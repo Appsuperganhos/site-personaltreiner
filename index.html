@@ -903,7 +903,7 @@ footer {
   <div class="services-grid">
     <div class="service-card"><div class="service-num">01</div><div class="service-bar"></div><h3 class="service-name">Treino Personalizado</h3><p class="service-desc">Protocolo exclusivo desenhado para sua biometria, objetivos e estilo de vida. Cada sessão é uma experiência única de alto rendimento.</p><div class="service-link">Explorar →</div></div>
     <div class="service-card"><div class="service-num">02</div><div class="service-bar"></div><h3 class="service-name">Nutrição Estratégica</h3><p class="service-desc">Plano alimentar baseado em dados reais do seu organismo. Ciência aplicada para máxima performance e recuperação acelerada.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">03</div><div class="service-bar"></div><h3 class="service-name">Mentoria Mental</h3><p class="service-desc">O corpo segue a mente. Técnicas de foco, disciplina e mentalidade vencedora para ir além de qualquer limite conhecido.</p><div class="service-link">Explorar →</div></div>
+    <div class="service-card"><div class="service-num">03</div><div class="service-bar"></div><h3 class="service-name">Mentoria Mental</h3><p class="service-desc">O corpo segue a mente. Técnicas de foco, disciplina e mentalidade vencedora para ir além de qualquer limite.</p><div class="service-link">Explorar →</div></div>
     <div class="service-card"><div class="service-num">04</div><div class="service-bar"></div><h3 class="service-name">High Performance</h3><p class="service-desc">Para atletas e executivos de alta demanda. Força, HIIT e recuperação ativa em protocolo intensivo e científico.</p><div class="service-link">Explorar →</div></div>
     <div class="service-card"><div class="service-num">05</div><div class="service-bar"></div><h3 class="service-name">Recomposição Corporal</h3><p class="service-desc">Redução de gordura e hipertrofia simultâneos. Metodologia exclusiva com reavaliação semanal e ajuste contínuo.</p><div class="service-link">Explorar →</div></div>
     <div class="service-card"><div class="service-num">06</div><div class="service-bar"></div><h3 class="service-name">Online Premium</h3><p class="service-desc">App exclusivo com treinos em vídeo, check-ins diários, análise de desempenho e suporte 24h onde você estiver.</p><div class="service-link">Explorar →</div></div>
@@ -1008,319 +1008,110 @@ footer {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
-/* hero3d.js — Three.js r128 compatible
-   Figura atlética 3D com partículas e linhas de energia
-   CapsuleGeometry REMOVIDA (não existe no r128)
-   Substituída por CylinderGeometry + SphereGeometry compostas
+/* hero3d.js — ATHLETE IMAGE HERO
+   3 imagens em crossfade sincronizado com scroll
+   mix-blend-mode: lighten — fundo preto vira transparente
+   Partículas de energia + parallax + glitch de entrada
+   Three.js r128
 */
+(function () {
 
-(function() {
-
-  const heroCanvas = document.getElementById('hero-canvas');
-  const scene  = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
-  const renderer = new THREE.WebGLRenderer({ canvas: heroCanvas, antialias: true, alpha: true });
+  // ── CANVAS BACKGROUND (partículas) ──────────────────────────────
+  const canvas   = document.getElementById('hero-canvas');
+  const scene    = new THREE.Scene();
+  const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setClearColor(0x060608, 1);
-  camera.position.set(0, 0, 22);
+  camera.position.set(0, 0, 30);
 
-  // ── CÂMERA STATE (controlada pelo GSAP scroll) ──
-  window.camState = {
-    posX: 0, posY: 0, posZ: 22,
-    lookY: 1, rotY: 0
-  };
+  // Camera state (driven by main.js GSAP)
+  window.camState = { posX: 0, posY: 0, posZ: 30, lookY: 0 };
 
-  // ── GRUPO DA FIGURA ──
-  const figureGroup = new THREE.Group();
-  scene.add(figureGroup);
-
-  // Helpers
-  function addSphere(group, x, y, z, r, mat) {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 16), mat);
-    m.position.set(x, y, z);
-    group.add(m);
-    return m;
-  }
-
-  function addCylinder(group, x1, y1, z1, x2, y2, z2, r, mat) {
-    const dir = new THREE.Vector3(x2-x1, y2-y1, z2-z1);
-    const len = dir.length();
-    const geo = new THREE.CylinderGeometry(r, r * 0.9, len, 12);
-    const m   = new THREE.Mesh(geo, mat);
-    dir.normalize();
-    m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
-    m.position.set((x1+x2)/2, (y1+y2)/2, (z1+z2)/2);
-    group.add(m);
-    return m;
-  }
-
-  // SUBSTITUTO de CapsuleGeometry (r128 safe)
-  // Cria cápsula = cilindro + 2 esferas nas pontas
-  function addCapsule(group, x, y, z, radiusX, height, mat) {
-    const halfH = height / 2;
-    // Cilindro central
-    const cyl = new THREE.Mesh(
-      new THREE.CylinderGeometry(radiusX, radiusX, height, 16, 1),
-      mat
-    );
-    cyl.position.set(x, y, z);
-    group.add(cyl);
-    // Topo
-    const top = new THREE.Mesh(new THREE.SphereGeometry(radiusX, 16, 8, 0, Math.PI*2, 0, Math.PI/2), mat);
-    top.position.set(x, y + halfH, z);
-    group.add(top);
-    // Base
-    const bot = new THREE.Mesh(new THREE.SphereGeometry(radiusX, 16, 8, 0, Math.PI*2, Math.PI/2, Math.PI/2), mat);
-    bot.position.set(x, y - halfH, z);
-    group.add(bot);
-  }
-
-  // ── MATERIAIS ──
-  const bodyMat   = new THREE.MeshPhongMaterial({ color: 0x1a1a22, transparent: true, opacity: 0.92, shininess: 40 });
-  const wireMat   = new THREE.MeshBasicMaterial({ color: 0xE8213A, wireframe: true,  transparent: true, opacity: 0.22 });
-  const muscleMat = new THREE.MeshPhongMaterial({ color: 0x2a1418, transparent: true, opacity: 0.85, shininess: 80 });
-  const glowMat   = new THREE.MeshBasicMaterial({ color: 0xE8213A, transparent: true, opacity: 0.55 });
-  const skelMat   = new THREE.MeshBasicMaterial({ color: 0x661020, transparent: true, opacity: 0.4 });
-
-  // ── CABEÇA ──
-  addSphere(figureGroup, 0, 7.2, 0, 0.9,  bodyMat);
-  addSphere(figureGroup, 0, 7.2, 0, 0.92, wireMat);
-
-  // ── PESCOÇO ──
-  addCylinder(figureGroup, 0,6.4,0, 0,6.0,0, 0.28, bodyMat);
-
-  // ── CLAVÍCULA ──
-  addCylinder(figureGroup, -2,5.8,0, 2,5.8,0, 0.14, skelMat);
-
-  // ── DELTÓIDES (ombros) ──
-  addSphere(figureGroup, -1.8, 5.8, 0, 0.7, muscleMat);
-  addSphere(figureGroup,  1.8, 5.8, 0, 0.7, muscleMat);
-  addSphere(figureGroup, -1.8, 5.8, 0, 0.72, wireMat);
-  addSphere(figureGroup,  1.8, 5.8, 0, 0.72, wireMat);
-
-  // ── PEITORAL ──
-  addSphere(figureGroup, -0.8, 4.8, 0.6, 1.0, muscleMat);
-  addSphere(figureGroup,  0.8, 4.8, 0.6, 1.0, muscleMat);
-  addSphere(figureGroup, -0.8, 4.8, 0.62, 0.95, wireMat);
-  addSphere(figureGroup,  0.8, 4.8, 0.62, 0.95, wireMat);
-
-  // ── COLUNA (spine) ──
-  addCylinder(figureGroup, 0,5.6,0, 0,1.5,0, 0.22, skelMat);
-
-  // ── ABDÔMEN (6-pack) ──
-  for (let i = 0; i < 3; i++) {
-    for (let s = -1; s <= 1; s += 2) {
-      addSphere(figureGroup, s * 0.35, 4.2 - i * 0.9, 0.72, 0.28, muscleMat);
-    }
-  }
-
-  // ── DORSAIS (lats) ──
-  addSphere(figureGroup, -1.5, 4.0, -0.1, 0.85, muscleMat);
-  addSphere(figureGroup,  1.5, 4.0, -0.1, 0.85, muscleMat);
-  addCylinder(figureGroup, -1.8,5.8,0, -1.4,3.5,-0.1, 0.3, muscleMat);
-  addCylinder(figureGroup,  1.8,5.8,0,  1.4,3.5,-0.1, 0.3, muscleMat);
-
-  // ── BRAÇOS SUPERIORES (bíceps/tríceps) ──
-  addCylinder(figureGroup, -1.8,5.8,0, -2.4,3.8,0, 0.42, bodyMat);
-  addCylinder(figureGroup,  1.8,5.8,0,  2.4,3.8,0, 0.42, bodyMat);
-  addSphere(figureGroup, -2.1, 4.8, 0.1, 0.5, muscleMat);
-  addSphere(figureGroup,  2.1, 4.8, 0.1, 0.5, muscleMat);
-
-  // ── COTOVELOS ──
-  addSphere(figureGroup, -2.4, 3.8, 0, 0.38, bodyMat);
-  addSphere(figureGroup,  2.4, 3.8, 0, 0.38, bodyMat);
-
-  // ── ANTEBRAÇOS ──
-  addCylinder(figureGroup, -2.4,3.8,0, -2.6,2.0,0.1, 0.28, bodyMat);
-  addCylinder(figureGroup,  2.4,3.8,0,  2.6,2.0,0.1, 0.28, bodyMat);
-
-  // ── MÃOS ──
-  addSphere(figureGroup, -2.6, 1.7, 0.1, 0.32, bodyMat);
-  addSphere(figureGroup,  2.6, 1.7, 0.1, 0.32, bodyMat);
-
-  // ── PELVE ──
-  addSphere(figureGroup, 0, 1.5, 0, 0.9, bodyMat);
-
-  // ── GLÚTEOS ──
-  addSphere(figureGroup, -0.7, 1.3, -0.4, 0.7, muscleMat);
-  addSphere(figureGroup,  0.7, 1.3, -0.4, 0.7, muscleMat);
-
-  // ── COXAS (quadríceps) ──
-  addCylinder(figureGroup, -0.6,1.5,0, -0.8,-1.0,0, 0.55, bodyMat);
-  addCylinder(figureGroup,  0.6,1.5,0,  0.8,-1.0,0, 0.55, bodyMat);
-  addSphere(figureGroup, -0.7, 0.2,  0.4, 0.5, muscleMat);
-  addSphere(figureGroup,  0.7, 0.2,  0.4, 0.5, muscleMat);
-
-  // ── JOELHOS ──
-  addSphere(figureGroup, -0.8, -1.0, 0, 0.44, bodyMat);
-  addSphere(figureGroup,  0.8, -1.0, 0, 0.44, bodyMat);
-
-  // ── PANTURRILHAS ──
-  addCylinder(figureGroup, -0.8,-1.0,0, -0.8,-3.2,-0.1, 0.38, bodyMat);
-  addCylinder(figureGroup,  0.8,-1.0,0,  0.8,-3.2,-0.1, 0.38, bodyMat);
-  addSphere(figureGroup, -0.85, -2.0, -0.25, 0.38, muscleMat);
-  addSphere(figureGroup,  0.85, -2.0, -0.25, 0.38, muscleMat);
-
-  // ── TORNOZELOS & PÉS ──
-  addSphere(figureGroup, -0.8, -3.2, -0.1, 0.28, bodyMat);
-  addSphere(figureGroup,  0.8, -3.2, -0.1, 0.28, bodyMat);
-  addCylinder(figureGroup, -0.8,-3.2,-0.1, -0.8,-3.2,0.7, 0.22, bodyMat);
-  addCylinder(figureGroup,  0.8,-3.2,-0.1,  0.8,-3.2,0.7, 0.22, bodyMat);
-
-  // ── SILHUETA WIREFRAME do corpo inteiro (r128 safe: CylinderGeometry) ──
-  // Usamos uma cápsula manual: cilindro central + esferas nos extremos
-  addCapsule(figureGroup, 0, 2.0, 0, 1.85, 9.5,
-    new THREE.MeshBasicMaterial({ color: 0xE8213A, wireframe: true, transparent: true, opacity: 0.05 })
-  );
-
-  // ── ANÉIS DE ENERGIA ──
-  const ringMeshes = [6, 3, -1].map(y => {
-    const geo = new THREE.TorusGeometry(2.4, 0.012, 8, 64);
-    const mat = new THREE.MeshBasicMaterial({ color: 0xE8213A, transparent: true, opacity: 0.15 });
-    const m   = new THREE.Mesh(geo, mat);
-    m.position.y = y;
-    m.rotation.x = Math.PI / 2;
-    figureGroup.add(m);
-    return m;
-  });
-
-  // ── PONTOS DE ATIVAÇÃO MUSCULAR (glow) ──
-  const glowPoints = [
-    [-0.8, 4.8,  0.62], [ 0.8, 4.8,  0.62],
-    [-1.5, 4.0, -0.1 ], [ 1.5, 4.0, -0.1 ],
-    [-2.1, 4.8,  0.1 ], [ 2.1, 4.8,  0.1 ],
-    [-0.7, 0.2,  0.4 ], [ 0.7, 0.2,  0.4 ],
-  ];
-  const glowMeshes = glowPoints.map(([x,y,z]) => addSphere(figureGroup, x, y, z, 0.15, glowMat));
-
-  // ── LINHAS DE ENERGIA (esqueleto luminoso) ──
-  function makeELine(p1, p2, opacity) {
-    const geo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(...p1),
-      new THREE.Vector3(...p2)
-    ]);
-    const mat = new THREE.LineBasicMaterial({
-      color: 0xE8213A, transparent: true, opacity,
-      blending: THREE.AdditiveBlending
-    });
-    const line = new THREE.Line(geo, mat);
-    figureGroup.add(line);
-    return mat;
-  }
-
-  const eMats = [
-    makeELine([0,7.2,0],[0,6.0,0], 0.3),
-    makeELine([0,6.0,0],[-1.8,5.8,0], 0.3),
-    makeELine([0,6.0,0],[ 1.8,5.8,0], 0.3),
-    makeELine([-1.8,5.8,0],[-2.4,3.8,0], 0.25),
-    makeELine([ 1.8,5.8,0],[ 2.4,3.8,0], 0.25),
-    makeELine([-0.8,4.8,0.6],[0.8,4.8,0.6], 0.2),
-    makeELine([0,5.6,0],[0,1.5,0], 0.3),
-    makeELine([0,1.5,0],[-0.6,1.5,0], 0.25),
-    makeELine([0,1.5,0],[ 0.6,1.5,0], 0.25),
-    makeELine([-0.6,1.5,0],[-0.8,-1.0,0], 0.2),
-    makeELine([ 0.6,1.5,0],[ 0.8,-1.0,0], 0.2),
-    makeELine([-0.8,-1.0,0],[-0.8,-3.2,-0.1], 0.2),
-    makeELine([ 0.8,-1.0,0],[ 0.8,-3.2,-0.1], 0.2),
-  ];
-
-  // ── PARTÍCULAS DE FUNDO ──
-  const pCount = 3000;
-  const pPos = new Float32Array(pCount * 3);
-  const pCol = new Float32Array(pCount * 3);
-  for (let i = 0; i < pCount; i++) {
+  // ── PARTICLE FIELD (fundo atmosférico) ──────────────────────────
+  const N = 2000;
+  const pPos = new Float32Array(N * 3);
+  const pCol = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
     const i3 = i * 3;
-    pPos[i3]   = (Math.random() - 0.5) * 100;
-    pPos[i3+1] = (Math.random() - 0.5) * 80;
-    pPos[i3+2] = (Math.random() - 0.5) * 80 - 20;
-    if (Math.random() < 0.12) {
-      pCol[i3]=0.91; pCol[i3+1]=0.13; pCol[i3+2]=0.23;
-    } else {
-      const v = 0.06 + Math.random() * 0.15;
-      pCol[i3]=v; pCol[i3+1]=v; pCol[i3+2]=v * 1.1;
-    }
+    pPos[i3]   = (Math.random() - 0.5) * 160;
+    pPos[i3+1] = (Math.random() - 0.5) * 100;
+    pPos[i3+2] = (Math.random() - 0.5) * 80 - 10;
+    const isRed = Math.random() < 0.18;
+    if (isRed) { pCol[i3]=0.91; pCol[i3+1]=0.13; pCol[i3+2]=0.23; }
+    else { const v = 0.04 + Math.random()*0.12; pCol[i3]=v; pCol[i3+1]=v; pCol[i3+2]=v*1.1; }
   }
   const pGeo = new THREE.BufferGeometry();
   pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
   pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
   const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
-    size: 0.18, vertexColors: true,
-    transparent: true, opacity: 0.8,
+    size: 0.14, vertexColors: true,
+    transparent: true, opacity: 0.7,
     blending: THREE.AdditiveBlending, depthWrite: false
   }));
   scene.add(particles);
 
-  // ── GRID CHÃO ──
-  const grid = new THREE.GridHelper(60, 30, 0x1a0306, 0x0e0105);
-  grid.position.y = -3.5;
-  scene.add(grid);
-
-  // ── ILUMINAÇÃO ──
-  scene.add(new THREE.AmbientLight(0x111118, 2));
-  const redLight = new THREE.PointLight(0xE8213A, 4, 30);
-  redLight.position.set(3, 6, 6);
-  scene.add(redLight);
-  const blueLight = new THREE.PointLight(0x0a1aff, 1.5, 25);
-  blueLight.position.set(-4, 2, 4);
-  scene.add(blueLight);
-  const rimLight = new THREE.DirectionalLight(0xffffff, 0.4);
-  rimLight.position.set(-5, 8, -5);
-  scene.add(rimLight);
-
-  // ── PARALLAX MOUSE ──
-  let mParX = 0, mParY = 0;
-  document.addEventListener('mousemove', e => {
-    mParX = (e.clientX / innerWidth  - 0.5);
-    mParY = (e.clientY / innerHeight - 0.5);
+  // ── ENERGY RINGS (decorativos no fundo) ─────────────────────────
+  const rings = [-6, 0, 6].map((y, i) => {
+    const m = new THREE.Mesh(
+      new THREE.TorusGeometry(8 + i*2, 0.015, 6, 80),
+      new THREE.MeshBasicMaterial({
+        color: 0xE8213A, transparent: true, opacity: 0.08,
+        blending: THREE.AdditiveBlending
+      })
+    );
+    m.position.y = y;
+    m.rotation.x = Math.PI / 2;
+    scene.add(m);
+    return m;
   });
 
-  // ── RENDER LOOP ──
+  // ── RED LIGHT (pulsa ao fundo) ───────────────────────────────────
+  const redLight = new THREE.PointLight(0xE8213A, 2, 40);
+  redLight.position.set(0, 0, 5);
+  scene.add(redLight);
+
+  // ── MOUSE PARALLAX ──────────────────────────────────────────────
+  let mX = 0, mY = 0;
+  document.addEventListener('mousemove', e => {
+    mX = (e.clientX / innerWidth  - 0.5);
+    mY = (e.clientY / innerHeight - 0.5);
+  });
+
+  // ── RENDER LOOP ─────────────────────────────────────────────────
   const clock = new THREE.Clock();
-  function renderHero() {
-    requestAnimationFrame(renderHero);
-    const t = clock.getElapsedTime();
+  function render() {
+    requestAnimationFrame(render);
+    const t  = clock.getElapsedTime();
     const cs = window.camState;
 
-    // Câmera suave
-    camera.position.x += (cs.posX + mParX * 1.2 - camera.position.x) * 0.06;
-    camera.position.y += (cs.posY - mParY * 0.6   - camera.position.y) * 0.06;
-    camera.position.z += (cs.posZ                  - camera.position.z) * 0.06;
-    camera.lookAt(cs.rotY * 2, cs.lookY, 0);
+    // Camera smooth follow
+    camera.position.x += (cs.posX + mX * 1.5 - camera.position.x) * 0.05;
+    camera.position.y += (cs.posY - mY * 0.8  - camera.position.y) * 0.05;
+    camera.position.z += (cs.posZ              - camera.position.z) * 0.05;
+    camera.lookAt(0, cs.lookY, 0);
 
-    // Figura flutua suavemente
-    figureGroup.position.y = Math.sin(t * 0.4) * 0.18;
-    figureGroup.rotation.y = cs.rotY + Math.sin(t * 0.2) * 0.04;
+    // Particles drift
+    particles.rotation.y = t * 0.008;
+    particles.rotation.x = t * 0.004;
 
-    // Piscada dos pontos de ativação muscular
-    glowMeshes.forEach((m, i) => {
-      m.material.opacity = 0.3 + Math.sin(t * 2.5 + i * 0.7) * 0.25;
+    // Rings pulse and rotate
+    rings.forEach((r, i) => {
+      r.rotation.z = t * (0.1 + i * 0.06);
+      r.material.opacity = 0.05 + Math.sin(t * 1.2 + i * 1.4) * 0.04;
     });
 
-    // Anéis de energia giram
-    ringMeshes.forEach((r, i) => {
-      r.rotation.z  = t * (0.2 + i * 0.1);
-      r.material.opacity = 0.08 + Math.sin(t * 1.8 + i * 1.2) * 0.07;
-    });
-
-    // Linhas de energia flicker
-    eMats.forEach((mat, i) => {
-      mat.opacity = 0.15 + Math.sin(t * 3 + i * 0.9) * 0.2;
-    });
-
-    // Partículas giram
-    particles.rotation.y = t * 0.015;
-    particles.rotation.x = t * 0.008;
-
-    // Luz vermelha orbita
-    redLight.position.x = Math.sin(t * 0.5) * 6;
-    redLight.position.z = Math.cos(t * 0.5) * 6;
+    // Red light orbit
+    redLight.position.x = Math.sin(t * 0.35) * 8;
+    redLight.position.z = Math.cos(t * 0.35) * 6 + 5;
+    redLight.intensity  = 1.5 + Math.sin(t * 1.6) * 0.8;
 
     renderer.render(scene, camera);
   }
-  renderHero();
+  render();
 
-  // ── RESIZE ──
+  // ── RESIZE ──────────────────────────────────────────────────────
   window.addEventListener('resize', () => {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
@@ -1328,70 +1119,427 @@ footer {
   });
 
 })();
-/* main.js — GSAP + ScrollTrigger + lógica de scroll geral */
 
-(function() {
 
+// ── ATHLETE IMAGE SYSTEM ─────────────────────────────────────────
+// Gerencia as 3 imagens + parallax + glitch + crossfade por scroll
+(function () {
+
+  // ── INJECT ATHLETE LAYER CSS ────────────────────────────────────
+  const style = document.createElement('style');
+  style.textContent = `
+    /* Container das imagens — fica sobre o canvas, abaixo do texto */
+    #athlete-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Cada imagem do atleta */
+    .athlete-img {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 100%;
+      width: auto;
+      max-width: none;
+
+      /* A MÁGICA: fundo preto some, atleta aparece flutuando */
+      mix-blend-mode: lighten;
+
+      opacity: 0;
+      transition: none;
+      will-change: transform, opacity;
+      filter: brightness(1.05) contrast(1.08);
+      transform-origin: bottom center;
+    }
+
+    /* Glitch effect layers */
+    .athlete-img.glitch-r {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      mix-blend-mode: lighten;
+      opacity: 0;
+      filter: brightness(1.05) contrast(1.1) saturate(2);
+      pointer-events: none;
+      height: 100%;
+      width: auto;
+    }
+    .athlete-img.glitch-b {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      mix-blend-mode: lighten;
+      opacity: 0;
+      filter: brightness(1.05) contrast(1.1) hue-rotate(200deg) saturate(2);
+      pointer-events: none;
+      height: 100%;
+      width: auto;
+    }
+
+    /* Rim light glow overlay — pulsa sobre o atleta */
+    #athlete-glow {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse 30% 70% at 72% 50%,
+        rgba(232,33,58,0.12) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 30% 70% at 28% 50%,
+        rgba(40,80,255,0.07) 0%,
+        transparent 70%
+      );
+      animation: glowPulse 3s ease-in-out infinite;
+    }
+    @keyframes glowPulse {
+      0%,100% { opacity: 0.6; }
+      50%      { opacity: 1.0; }
+    }
+
+    /* Energy lines that sweep up the athlete body */
+    #energy-sweep {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      bottom: -10%;
+      height: 0%;
+      background: linear-gradient(to top, transparent, rgba(232,33,58,0.8), transparent);
+      z-index: 3;
+      pointer-events: none;
+      box-shadow: 0 0 20px rgba(232,33,58,0.6), 0 0 60px rgba(232,33,58,0.3);
+      opacity: 0;
+    }
+
+    /* Crossfade label that shows which phase */
+    #athlete-phase-label {
+      position: absolute;
+      bottom: 48px;
+      right: 48px;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+    }
+    #athlete-phase-label span {
+      display: block;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 11px;
+      letter-spacing: 6px;
+      color: rgba(232,33,58,0.7);
+      text-transform: uppercase;
+    }
+
+    /* Phase dots indicator */
+    #phase-dots {
+      position: absolute;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .phase-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      transition: background 0.4s, transform 0.4s;
+    }
+    .phase-dot.active {
+      background: var(--red);
+      transform: scale(1.4);
+      box-shadow: 0 0 6px var(--red);
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ── BUILD DOM ───────────────────────────────────────────────────
+  const heroSticky = document.getElementById('hero-sticky');
+
+  // Athlete layer
+  const layer = document.createElement('div');
+  layer.id = 'athlete-layer';
+  heroSticky.appendChild(layer);
+
+  // Glow overlay
+  const glow = document.createElement('div');
+  glow.id = 'athlete-glow';
+  layer.appendChild(glow);
+
+  // Energy sweep line
+  const sweep = document.createElement('div');
+  sweep.id = 'energy-sweep';
+  layer.appendChild(sweep);
+
+  // Phase label
+  const phaseLabel = document.createElement('div');
+  phaseLabel.id = 'athlete-phase-label';
+  phaseLabel.innerHTML = '<span id="phase-label-text"></span>';
+  heroSticky.appendChild(phaseLabel);
+
+  // Phase dots
+  const dotsEl = document.createElement('div');
+  dotsEl.id = 'phase-dots';
+  dotsEl.innerHTML = '<div class="phase-dot active"></div><div class="phase-dot"></div><div class="phase-dot"></div>';
+  heroSticky.appendChild(dotsEl);
+
+  // ── IMAGE PATHS ─────────────────────────────────────────────────
+  // Coloque suas imagens na pasta images/hero/
+  const IMAGES = [
+    'images/hero/athlete-2.png',  // Arms crossed — autoridade (fase 1)
+    'images/hero/athlete-1.png',  // Deadlift ready — força (fase 2)
+    'images/hero/athlete-3.png',  // Victory jump — resultado (fase 3)
+  ];
+
+  const LABELS = ['AUTORIDADE', 'FORÇA', 'RESULTADO'];
+
+  // ── CREATE IMAGE ELEMENTS ────────────────────────────────────────
+  const imgs = IMAGES.map((src, i) => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.className = 'athlete-img';
+    img.alt = '';
+    img.draggable = false;
+    layer.appendChild(img);
+    return img;
+  });
+
+  // Glitch copies (para efeito de entrada)
+  const glitchR = document.createElement('img');
+  glitchR.className = 'athlete-img glitch-r';
+  glitchR.alt = ''; glitchR.draggable = false;
+  layer.appendChild(glitchR);
+
+  const glitchB = document.createElement('img');
+  glitchB.className = 'athlete-img glitch-b';
+  glitchB.alt = ''; glitchB.draggable = false;
+  layer.appendChild(glitchB);
+
+  // ── STATE ────────────────────────────────────────────────────────
+  let currentPhase  = 0;
+  let targetPhase   = 0;
+  let parallaxY     = 0;
+  let parallaxX     = 0;
+  let glitching     = false;
+  const dots        = dotsEl.querySelectorAll('.phase-dot');
+
+  // Expose scroll progress for main.js
+  window.athleteState = {
+    scrollProgress: 0,  // 0–1 over hero journey
+    phase: 0,
+  };
+
+  // ── SHOW PHASE ───────────────────────────────────────────────────
+  function showPhase(idx, immediate) {
+    if (idx === currentPhase && !immediate) return;
+    const prev = currentPhase;
+    currentPhase = idx;
+    window.athleteState.phase = idx;
+
+    // Update dots
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+
+    // Label
+    document.getElementById('phase-label-text').textContent = LABELS[idx];
+
+    if (immediate) {
+      imgs.forEach((img, i) => { img.style.opacity = i === idx ? '1' : '0'; });
+      return;
+    }
+
+    // Crossfade — new image fades in while old fades out
+    imgs[prev].style.transition = 'opacity 0.9s cubic-bezier(0.4,0,0.2,1)';
+    imgs[idx].style.transition  = 'opacity 0.9s cubic-bezier(0.4,0,0.2,1)';
+    imgs[prev].style.opacity = '0';
+    imgs[idx].style.opacity  = '1';
+
+    // Glitch copies follow the new image
+    if (!glitching) triggerGlitch(IMAGES[idx]);
+
+    // Energy sweep
+    sweep.style.transition = 'none';
+    sweep.style.bottom = '-10%';
+    sweep.style.height = '0%';
+    sweep.style.opacity = '1';
+    requestAnimationFrame(() => {
+      sweep.style.transition = 'height 0.6s ease-out, bottom 0.6s ease-out, opacity 0.3s ease 0.5s';
+      sweep.style.height = '110%';
+      sweep.style.bottom = '100%';
+      setTimeout(() => { sweep.style.opacity = '0'; }, 500);
+    });
+  }
+
+  // ── GLITCH EFFECT ────────────────────────────────────────────────
+  function triggerGlitch(src) {
+    glitching = true;
+    glitchR.src = src;
+    glitchB.src = src;
+
+    const timeline = [
+      { el: glitchR, tx: '4px',  ty: '0px',   op: '0.6', delay: 0   },
+      { el: glitchB, tx: '-4px', ty: '-2px',  op: '0.5', delay: 50  },
+      { el: glitchR, tx: '-3px', ty: '2px',   op: '0.4', delay: 100 },
+      { el: glitchB, tx: '5px',  ty: '-1px',  op: '0.3', delay: 150 },
+      { el: glitchR, tx: '0',    ty: '0',     op: '0',   delay: 220 },
+      { el: glitchB, tx: '0',    ty: '0',     op: '0',   delay: 260 },
+    ];
+
+    timeline.forEach(({ el, tx, ty, op, delay }) => {
+      setTimeout(() => {
+        el.style.transform = `translateX(calc(-50% + ${tx})) translateY(${ty})`;
+        el.style.opacity   = op;
+      }, delay);
+    });
+
+    setTimeout(() => { glitching = false; }, 400);
+  }
+
+  // ── PARALLAX ON MOUSE ────────────────────────────────────────────
+  document.addEventListener('mousemove', e => {
+    parallaxX = (e.clientX / innerWidth  - 0.5) * 18;
+    parallaxY = (e.clientY / innerHeight - 0.5) * 10;
+  });
+
+  let rafPX = 0, rafPY = 0;
+  function updateParallax() {
+    rafPX += (parallaxX - rafPX) * 0.07;
+    rafPY += (parallaxY - rafPY) * 0.07;
+
+    const scrollOffset = window.athleteState.scrollProgress * -60; // moves up as you scroll
+
+    imgs.forEach(img => {
+      img.style.transform =
+        `translateX(calc(-50% + ${rafPX * 0.4}px)) translateY(${rafPY * 0.3 + scrollOffset}px)`;
+    });
+    glitchR.style.transform = `translateX(calc(-50% + ${rafPX * 0.4}px)) translateY(${rafPY * 0.3 + scrollOffset}px)`;
+    glitchB.style.transform = `translateX(calc(-50% + ${rafPX * 0.4}px)) translateY(${rafPY * 0.3 + scrollOffset}px)`;
+
+    requestAnimationFrame(updateParallax);
+  }
+  updateParallax();
+
+  // ── SCROLL PHASE CONTROL (called by main.js via window.setAthletePhase) ──
+  window.setAthletePhase = function(progress) {
+    window.athleteState.scrollProgress = progress;
+
+    // 0.00–0.33 → phase 0 (arms crossed — autoridade)
+    // 0.33–0.66 → phase 1 (deadlift — força)
+    // 0.66–1.00 → phase 2 (jump — resultado)
+    const newPhase = progress < 0.33 ? 0 : progress < 0.66 ? 1 : 2;
+    if (newPhase !== targetPhase) {
+      targetPhase = newPhase;
+      showPhase(newPhase, false);
+    }
+
+    // Phase label visibility
+    phaseLabel.style.opacity = progress > 0.05 && progress < 0.95 ? '1' : '0';
+  };
+
+  // ── ENTRANCE ANIMATION ───────────────────────────────────────────
+  // On load: glitch entrance then settle on phase 0
+  function entrance() {
+    const src0 = IMAGES[0];
+    imgs[0].src   = src0;
+    glitchR.src   = src0;
+    glitchB.src   = src0;
+
+    // Pre-load all images
+    IMAGES.forEach((src, i) => { if (i > 0) { const tmp = new Image(); tmp.src = src; imgs[i].src = src; } });
+
+    // Sequence: glitch in over 1.2s
+    const seq = [
+      { op: '0.3', tx: '-6px', delay: 100 },
+      { op: '0.5', tx:  '5px', delay: 200 },
+      { op: '0.7', tx: '-3px', delay: 300 },
+      { op: '0.9', tx:  '2px', delay: 400 },
+      { op: '1.0', tx:  '0px', delay: 600 },
+    ];
+
+    seq.forEach(({ op, tx, delay }) => {
+      setTimeout(() => {
+        imgs[0].style.transition = 'opacity 0.15s ease';
+        imgs[0].style.opacity    = op;
+        glitchR.style.opacity    = parseFloat(op) > 0.5 ? '0' : (parseFloat(op) * 0.5).toString();
+        glitchB.style.opacity    = parseFloat(op) > 0.5 ? '0' : (parseFloat(op) * 0.4).toString();
+        glitchR.style.transform  = `translateX(calc(-50% + ${tx}))`;
+        glitchB.style.transform  = `translateX(calc(-50% + ${parseFloat(tx) * -1.3}px))`;
+      }, delay);
+    });
+
+    // After entrance, clean up
+    setTimeout(() => {
+      glitchR.style.opacity = '0';
+      glitchB.style.opacity = '0';
+      imgs[0].style.transition = '';
+    }, 900);
+  }
+
+  // Delay entrance until fonts + page loaded
+  if (document.readyState === 'complete') {
+    setTimeout(entrance, 400);
+  } else {
+    window.addEventListener('load', () => setTimeout(entrance, 400));
+  }
+
+})();
+/* main.js — GSAP + ScrollTrigger
+   Scroll journey 600vh com 3 fases do atleta
+*/
+(function () {
   gsap.registerPlugin(ScrollTrigger);
 
   // ── CURSOR ──────────────────────────────────────────────────────
   const cur  = document.getElementById('cursor');
   const ring = document.getElementById('cursor-ring');
-  let mx = 0, my = 0, rx = 0, ry = 0;
-
+  let mx=0,my=0,rx=0,ry=0;
   document.addEventListener('mousemove', e => {
-    mx = e.clientX; my = e.clientY;
-    cur.style.left = mx + 'px';
-    cur.style.top  = my + 'px';
+    mx=e.clientX; my=e.clientY;
+    cur.style.left=mx+'px'; cur.style.top=my+'px';
   });
-
-  (function loopCursor() {
-    rx += (mx - rx) * 0.1;
-    ry += (my - ry) * 0.1;
-    ring.style.left = rx + 'px';
-    ring.style.top  = ry + 'px';
-    requestAnimationFrame(loopCursor);
-  })();
-
-  document.querySelectorAll('a, button, .service-card, .hscroll-card').forEach(el => {
-    el.addEventListener('mouseenter', () => {
-      cur.style.width  = '18px'; cur.style.height = '18px';
-      ring.style.width = '56px'; ring.style.height = '56px';
-    });
-    el.addEventListener('mouseleave', () => {
-      cur.style.width  = '10px'; cur.style.height = '10px';
-      ring.style.width = '38px'; ring.style.height = '38px';
-    });
+  (function loop(){ rx+=(mx-rx)*0.1; ry+=(my-ry)*0.1; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a,button,.service-card,.hscroll-card').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ cur.style.width='18px'; cur.style.height='18px'; ring.style.width='56px'; ring.style.height='56px'; });
+    el.addEventListener('mouseleave',()=>{ cur.style.width='10px'; cur.style.height='10px'; ring.style.width='38px'; ring.style.height='38px'; });
   });
 
   // ── PROGRESS BAR ────────────────────────────────────────────────
   const pb = document.getElementById('progress-bar');
   window.addEventListener('scroll', () => {
-    pb.style.width = (window.scrollY / (document.body.scrollHeight - innerHeight) * 100) + '%';
+    pb.style.width=(window.scrollY/(document.body.scrollHeight-innerHeight)*100)+'%';
   });
 
-  // ── NAV SCROLL ──────────────────────────────────────────────────
+  // ── NAV ─────────────────────────────────────────────────────────
   const nav = document.getElementById('main-nav');
-  window.addEventListener('scroll', () => {
-    nav.classList.toggle('scrolled', window.scrollY > 80);
-  });
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY>80));
 
-  // ── HERO INTRO (on load) ────────────────────────────────────────
-  gsap.timeline({ delay: 0.4 })
-    .to('.hero-word',      { y: 0, duration: 1.3, stagger: 0.1,  ease: 'power4.out' })
-    .to('.hero-label',     { opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.8')
-    .to('.hero-sub-main',  { opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.4')
-    .to('#scroll-hint',    { opacity: 1, duration: 0.6 }, '-=0.2');
+  // ── HERO INTRO ──────────────────────────────────────────────────
+  gsap.timeline({ delay: 0.5 })
+    .to('.hero-word',     { y:0, duration:1.4, stagger:0.1,  ease:'power4.out' })
+    .to('.hero-label',    { opacity:1, duration:0.8, ease:'power3.out' }, '-=0.9')
+    .to('.hero-sub-main', { opacity:1, duration:0.8, ease:'power3.out' }, '-=0.5')
+    .to('#scroll-hint',   { opacity:1, duration:0.6 }, '-=0.3');
 
   // ── HERO SCROLL JOURNEY ─────────────────────────────────────────
-  // Usa window.camState exposta pelo hero3d.js
-  const phase1   = document.getElementById('hero-phase-1');
-  const phase2   = document.getElementById('hero-phase-2');
-  const phase3   = document.getElementById('hero-phase-3');
-  const scanLine = document.getElementById('scan-line');
+  const phase1     = document.getElementById('hero-phase-1');
+  const phase2     = document.getElementById('hero-phase-2');
+  const phase3     = document.getElementById('hero-phase-3');
+  const scanLine   = document.getElementById('scan-line');
   const scrollHint = document.getElementById('scroll-hint');
-  const p2nums   = document.querySelectorAll('.phase2-num');
-  const p2tags   = document.querySelectorAll('.phase2-tag');
+  const p2nums     = document.querySelectorAll('.phase2-num');
+  const p2tags     = document.querySelectorAll('.phase2-tag');
+  const camProxy   = window.camState;
+
+  // Proxy para controlar o progresso do atleta via scrub
+  const athleteProxy = { progress: 0 };
 
   const heroTl = gsap.timeline({
     scrollTrigger: {
@@ -1401,238 +1549,167 @@ footer {
       scrub:         1.6,
       pin:           '#hero-sticky',
       anticipatePin: 1,
+      onUpdate: self => {
+        // Mapeia progresso do scroll → fases do atleta
+        if (window.setAthletePhase) window.setAthletePhase(self.progress);
+      }
     }
   });
 
   heroTl
-    // 0–15%: câmera avança para a figura
-    .to(window.camState, { posZ: 14, duration: 1.5, ease: 'power2.inOut' }, 0)
+    // ── FASE 1 (0–30%): Atleta 1 — Autoridade
+    // Câmera avança suavemente, texto do hero presente
+    .to(camProxy, { posZ:24, duration:3, ease:'power1.inOut' }, 0)
 
-    // 15–35%: órbita para a direita, fase 1 sai
-    .to(window.camState, { posX: 4, rotY: -0.4, posZ: 12, duration: 2, ease: 'power1.inOut' }, 1.5)
-    .to(phase1,          { opacity: 0, y: -40, duration: 0.8, ease: 'power2.in' }, 1.8)
-    .to(scrollHint,      { opacity: 0, duration: 0.4 }, 1.8)
+    // ── FASE 1→2 (30–35%): Transição — texto some, scan line
+    .to(phase1,   { opacity:0, y:-60, duration:1.2, ease:'power2.in' }, 3)
+    .to(scrollHint, { opacity:0, duration:0.5 }, 3)
+    .to(camProxy, { posX:4, posZ:22, lookY:1, duration:1.5, ease:'power1.inOut' }, 3.5)
+    // Scan line diagnóstico
+    .to(scanLine, { opacity:0.8, duration:0.15 }, 3.2)
+    .to(scanLine, { top:'100%', duration:1.2, ease:'none' }, 3.2)
+    .to(scanLine, { opacity:0, duration:0.2 }, 4.2)
 
-    // 35–60%: fase 2 entra (stats), câmera orbita esquerda
-    .to(phase2,   { opacity: 1, duration: 0.8, ease: 'power2.out' }, 3.0)
-    .to(p2nums,   { x: 0, opacity: 1, stagger: 0.2, duration: 0.6 }, 3.2)
-    .to(p2tags,   { x: 0, opacity: 1, stagger: 0.12, duration: 0.5 }, 3.4)
-    .to(window.camState, { posX: -5, rotY: 0.5, posZ: 15, lookY: 2, duration: 3, ease: 'power1.inOut' }, 2.5)
-    // Scan line varre a tela
-    .to(scanLine, { opacity: 0.6, duration: 0.2 }, 3.0)
-    .to(scanLine, { top: '100%', duration: 1.2, ease: 'none' }, 3.0)
-    .to(scanLine, { opacity: 0, duration: 0.2 }, 4.0)
+    // ── FASE 2 (35–65%): Atleta 2 — Força
+    // Stats entram pela esquerda
+    .to(phase2,   { opacity:1, duration:1.0, ease:'power2.out' }, 4.0)
+    .to(p2nums,   { x:0, opacity:1, stagger:0.2, duration:0.8, ease:'power3.out' }, 4.2)
+    .to(p2tags,   { x:0, opacity:1, stagger:0.12, duration:0.6, ease:'power3.out' }, 4.5)
+    .to(camProxy, { posX:-4, posZ:20, lookY:0, duration:3, ease:'power1.inOut' }, 4.0)
 
-    // 60–80%: fase 2 sai, câmera volta ao centro
-    .to(phase2,          { opacity: 0, duration: 0.6, ease: 'power2.in' }, 5.2)
-    .to(window.camState, { posX: 0, rotY: 0, posZ: 18, lookY: 0, duration: 2.5, ease: 'power2.inOut' }, 5.0)
+    // ── FASE 2→3 (65–70%): Transição — stats somem, câmera retorna
+    .to(phase2,   { opacity:0, duration:1.0, ease:'power2.in' }, 6.5)
+    .to(camProxy, { posX:0, posZ:26, lookY:-1, duration:2, ease:'power2.inOut' }, 6.5)
+    // Segundo scan line
+    .to(scanLine, { top:'0%', opacity:0.6, duration:0.1 }, 6.8)
+    .to(scanLine, { top:'100%', duration:1.0, ease:'none', opacity:0.6 }, 6.8)
+    .to(scanLine, { opacity:0, duration:0.2 }, 7.7)
 
-    // 80–100%: fase 3 CTA
-    .to(phase3,        { opacity: 1, duration: 1.0, ease: 'power2.out' }, 6.5)
-    .to('#phase3-line',{ width: 160, duration: 0.8, ease: 'power2.out' }, 7.0);
+    // ── FASE 3 (70–100%): Atleta 3 — Resultado
+    // CTA final
+    .to(phase3,        { opacity:1, duration:1.2, ease:'power2.out' }, 7.5)
+    .to('#phase3-line',{ width:160, duration:0.8, ease:'power2.out' }, 8.0)
+    .to(camProxy,      { posZ:28, duration:2, ease:'power1.inOut' }, 7.5);
 
   // ── DIVIDERS ────────────────────────────────────────────────────
   document.querySelectorAll('[data-divider]').forEach(el => {
-    gsap.to(el, {
-      width: '100%', duration: 1.8, ease: 'power2.inOut',
-      scrollTrigger: { trigger: el, start: 'top 92%' }
-    });
+    gsap.to(el, { width:'100%', duration:1.8, ease:'power2.inOut',
+      scrollTrigger:{ trigger:el, start:'top 92%' } });
   });
 
   // ── STATS COUNTER ───────────────────────────────────────────────
   document.querySelectorAll('.stat-item').forEach((s, i) => {
     const el  = s.querySelector('.count');
     const tgt = parseInt(el.dataset.target);
-    ScrollTrigger.create({
-      trigger: s, start: 'top 82%',
-      onEnter: () => {
-        s.classList.add('is-active');
-        gsap.to({ v: 0 }, {
-          v: tgt, duration: 2.2, delay: i * 0.12, ease: 'power2.out',
-          onUpdate: function() { el.textContent = Math.round(this.targets()[0].v); }
-        });
-      }
-    });
+    ScrollTrigger.create({ trigger:s, start:'top 82%', onEnter:() => {
+      s.classList.add('is-active');
+      gsap.to({v:0},{v:tgt,duration:2.2,delay:i*0.12,ease:'power2.out',
+        onUpdate:function(){ el.textContent=Math.round(this.targets()[0].v); }});
+    }});
   });
 
-  // ── SECTION EYEBROWS ────────────────────────────────────────────
+  // ── EYEBROWS ────────────────────────────────────────────────────
   gsap.utils.toArray('.section-eyebrow').forEach(el => {
-    gsap.to(el, {
-      opacity: 1, x: 0, duration: 0.8, ease: 'power3.out',
-      scrollTrigger: { trigger: el, start: 'top 88%' }
-    });
+    gsap.to(el,{ opacity:1, x:0, duration:0.8, ease:'power3.out',
+      scrollTrigger:{ trigger:el, start:'top 88%' } });
   });
 
   // ── STAGGER WORDS ───────────────────────────────────────────────
   gsap.utils.toArray('.s-word').forEach(w => {
-    gsap.to(w, {
-      y: 0, opacity: 1, duration: 1.0, ease: 'power4.out',
-      scrollTrigger: { trigger: w.closest('.section-title') || w, start: 'top 88%' }
-    });
+    gsap.to(w,{ y:0, opacity:1, duration:1.0, ease:'power4.out',
+      scrollTrigger:{ trigger:w.closest('.section-title')||w, start:'top 88%' } });
   });
 
   // ── SERVICE CARDS ───────────────────────────────────────────────
   document.querySelectorAll('.service-card').forEach((c, i) => {
-    ScrollTrigger.create({
-      trigger: c, start: 'top 88%',
-      onEnter: () => {
-        setTimeout(() => {
-          const bar  = c.querySelector('.service-bar');
-          const name = c.querySelector('.service-name');
-          const desc = c.querySelector('.service-desc');
-          const link = c.querySelector('.service-link');
-          if (bar)  bar.style.cssText  = 'transform:scaleX(1);transition:transform 0.8s ease';
-          if (name) name.style.cssText = 'transform:translateY(0);opacity:1;transition:all 0.6s ease 0.15s';
-          if (desc) desc.style.cssText = 'transform:translateY(0);opacity:1;transition:all 0.6s ease 0.25s';
-          if (link) link.style.cssText = 'transform:translateY(0);opacity:1;transition:all 0.6s ease 0.35s';
-        }, i * 70);
-      }
-    });
+    ScrollTrigger.create({ trigger:c, start:'top 88%', onEnter:() => {
+      setTimeout(() => {
+        const b=c.querySelector('.service-bar');
+        const n=c.querySelector('.service-name');
+        const d=c.querySelector('.service-desc');
+        const l=c.querySelector('.service-link');
+        if(b) b.style.cssText='transform:scaleX(1);transition:transform 0.8s ease';
+        if(n) n.style.cssText='transform:translateY(0);opacity:1;transition:all 0.6s ease 0.15s';
+        if(d) d.style.cssText='transform:translateY(0);opacity:1;transition:all 0.6s ease 0.25s';
+        if(l) l.style.cssText='transform:translateY(0);opacity:1;transition:all 0.6s ease 0.35s';
+      }, i*70);
+    }});
   });
 
-  // ── HORIZONTAL SCROLL (programs) ────────────────────────────────
+  // ── HORIZONTAL SCROLL ───────────────────────────────────────────
   const ht = document.getElementById('hscroll-track');
-  if (ht) {
-    gsap.to(ht, {
-      x: () => -(ht.scrollWidth - innerWidth + 128),
-      ease: 'none',
-      scrollTrigger: {
-        trigger:       '.hscroll-section',
-        start:         'top top',
-        end:           'bottom bottom',
-        scrub:         1.2,
-        pin:           '.hscroll-sticky',
-        anticipatePin: 1,
-      }
-    });
-  }
+  if(ht){ gsap.to(ht,{ x:()=>-(ht.scrollWidth-innerWidth+128), ease:'none',
+    scrollTrigger:{ trigger:'.hscroll-section', start:'top top', end:'bottom bottom',
+      scrub:1.2, pin:'.hscroll-sticky', anticipatePin:1 } }); }
 
-  // ── TRANSFORM SECTION ───────────────────────────────────────────
+  // ── TRANSFORM CANVAS ────────────────────────────────────────────
   const tc = document.getElementById('transform-canvas-2');
-  if (tc) {
-    const tScene = new THREE.Scene();
-    const tCam   = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
-    const tRend  = new THREE.WebGLRenderer({ canvas: tc, antialias: true, alpha: true });
-    tRend.setClearColor(0x141418, 1);
-    tCam.position.z = 8;
-    tScene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const tLight = new THREE.PointLight(0xE8213A, 3, 20);
-    tLight.position.set(3, 3, 5);
-    tScene.add(tLight);
-
-    // DNA Helix
-    const hGroup  = new THREE.Group();
-    const sBallG  = new THREE.SphereGeometry(0.12, 8, 8);
-    const matRed  = new THREE.MeshBasicMaterial({ color: 0xE8213A });
-    const matDark = new THREE.MeshBasicMaterial({ color: 0x2a2a35 });
-    for (let i = 0; i < 60; i++) {
-      const ang = (i / 60) * Math.PI * 4;
-      const y   = (i / 60) * 10 - 5;
-      const s1  = new THREE.Mesh(sBallG, matRed);
-      s1.position.set(Math.cos(ang) * 1.6, y, Math.sin(ang) * 1.6);
-      hGroup.add(s1);
-      const s2 = new THREE.Mesh(sBallG, matDark);
-      s2.position.set(Math.cos(ang + Math.PI) * 1.6, y, Math.sin(ang + Math.PI) * 1.6);
-      hGroup.add(s2);
-      if (i % 5 === 0) {
-        const bGeo = new THREE.CylinderGeometry(0.015, 0.015, 3.2, 4);
-        const bar  = new THREE.Mesh(bGeo, new THREE.MeshBasicMaterial({ color: 0x332225, transparent: true, opacity: 0.5 }));
-        bar.position.y = y;
-        bar.rotation.z = Math.PI / 2;
-        bar.rotation.x = ang;
-        hGroup.add(bar);
+  if(tc){
+    const tS=new THREE.Scene(),tC=new THREE.PerspectiveCamera(60,1,0.1,100);
+    const tR=new THREE.WebGLRenderer({canvas:tc,antialias:true,alpha:true});
+    tR.setClearColor(0x141418,1); tC.position.z=8;
+    tS.add(new THREE.AmbientLight(0xffffff,0.4));
+    const tL=new THREE.PointLight(0xE8213A,3,20); tL.position.set(3,3,5); tS.add(tL);
+    const hG=new THREE.Group();
+    const sG=new THREE.SphereGeometry(0.12,8,8);
+    const mR=new THREE.MeshBasicMaterial({color:0xE8213A});
+    const mD=new THREE.MeshBasicMaterial({color:0x2a2a35});
+    for(let i=0;i<60;i++){
+      const a=(i/60)*Math.PI*4, y=(i/60)*10-5;
+      const s1=new THREE.Mesh(sG,mR); s1.position.set(Math.cos(a)*1.6,y,Math.sin(a)*1.6); hG.add(s1);
+      const s2=new THREE.Mesh(sG,mD); s2.position.set(Math.cos(a+Math.PI)*1.6,y,Math.sin(a+Math.PI)*1.6); hG.add(s2);
+      if(i%5===0){
+        const bg=new THREE.CylinderGeometry(0.015,0.015,3.2,4);
+        const bm=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:0x332225,transparent:true,opacity:0.5}));
+        bm.position.y=y; bm.rotation.z=Math.PI/2; bm.rotation.x=a; hG.add(bm);
       }
     }
-    tScene.add(hGroup);
-
-    function resizeT() {
-      const p = tc.parentElement;
-      if (!p) return;
-      tRend.setSize(p.clientWidth, p.clientHeight);
-      tCam.aspect = p.clientWidth / p.clientHeight;
-      tCam.updateProjectionMatrix();
-    }
-
-    const tClock = new THREE.Clock();
-    let tRunning = false;
-    function renderT() {
-      if (!tRunning) return;
-      requestAnimationFrame(renderT);
-      hGroup.rotation.y = tClock.getElapsedTime() * 0.45;
-      tRend.render(tScene, tCam);
-    }
-
-    ScrollTrigger.create({
-      trigger: '.transform-visual', start: 'top 72%',
-      onEnter: () => {
-        document.querySelector('.transform-frame-outer').classList.add('is-visible');
-        document.querySelector('.transform-badge').classList.add('is-visible');
-        resizeT();
-        tRunning = true;
-        renderT();
-      }
-    });
-
-    window.addEventListener('resize', resizeT);
-    setTimeout(resizeT, 100);
+    tS.add(hG);
+    function resizeT(){ const p=tc.parentElement; if(!p)return; tR.setSize(p.clientWidth,p.clientHeight); tC.aspect=p.clientWidth/p.clientHeight; tC.updateProjectionMatrix(); }
+    const tClk=new THREE.Clock(); let tRun=false;
+    function renderT(){ if(!tRun)return; requestAnimationFrame(renderT); hG.rotation.y=tClk.getElapsedTime()*0.45; tR.render(tS,tC); }
+    ScrollTrigger.create({ trigger:'.transform-visual', start:'top 72%', onEnter:()=>{
+      document.querySelector('.transform-frame-outer').classList.add('is-visible');
+      document.querySelector('.transform-badge').classList.add('is-visible');
+      resizeT(); tRun=true; renderT();
+    }});
+    window.addEventListener('resize',resizeT); setTimeout(resizeT,100);
   }
 
   // ── TRANSFORM TEXT ──────────────────────────────────────────────
-  document.querySelectorAll('.transform-body, .feature-row').forEach((el, i) => {
-    ScrollTrigger.create({
-      trigger: el, start: 'top 88%',
-      onEnter: () => { setTimeout(() => el.classList.add('is-visible'), i * 90); }
+  document.querySelectorAll('.transform-body,.feature-row').forEach((el,i)=>{
+    ScrollTrigger.create({ trigger:el, start:'top 88%',
+      onEnter:()=>setTimeout(()=>el.classList.add('is-visible'),i*90) });
+  });
+
+  // ── PROCESS ─────────────────────────────────────────────────────
+  const pF=document.getElementById('process-fill');
+  if(pF){ gsap.to(pF,{ width:'100%', ease:'none',
+    scrollTrigger:{ trigger:'.process-section', start:'top 65%', end:'bottom 65%', scrub:1 } }); }
+  document.querySelectorAll('.process-step').forEach((s,i)=>{
+    ScrollTrigger.create({ trigger:s, start:'top 82%',
+      onEnter:()=>setTimeout(()=>s.classList.add('is-visible'),i*160) });
+  });
+
+  // ── TESTIMONIALS ────────────────────────────────────────────────
+  const tt=document.getElementById('testimonials-track');
+  if(tt){ gsap.to(tt,{ x:()=>-(tt.scrollWidth-innerWidth+128), ease:'none',
+    scrollTrigger:{ trigger:'.testimonials-section', start:'top 80%',
+      end:()=>'+='+(tt.scrollWidth*0.9), scrub:1.4 } }); }
+
+  // ── CTA ─────────────────────────────────────────────────────────
+  gsap.from('.cta-title',{ y:60, opacity:0, duration:1.2, ease:'power4.out',
+    scrollTrigger:{ trigger:'.cta-title', start:'top 82%' } });
+
+  // ── SMOOTH ANCHORS ──────────────────────────────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const t=document.querySelector(a.getAttribute('href'));
+      if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
     });
   });
 
-  // ── PROCESS LINE ────────────────────────────────────────────────
-  const pFill = document.getElementById('process-fill');
-  if (pFill) {
-    gsap.to(pFill, {
-      width: '100%', ease: 'none',
-      scrollTrigger: { trigger: '.process-section', start: 'top 65%', end: 'bottom 65%', scrub: 1 }
-    });
-  }
-  document.querySelectorAll('.process-step').forEach((s, i) => {
-    ScrollTrigger.create({
-      trigger: s, start: 'top 82%',
-      onEnter: () => { setTimeout(() => s.classList.add('is-visible'), i * 160); }
-    });
-  });
-
-  // ── TESTIMONIALS SCROLL ─────────────────────────────────────────
-  const ttrack = document.getElementById('testimonials-track');
-  if (ttrack) {
-    gsap.to(ttrack, {
-      x: () => -(ttrack.scrollWidth - innerWidth + 128),
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '.testimonials-section',
-        start:   'top 80%',
-        end:     () => '+=' + (ttrack.scrollWidth * 0.9),
-        scrub:   1.4,
-      }
-    });
-  }
-
-  // ── CTA REVEAL ──────────────────────────────────────────────────
-  gsap.from('.cta-title', {
-    y: 60, opacity: 0, duration: 1.2, ease: 'power4.out',
-    scrollTrigger: { trigger: '.cta-title', start: 'top 82%' }
-  });
-
-  // ── SMOOTH ANCHOR SCROLL ────────────────────────────────────────
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const target = document.querySelector(a.getAttribute('href'));
-      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
-    });
-  });
-
-  // ── REFRESH ON RESIZE ───────────────────────────────────────────
-  window.addEventListener('resize', () => {
-    ScrollTrigger.refresh();
-  });
+  window.addEventListener('resize',()=>ScrollTrigger.refresh());
 
 })();
 </script>
