@@ -148,7 +148,7 @@ nav.scrolled {
 ══════════════════════════════════════ */
 #hero-wrapper {
   position: relative;
-  height: 600vh;
+  height: 250vh;
 }
 #hero-sticky {
   background: #060608;
@@ -829,7 +829,6 @@ footer {
     <div class="hero-vignette"></div>
     <div class="scan-line" id="scan-line"></div>
 
-    <!-- FASE 1: grid esquerda/direita — JS reconstrói o DOM -->
     <div class="hero-overlay" id="hero-phase-1">
       <div>
         <p class="hero-label">Elite Personal Training · São Paulo</p>
@@ -858,10 +857,10 @@ footer {
     </div>
 
     <div class="hero-overlay" id="hero-phase-3">
-      <div style="text-align:center">
+      <div style="text-align:left;padding-left:72px">
         <h2 class="phase3-title">PRONTO PARA<br><span style="color:var(--red)">EVOLUIR?</span></h2>
-        <div class="phase3-line" id="phase3-line"></div>
-        <p class="phase3-sub">Vagas limitadas · Próxima turma em 15 dias</p>
+        <div class="phase3-line" id="phase3-line" style="margin:0 0 28px 0"></div>
+        <p class="phase3-sub" style="text-align:left">Vagas limitadas · Próxima turma em 15 dias</p>
         <a href="#contato" class="phase3-btn"><span>Reservar Minha Vaga</span></a>
       </div>
     </div>
@@ -872,6 +871,14 @@ footer {
     </div>
   </div>
 </div>
+
+<!-- Stats — extensão visual do hero (mesmo fundo) -->
+<section class="stats-section">
+  <div class="stat-item"><div class="stat-number"><span class="count" data-target="850">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Alunos Transformados</div></div>
+  <div class="stat-item"><div class="stat-number"><span class="count" data-target="12">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Anos de Experiência</div></div>
+  <div class="stat-item"><div class="stat-number"><span class="count" data-target="98">0</span><span class="stat-suffix">%</span></div><div class="stat-label">Taxa de Satisfação</div></div>
+  <div class="stat-item"><div class="stat-number"><span class="count" data-target="47">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Medalhas Conquistadas</div></div>
+</section>
 
 <div class="ticker-wrap">
   <div class="ticker-track">
@@ -889,13 +896,6 @@ footer {
     <span class="ticker-item">ELITE TRAINING</span><span class="ticker-item accent">✦</span>
   </div>
 </div>
-
-<section class="stats-section">
-  <div class="stat-item"><div class="stat-number"><span class="count" data-target="850">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Alunos Transformados</div></div>
-  <div class="stat-item"><div class="stat-number"><span class="count" data-target="12">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Anos de Experiência</div></div>
-  <div class="stat-item"><div class="stat-number"><span class="count" data-target="98">0</span><span class="stat-suffix">%</span></div><div class="stat-label">Taxa de Satisfação</div></div>
-  <div class="stat-item"><div class="stat-number"><span class="count" data-target="47">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Medalhas Conquistadas</div></div>
-</section>
 
 <div class="section-divider"><div class="section-divider-fill" data-divider></div></div>
 
@@ -1010,741 +1010,985 @@ footer {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
-/* hero3d.js v5 — SPLIT LAYOUT
-   ESQUERDA: texto grande
-   DIREITA: atleta PNG (fundo removido), posicionado baixo
-   Canvas Three.js: partículas + rings no fundo
+/* hero3d.js v6 — VIDA PRÓPRIA
+   Princípios desta revisão:
+   - 1 coisa feita muito bem > 10 coisas medianas
+   - Atleta respira, reage ao mouse, escala com scroll
+   - Three.js: campo de partículas com profundidade real + glow shader atrás do atleta
+   - Zero CapsuleGeometry, zero Object.assign em Three.js
 */
 (function () {
+'use strict';
 
-  // ── THREE.JS BACKGROUND ─────────────────────────────────────────
-  const canvas   = document.getElementById('hero-canvas');
-  const scene    = new THREE.Scene();
-  const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.setClearColor(0x000000, 0);
-  camera.position.set(0, 0, 28);
+// ════════════════════════════════════════════════════════════
+// 1. THREE.JS — BACKGROUND ATMOSFÉRICO
+// ════════════════════════════════════════════════════════════
+const canvas = document.getElementById('hero-canvas');
+if (!canvas) return;
 
-  window.camState = { posX: 0, posY: 0, posZ: 28, lookY: 0 };
+const scene    = new THREE.Scene();
+const camera   = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 300);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setClearColor(0x000000, 0);
+camera.position.z = 32;
 
-  // Partículas
-  const N = 1600;
-  const pPos = new Float32Array(N * 3);
-  const pCol = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
+// Exposição para o GSAP em main.js
+window.camState = { x: 0, y: 0, z: 32 };
+
+// ── Campo de partículas em 3 camadas de profundidade ──────
+function buildParticleLayer(count, spread, zRange, redChance, size) {
+  const pos = new Float32Array(count * 3);
+  const col = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
     const i3 = i * 3;
-    pPos[i3]   = (Math.random() - 0.5) * 180;
-    pPos[i3+1] = (Math.random() - 0.5) * 100;
-    pPos[i3+2] = (Math.random() - 0.5) * 80 - 20;
-    const r = Math.random() < 0.14;
-    if (r) { pCol[i3]=0.91; pCol[i3+1]=0.13; pCol[i3+2]=0.23; }
-    else { const v=0.04+Math.random()*0.1; pCol[i3]=v; pCol[i3+1]=v; pCol[i3+2]=v; }
+    pos[i3]   = (Math.random() - 0.5) * spread;
+    pos[i3+1] = (Math.random() - 0.5) * spread * 0.6;
+    pos[i3+2] = -zRange * Math.random();
+    if (Math.random() < redChance) {
+      col[i3] = 0.91; col[i3+1] = 0.13; col[i3+2] = 0.23;
+    } else {
+      const v = 0.04 + Math.random() * 0.12;
+      col[i3] = v; col[i3+1] = v; col[i3+2] = v * 1.05;
+    }
   }
-  const pGeo = new THREE.BufferGeometry();
-  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos,3));
-  pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol,3));
-  const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
-    size:0.14, vertexColors:true, transparent:true, opacity:0.6,
-    blending:THREE.AdditiveBlending, depthWrite:false
-  }));
-  scene.add(particles);
-
-  // Rings decorativos
-  const rings = [0, 6, -6].map((y, i) => {
-    const m = new THREE.Mesh(
-      new THREE.TorusGeometry(12+i*3, 0.012, 6, 80),
-      new THREE.MeshBasicMaterial({ color:0xE8213A, transparent:true, opacity:0.05, blending:THREE.AdditiveBlending })
-    );
-    m.position.y = y; m.rotation.x = Math.PI/2; scene.add(m); return m;
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
+  const mat = new THREE.PointsMaterial({
+    size, vertexColors: true,
+    transparent: true, opacity: 0.7,
+    blending: THREE.AdditiveBlending, depthWrite: false
   });
+  return new THREE.Points(geo, mat);
+}
 
-  const redLight = new THREE.PointLight(0xE8213A, 1.5, 50);
-  scene.add(redLight);
+const layerFar  = buildParticleLayer(800,  200, 60, 0.08, 0.12);
+const layerMid  = buildParticleLayer(400,  120, 30, 0.18, 0.18);
+const layerNear = buildParticleLayer(120,   60, 10, 0.35, 0.28);
+scene.add(layerFar, layerMid, layerNear);
 
-  let mX=0, mY=0;
-  document.addEventListener('mousemove', e => {
-    mX=(e.clientX/innerWidth -0.5);
-    mY=(e.clientY/innerHeight-0.5);
-  });
+// ── Anel de energia atrás do atleta ──────────────────────
+const ringGeo = new THREE.TorusGeometry(5.5, 0.022, 8, 100);
+const ringMat = new THREE.MeshBasicMaterial({
+  color: 0xE8213A, transparent: true, opacity: 0.0,
+  blending: THREE.AdditiveBlending
+});
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.position.set(6, 0, -2); // posicionado atrás e à direita (onde o atleta fica)
+ring.rotation.x = 0.3;
+scene.add(ring);
 
-  const clk = new THREE.Clock();
-  function render() {
-    requestAnimationFrame(render);
-    const t=clk.getElapsedTime(), cs=window.camState;
-    camera.position.x += (cs.posX + mX*1.0 - camera.position.x)*0.05;
-    camera.position.y += (cs.posY - mY*0.6 - camera.position.y)*0.05;
-    camera.position.z += (cs.posZ          - camera.position.z)*0.05;
-    camera.lookAt(0, cs.lookY, 0);
-    particles.rotation.y = t*0.006;
-    rings.forEach((r,i)=>{ r.rotation.z=t*(0.07+i*0.04); r.material.opacity=0.03+Math.sin(t*1.1+i)*0.02; });
-    redLight.position.set(Math.sin(t*0.3)*12, 0, Math.cos(t*0.3)*8+6);
-    redLight.intensity = 1.2+Math.sin(t*1.3)*0.5;
-    renderer.render(scene, camera);
-  }
-  render();
+const ring2 = new THREE.Mesh(
+  new THREE.TorusGeometry(7.5, 0.012, 6, 80),
+  new THREE.MeshBasicMaterial({ color: 0xE8213A, transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending })
+);
+ring2.position.set(6, 0, -4);
+ring2.rotation.x = 0.2;
+ring2.rotation.z = 0.5;
+scene.add(ring2);
 
-  window.addEventListener('resize', ()=>{
-    camera.aspect=innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
-  });
+// ── Luzes ─────────────────────────────────────────────────
+const redLight = new THREE.PointLight(0xE8213A, 0, 40);
+redLight.position.set(8, 2, 6);
+scene.add(redLight);
+const ambLight = new THREE.AmbientLight(0x111118, 1);
+scene.add(ambLight);
 
+// ── Mouse suave ───────────────────────────────────────────
+let mX = 0, mY = 0, smX = 0, smY = 0;
+document.addEventListener('mousemove', e => {
+  mX = (e.clientX / innerWidth  - 0.5);
+  mY = (e.clientY / innerHeight - 0.5);
+});
+
+// ── Scroll progress (0→1 dentro do hero) ─────────────────
+window.heroScrollProgress = 0;
+
+// ── Render Loop ───────────────────────────────────────────
+const clk = new THREE.Clock();
+(function renderLoop() {
+  requestAnimationFrame(renderLoop);
+  const t  = clk.getElapsedTime();
+  const sp = window.heroScrollProgress; // 0→1
+
+  // Mouse lerp
+  smX += (mX - smX) * 0.04;
+  smY += (mY - smY) * 0.04;
+
+  // Camera parallax suave
+  const cs = window.camState;
+  camera.position.x += (cs.x + smX * 2 - camera.position.x) * 0.04;
+  camera.position.y += (cs.y - smY * 1  - camera.position.y) * 0.04;
+  camera.position.z += (cs.z            - camera.position.z) * 0.04;
+  camera.lookAt(0, 0, 0);
+
+  // Layers de partícula em velocidades diferentes → parallax de profundidade
+  layerFar.rotation.y  = t * 0.004 + smX * 0.05;
+  layerMid.rotation.y  = t * 0.008 + smX * 0.10;
+  layerNear.rotation.y = t * 0.015 + smX * 0.18;
+  layerNear.rotation.x = smY * 0.06;
+
+  // Rings pulsam quando hero está visível, somem ao sair
+  const ringVis = 1 - sp;
+  const pulse   = 0.10 + Math.sin(t * 1.8) * 0.04;
+  ring.material.opacity  = pulse * ringVis;
+  ring2.material.opacity = (pulse * 0.5) * ringVis;
+  ring.rotation.z  = t * 0.25;
+  ring2.rotation.z = -t * 0.15;
+
+  // Luz vermelha pulsa e orbita atrás do atleta
+  redLight.intensity = (1.8 + Math.sin(t * 2.0) * 0.7) * ringVis;
+  redLight.position.x = 8 + Math.sin(t * 0.5) * 2;
+  redLight.position.y = 2 + Math.cos(t * 0.7) * 1.5;
+
+  renderer.render(scene, camera);
 })();
 
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
 
-// ── ATHLETE IMAGE LAYER ──────────────────────────────────────────
+
+// ════════════════════════════════════════════════════════════
+// 2. ATLETA — VIDA PRÓPRIA
+// ════════════════════════════════════════════════════════════
 (function () {
 
-  const style = document.createElement('style');
-  style.textContent = `
-    /* Fundo escuro explícito */
-    #hero-sticky { background: #060608; }
+const style = document.createElement('style');
+style.textContent = `
+  #hero-sticky { background: #060608; }
 
-    /* ── LAYOUT SPLIT: esquerda=texto, direita=atleta ── */
-    #hero-phase-1 {
-      display: grid !important;
-      grid-template-columns: 1fr 1fr;
-      align-items: end !important;
-      justify-content: unset !important;
-      padding: 0 80px 0 72px;
-      padding-top: 0;
-    }
-
-    /* Bloco de texto — alinhado verticalmente ao centro */
-    #hero-text-block {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding-bottom: 60px;
-      position: relative;
-      z-index: 3;
-    }
-
-    /* Título GRANDE — ocupa o espaço da esquerda */
-    .hero-title-main {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(80px, 10vw, 144px) !important;
-      line-height: 0.86 !important;
-      letter-spacing: -2px;
-      text-align: left !important;
-    }
-    .hero-label {
-      text-align: left !important;
-      margin-bottom: 20px;
-    }
-    .hero-sub-main {
-      text-align: left !important;
-      margin-top: 28px;
-      max-width: 380px;
-    }
-
-    /* Botão CTA direto no hero */
-    .hero-cta-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 40px;
-      padding: 16px 40px;
-      background: var(--red);
-      color: #060608;
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      text-decoration: none;
-      pointer-events: auto;
-      position: relative;
-      overflow: hidden;
-      transition: background 0.3s;
-      align-self: flex-start;
-    }
-    .hero-cta-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: #ff3351;
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.35s ease;
-    }
-    .hero-cta-btn:hover::before { transform: scaleX(1); }
-    .hero-cta-btn span { position: relative; z-index: 1; }
-
-    /* Linha decorativa vermelha antes do título */
-    .hero-red-line {
-      width: 48px;
-      height: 2px;
-      background: var(--red);
-      box-shadow: 0 0 8px var(--red);
-      margin-bottom: 20px;
-      transform: scaleX(0);
-      transform-origin: left;
-    }
-
-    /* ── CONTAINER DA IMAGEM — lado direito ── */
-    #athlete-container {
-      position: relative;
-      height: 100vh;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    /* Gradiente inferior — atleta "emerge" do chão */
-    #athlete-container::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 22%;
-      background: linear-gradient(to top, #060608 0%, transparent 100%);
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    /* Glow vermelho atrás do atleta */
-    #athlete-glow-bg {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 70%;
-      height: 80%;
-      background: radial-gradient(ellipse at 50% 80%, rgba(232,33,58,0.14) 0%, transparent 70%);
-      z-index: 0;
-      pointer-events: none;
-      animation: glowBreath 3s ease-in-out infinite;
-    }
-    @keyframes glowBreath {
-      0%,100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
-      50%      { opacity: 1.0; transform: translateX(-50%) scale(1.06); }
-    }
-
-    /* As imagens do atleta */
-    .athlete-img {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      /* Altura: 88vh — começa bem abaixo do menu, os pés ficam no chão */
-      height: 88vh;
-      width: auto;
-      max-width: none;
-      object-fit: contain;
-      object-position: bottom;
-      opacity: 0;
-      z-index: 1;
-      will-change: opacity, transform;
-      /* Com fundo removido: normal blend mode */
-      mix-blend-mode: normal;
-      filter: brightness(1.04) contrast(1.06);
-    }
-
-    /* Glitch copies */
-    .athlete-glitch {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      height: 88vh;
-      width: auto;
-      object-fit: contain;
-      object-position: bottom;
-      opacity: 0;
-      z-index: 1;
-      pointer-events: none;
-      will-change: opacity, transform;
-    }
-    .athlete-glitch-r { filter: brightness(1.1) saturate(4) hue-rotate(0deg);   mix-blend-mode: screen; }
-    .athlete-glitch-b { filter: brightness(1.1) saturate(4) hue-rotate(190deg); mix-blend-mode: screen; }
-
-    /* Energy sweep line */
-    #energy-sweep {
-      position: absolute;
-      left: 50%; transform: translateX(-50%);
-      width: 1px; bottom: -5%; height: 0%;
-      background: linear-gradient(to top, transparent, rgba(232,33,58,0.9), transparent);
-      box-shadow: 0 0 14px rgba(232,33,58,0.7);
-      z-index: 3; pointer-events: none; opacity: 0;
-    }
-
-    /* Linha lateral esquerda decorativa */
-    #hero-side-line {
-      position: absolute;
-      left: 72px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 1px;
-      height: 0;
-      background: linear-gradient(to bottom, transparent, rgba(232,33,58,0.4), transparent);
-      z-index: 5;
-      pointer-events: none;
-      transition: height 1.2s ease 0.8s;
-    }
-    #hero-side-line.visible { height: 200px; }
-
-    /* Phase dots */
-    #phase-dots {
-      position: absolute;
-      bottom: 40px; left: 72px;
-      display: flex; gap: 8px;
-      z-index: 15; pointer-events: none;
-    }
-    .phase-dot {
-      width: 4px; height: 4px; border-radius: 50%;
-      background: rgba(255,255,255,0.18);
-      transition: background 0.4s, transform 0.4s, box-shadow 0.4s;
-    }
-    .phase-dot.active {
-      background: #E8213A; transform: scale(1.5);
-      box-shadow: 0 0 6px #E8213A;
-    }
-
-    /* Phase label */
-    #phase-label {
-      position: absolute;
-      bottom: 36px; right: 56px;
-      z-index: 15; pointer-events: none;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 10px; letter-spacing: 6px;
-      color: rgba(232,33,58,0.55);
-      text-transform: uppercase;
-      opacity: 0; transition: opacity 0.5s;
-    }
-
-    /* Ajuste: vignette lateral direita suave */
-    .hero-vignette {
-      background: radial-gradient(
-        ellipse 80% 100% at 30% 50%,
-        transparent 40%,
-        rgba(6,6,8,0.75) 100%
-      ) !important;
-    }
-
-    /* Texto da fase 2 alinhado */
-    #hero-phase-2 {
-      padding: 0 80px !important;
-      justify-content: space-between !important;
-    }
-
-    /* Fase 3 centralizada */
-    #hero-phase-3 {
-      justify-content: flex-start !important;
-      padding-left: 72px !important;
-      align-items: center !important;
-    }
-    .phase3-title { text-align: left !important; }
-    .phase3-sub   { text-align: left !important; }
-    #phase3-line  { margin: 0 0 28px 0 !important; }
-  `;
-  document.head.appendChild(style);
-
-  // ── RESTRUCTURE #hero-phase-1 DOM ───────────────────────────────
-  const phase1 = document.getElementById('hero-phase-1');
-  const heroSticky = document.getElementById('hero-sticky');
-
-  // Pega o conteúdo atual do phase-1
-  const existingContent = phase1.querySelector('div');
-
-  // Cria bloco de texto esquerdo
-  const textBlock = document.createElement('div');
-  textBlock.id = 'hero-text-block';
-
-  // Red line decorativa
-  const redLine = document.createElement('div');
-  redLine.className = 'hero-red-line';
-  textBlock.appendChild(redLine);
-
-  // Move o conteúdo existente (label + título + sub) para textBlock
-  if (existingContent) {
-    while (existingContent.firstChild) {
-      textBlock.appendChild(existingContent.firstChild);
-    }
-    existingContent.remove();
+  /* ── Layout: texto esquerda / atleta direita ── */
+  #hero-phase-1 {
+    position: absolute !important;
+    inset: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    align-items: center !important;
+    justify-content: unset !important;
+    padding: 100px 72px 0 72px !important;
+    pointer-events: none;
   }
 
-  // Botão CTA direto no hero
-  const ctaBtn = document.createElement('a');
-  ctaBtn.href = '#contato';
-  ctaBtn.className = 'hero-cta-btn';
-  ctaBtn.innerHTML = '<span>Quero Transformar</span>';
-  textBlock.appendChild(ctaBtn);
+  /* Bloco de texto — esquerda */
+  #hero-text-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+  }
 
-  // Container do atleta (lado direito)
-  const athleteContainer = document.createElement('div');
-  athleteContainer.id = 'athlete-container';
+  .hero-label {
+    text-align: left !important;
+    margin-bottom: 16px;
+    font-size: 10px;
+    letter-spacing: 7px;
+    text-transform: uppercase;
+    color: var(--red);
+    opacity: 0;
+  }
 
-  // Glow bg
-  const glowBg = document.createElement('div');
-  glowBg.id = 'athlete-glow-bg';
-  athleteContainer.appendChild(glowBg);
+  /* Linha vermelha que cresce antes do título */
+  #hero-accent-line {
+    width: 0px;
+    height: 2px;
+    background: var(--red);
+    box-shadow: 0 0 10px var(--red);
+    margin-bottom: 18px;
+    transition: width 0.9s cubic-bezier(0.16,1,0.3,1) 0.4s;
+  }
+  #hero-accent-line.on { width: 52px; }
 
-  // Energy sweep
-  const sweep = document.createElement('div');
-  sweep.id = 'energy-sweep';
-  athleteContainer.appendChild(sweep);
+  .hero-title-main {
+    font-family: 'Bebas Neue', sans-serif !important;
+    font-size: clamp(76px, 9.5vw, 140px) !important;
+    line-height: 0.87 !important;
+    letter-spacing: -2px !important;
+    text-align: left !important;
+  }
+  .hero-title-main .hero-line  { display: block; overflow: hidden; }
+  .hero-title-main .hero-word  { display: inline-block; transform: translateY(105%); }
+  .hero-word-red { color: var(--red); }
 
-  // Monta o grid
-  phase1.appendChild(textBlock);
-  phase1.appendChild(athleteContainer);
+  .hero-sub-main {
+    margin-top: 24px !important;
+    font-size: 14px !important;
+    color: rgba(245,245,240,.42) !important;
+    letter-spacing: 1.2px !important;
+    font-weight: 300 !important;
+    line-height: 1.7 !important;
+    text-align: left !important;
+    max-width: 340px;
+    opacity: 0;
+  }
 
-  // Side line
-  const sideLine = document.createElement('div');
-  sideLine.id = 'hero-side-line';
-  heroSticky.appendChild(sideLine);
-  setTimeout(() => sideLine.classList.add('visible'), 1000);
+  /* CTA no hero */
+  .hero-cta-inline {
+    margin-top: 36px;
+    display: inline-flex;
+    gap: 12px;
+    align-items: center;
+    padding: 15px 38px;
+    background: var(--red);
+    color: #060608;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    pointer-events: auto;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(14px);
+    align-self: flex-start;
+  }
+  .hero-cta-inline::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #ff3351;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s ease;
+  }
+  .hero-cta-inline:hover::before { transform: scaleX(1); }
+  .hero-cta-inline span { position: relative; z-index: 1; }
 
-  // Phase dots e label
-  const dotsWrap = document.createElement('div');
-  dotsWrap.id = 'phase-dots';
-  dotsWrap.innerHTML = '<div class="phase-dot active"></div><div class="phase-dot"></div><div class="phase-dot"></div>';
-  heroSticky.appendChild(dotsWrap);
+  /* ── Coluna do atleta — direita ── */
+  #athlete-col {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: visible;
+  }
 
-  const label = document.createElement('div');
-  label.id = 'phase-label';
-  heroSticky.appendChild(label);
+  /* Container da imagem — controlado por JS */
+  #athlete-wrap {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    height: 90vh;
+    display: flex;
+    align-items: flex-end;
+    will-change: transform;
+  }
 
-  // ── IMAGENS ───────────────────────────────────────────────────────
-  // athlete-2 = arms crossed  (autoridade) → fase 0
-  // athlete-1 = deadlift      (força)      → fase 1
-  // athlete-3 = victory jump  (resultado)  → fase 2
-  const SRCS   = ['images/hero/athlete-2.png','images/hero/athlete-1.png','images/hero/athlete-3.png'];
-  const LABELS = ['AUTORIDADE','FORÇA','RESULTADO'];
+  /* Glow atmosférico atrás */
+  #athlete-glow {
+    position: absolute;
+    bottom: -5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110%;
+    height: 85%;
+    background: radial-gradient(ellipse at 50% 85%,
+      rgba(232,33,58,0.18) 0%,
+      rgba(232,33,58,0.06) 40%,
+      transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+    animation: glowBreath 3.2s ease-in-out infinite;
+  }
+  @keyframes glowBreath {
+    0%,100% { opacity: 0.75; transform: translateX(-50%) scaleX(1); }
+    50%      { opacity: 1.00; transform: translateX(-50%) scaleX(1.08); }
+  }
 
-  const imgs = SRCS.map((src,i) => {
-    const img = document.createElement('img');
-    img.src = src; img.className = 'athlete-img';
-    img.alt = ''; img.draggable = false;
-    athleteContainer.appendChild(img);
-    return img;
+  /* Gradiente de chão */
+  #athlete-ground {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 28%;
+    background: linear-gradient(to top, #060608 0%, rgba(6,6,8,0.7) 50%, transparent 100%);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* As imagens */
+  .athlete-img {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 90vh;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+    object-position: bottom center;
+    opacity: 0;
+    z-index: 1;
+    will-change: opacity, transform, filter;
+    filter: brightness(1.05) contrast(1.04) saturate(1.08);
+  }
+
+  /* Linha de separação vertical entre texto e atleta */
+  #hero-divider-v {
+    position: absolute;
+    left: 50%;
+    top: 15%;
+    bottom: 8%;
+    width: 1px;
+    background: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(232,33,58,0.25) 20%,
+      rgba(232,33,58,0.25) 80%,
+      transparent 100%);
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1s ease 1s;
+  }
+  #hero-divider-v.on { opacity: 1; }
+
+  /* Número de scroll (canto direito) */
+  #hero-scroll-num {
+    position: absolute;
+    right: 28px;
+    bottom: 44px;
+    z-index: 10;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: rgba(245,245,240,0.2);
+    writing-mode: vertical-rl;
+    opacity: 0;
+    transition: opacity 1s ease 1.2s;
+  }
+  #hero-scroll-num.on { opacity: 1; }
+
+  /* Phase dots — canto esquerdo baixo */
+  #phase-dots {
+    position: absolute;
+    left: 72px;
+    bottom: 44px;
+    display: flex;
+    gap: 8px;
+    z-index: 15;
+    pointer-events: none;
+  }
+  .phase-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: all 0.4s;
+  }
+  .phase-dot.active {
+    background: var(--red);
+    transform: scale(1.6);
+    box-shadow: 0 0 6px var(--red);
+  }
+
+  /* Phase label */
+  #phase-label {
+    position: absolute;
+    right: 72px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 15;
+    pointer-events: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 9px;
+    letter-spacing: 7px;
+    color: rgba(232,33,58,0.45);
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  /* Vinheta: mais intensa nas bordas, preserva centro */
+  .hero-vignette {
+    background: radial-gradient(
+      ellipse 65% 90% at 50% 50%,
+      transparent 50%,
+      rgba(6,6,8,0.6) 85%,
+      rgba(6,6,8,0.92) 100%
+    ) !important;
+  }
+
+  /* ── SEÇÃO STATS — continuação visual do hero ── */
+  .stats-section {
+    margin-top: 0 !important;
+    border-top: none !important;
+    background: #060608 !important; /* mesmo fundo do hero */
+    position: relative;
+  }
+  /* Linha de separação sutil, não corte abrupto */
+  .stats-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 72px; right: 72px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(232,33,58,0.3), transparent);
+  }
+
+  .stat-item {
+    background: transparent !important;
+    border-right: 1px solid rgba(255,255,255,0.04) !important;
+    padding: 56px 48px !important;
+  }
+  .stat-item:last-child { border-right: none !important; }
+
+  /* Ticker — conecta hero com stats */
+  .ticker-wrap {
+    background: #060608 !important;
+    border-top: 1px solid rgba(232,33,58,0.12) !important;
+    border-bottom: 1px solid rgba(232,33,58,0.12) !important;
+    padding: 24px 0 !important;
+  }
+`;
+document.head.appendChild(style);
+
+// ── Reconstrução do DOM ────────────────────────────────────
+const phase1     = document.getElementById('hero-phase-1');
+const heroSticky = document.getElementById('hero-sticky');
+
+// Extrai conteúdo do div interno
+const inner = phase1.querySelector('div');
+
+// Bloco de texto (esquerda)
+const textBlock = document.createElement('div');
+textBlock.id = 'hero-text-block';
+
+// Accent line
+const accentLine = document.createElement('div');
+accentLine.id = 'hero-accent-line';
+textBlock.appendChild(accentLine);
+setTimeout(() => accentLine.classList.add('on'), 300);
+
+// Move label + título + sub para textBlock
+if (inner) {
+  while (inner.firstChild) textBlock.appendChild(inner.firstChild);
+  inner.remove();
+}
+
+// CTA inline
+const ctaBtn = document.createElement('a');
+ctaBtn.href = '#contato';
+ctaBtn.className = 'hero-cta-inline';
+ctaBtn.innerHTML = '<span>Quero Transformar</span>';
+textBlock.appendChild(ctaBtn);
+
+// Coluna do atleta (direita)
+const athleteCol = document.createElement('div');
+athleteCol.id = 'athlete-col';
+
+  // Glow
+  const glow = document.createElement('div');
+  glow.id = 'athlete-glow';
+  athleteCol.appendChild(glow);
+
+  // Wrap da imagem (controlado por JS para vida própria)
+  const wrap = document.createElement('div');
+  wrap.id = 'athlete-wrap';
+  athleteCol.appendChild(wrap);
+
+  // Ground gradient
+  const ground = document.createElement('div');
+  ground.id = 'athlete-ground';
+  athleteCol.appendChild(ground);
+
+// Monta o grid no phase1
+phase1.innerHTML = '';
+phase1.appendChild(textBlock);
+phase1.appendChild(athleteCol);
+
+// Linha vertical divisória
+const divV = document.createElement('div');
+divV.id = 'hero-divider-v';
+heroSticky.appendChild(divV);
+setTimeout(() => divV.classList.add('on'), 800);
+
+// Scroll number
+const scrollNum = document.createElement('div');
+scrollNum.id = 'hero-scroll-num';
+scrollNum.textContent = 'ROLE PARA VER MAIS';
+heroSticky.appendChild(scrollNum);
+setTimeout(() => scrollNum.classList.add('on'), 1200);
+
+// Phase dots
+const dotsWrap = document.createElement('div');
+dotsWrap.id = 'phase-dots';
+dotsWrap.innerHTML = '<div class="phase-dot active"></div><div class="phase-dot"></div><div class="phase-dot"></div>';
+heroSticky.appendChild(dotsWrap);
+
+// Phase label
+const phaseLabel = document.createElement('div');
+phaseLabel.id = 'phase-label';
+heroSticky.appendChild(phaseLabel);
+
+// ── Imagens ────────────────────────────────────────────────
+const SRCS   = ['images/hero/athlete-2.png','images/hero/athlete-1.png','images/hero/athlete-3.png'];
+const LABELS = ['AUTORIDADE','FORÇA','RESULTADO'];
+
+const imgs = SRCS.map((src, i) => {
+  const img = document.createElement('img');
+  img.src = src;
+  img.className = 'athlete-img';
+  img.alt = '';
+  img.draggable = false;
+  wrap.appendChild(img);
+  return img;
+});
+
+// ── Estado ─────────────────────────────────────────────────
+let curPhase = 0;
+let breathT  = 0;
+let mouseOffX = 0, mouseOffY = 0, smOX = 0, smOY = 0;
+const dots = dotsWrap.querySelectorAll('.phase-dot');
+
+// ── Mouse sobre o atleta → parallax 3D suave ──────────────
+document.addEventListener('mousemove', e => {
+  mouseOffX = (e.clientX / innerWidth  - 0.5) * 28;
+  mouseOffY = (e.clientY / innerHeight - 0.5) * 14;
+});
+
+// ── Vida própria: breathing + mouse parallax ──────────────
+let rafId;
+(function lifeLoop() {
+  rafId = requestAnimationFrame(lifeLoop);
+  breathT += 0.012;
+
+  // Smooth mouse
+  smOX += (mouseOffX - smOX) * 0.05;
+  smOY += (mouseOffY - smOY) * 0.05;
+
+  // Scroll progress influencia escala e posição
+  const sp = window.heroScrollProgress || 0;
+
+  // Breathing: oscilação suave em escala e Y
+  const breatheY = Math.sin(breathT * 0.9) * 5;
+  const breatheS = 1 + Math.sin(breathT * 0.7) * 0.012;
+
+  // Mouse: rotação perspectiva leve
+  const tiltX = smOY * 0.018;
+  const tiltY = smOX * 0.022;
+
+  // Scroll: atleta sobe levemente e escurece ao sair do hero
+  const scrollShift = sp * -40;
+  const scrollDim   = 1 - sp * 0.6;
+
+  const transform = [
+    `translateX(-50%)`,
+    `translateY(${breatheY + scrollShift}px)`,
+    `scale(${breatheS})`,
+    `perspective(900px)`,
+    `rotateX(${tiltX}deg)`,
+    `rotateY(${tiltY}deg)`,
+  ].join(' ');
+
+  wrap.style.transform = transform;
+  imgs.forEach(img => {
+    if (parseFloat(img.style.opacity) > 0.05) {
+      img.style.filter = `brightness(${1.05 * scrollDim}) contrast(1.04) saturate(1.08)`;
+    }
+  });
+})();
+
+// ── Controle de fases (chamado pelo main.js via scroll) ───
+window.setAthletePhase = function(progress) {
+  window.heroScrollProgress = progress;
+  phaseLabel.style.opacity = progress > 0.08 && progress < 0.92 ? '1' : '0';
+
+  const newPhase = progress < 0.38 ? 0 : progress < 0.72 ? 1 : 2;
+  if (newPhase === curPhase) return;
+  curPhase = newPhase;
+
+  dots.forEach((d, i) => d.classList.toggle('active', i === newPhase));
+  phaseLabel.textContent = LABELS[newPhase];
+
+  // Crossfade
+  imgs.forEach((img, i) => {
+    img.style.transition = i === newPhase
+      ? 'opacity 1s cubic-bezier(0.16,1,0.3,1)'
+      : 'opacity 0.4s ease';
+    img.style.opacity = i === newPhase ? '1' : '0';
+  });
+};
+
+// ── Entrada com efeito de materialização ──────────────────
+function entrance() {
+  SRCS.forEach((src, i) => { imgs[i].src = src; });
+
+  // Fase 0 materializa
+  let step = 0;
+  const steps = [0.0, 0.15, 0.35, 0.6, 0.82, 1.0];
+  const delays = [80, 160, 260, 380, 500, 680];
+
+  delays.forEach((delay, i) => {
+    setTimeout(() => {
+      imgs[0].style.transition = 'opacity 0.1s ease, filter 0.2s ease';
+      imgs[0].style.opacity = steps[i].toFixed(2);
+      // Slight blur que desaparece → materialização
+      const blurPx = (1 - steps[i]) * 4;
+      imgs[0].style.filter = `brightness(${1.05}) contrast(1.04) saturate(1.08) blur(${blurPx}px)`;
+    }, delay);
   });
 
-  const glitchR = document.createElement('img');
-  glitchR.className = 'athlete-glitch athlete-glitch-r';
-  glitchR.alt=''; glitchR.draggable=false;
-  athleteContainer.appendChild(glitchR);
+  setTimeout(() => {
+    imgs[0].style.transition = '';
+    imgs[0].style.filter = '';
+  }, 900);
+}
 
-  const glitchB = document.createElement('img');
-  glitchB.className = 'athlete-glitch athlete-glitch-b';
-  glitchB.alt=''; glitchB.draggable=false;
-  athleteContainer.appendChild(glitchB);
-
-  // ── STATE ─────────────────────────────────────────────────────────
-  let curPhase = 0;
-  const dots   = dotsWrap.querySelectorAll('.phase-dot');
-
-  window.setAthletePhase = function(progress) {
-    const p = progress < 0.33 ? 0 : progress < 0.66 ? 1 : 2;
-    label.style.opacity = progress > 0.06 && progress < 0.94 ? '1' : '0';
-    if (p === curPhase) return;
-    curPhase = p;
-    dots.forEach((d,i) => d.classList.toggle('active', i===p));
-    label.textContent = LABELS[p];
-    crossfade(p);
-  };
-
-  // ── CROSSFADE ─────────────────────────────────────────────────────
-  function crossfade(to) {
-    imgs.forEach((img,i) => {
-      img.style.transition = i===to ? 'opacity 0.85s cubic-bezier(0.4,0,0.2,1)' : 'opacity 0.45s ease';
-      img.style.opacity    = i===to ? '1' : '0';
-    });
-    glitch(SRCS[to]);
-    sweepLine();
-  }
-
-  function glitch(src) {
-    glitchR.src = src; glitchB.src = src;
-    const steps = [
-      [0,   glitchR, '0.5', '7px',  '0'  ],
-      [60,  glitchB, '0.4', '-6px', '-2px'],
-      [120, glitchR, '0.3', '-4px', '1px' ],
-      [190, glitchB, '0.2', '5px',  '0'  ],
-      [250, glitchR, '0',   '0',    '0'  ],
-      [290, glitchB, '0',   '0',    '0'  ],
-    ];
-    steps.forEach(([d,el,op,dx,dy]) => {
-      setTimeout(()=>{ el.style.opacity=op; el.style.transform=`translateX(calc(-50% + ${dx})) translateY(${dy})`; }, d);
-    });
-  }
-
-  function sweepLine() {
-    sweep.style.transition='none'; sweep.style.opacity='1'; sweep.style.bottom='-5%'; sweep.style.height='0%';
-    requestAnimationFrame(()=>{
-      sweep.style.transition='height 0.5s ease-out, bottom 0.5s ease-out';
-      sweep.style.height='105%'; sweep.style.bottom='100%';
-      setTimeout(()=>{ sweep.style.transition='opacity 0.25s'; sweep.style.opacity='0'; }, 450);
-    });
-  }
-
-  // ── PARALLAX MOUSE ───────────────────────────────────────────────
-  let pX=0,pY=0,rX=0,rY=0;
-  document.addEventListener('mousemove', e=>{
-    pX=(e.clientX/innerWidth -0.5)*16;
-    pY=(e.clientY/innerHeight-0.5)*8;
-  });
-  (function loop(){
-    rX+=(pX-rX)*0.07; rY+=(pY-rY)*0.07;
-    const tx=rX*0.3, ty=rY*0.2;
-    imgs.forEach(img=>{ img.style.transform=`translateX(calc(-50% + ${tx}px)) translateY(${ty}px)`; });
-    glitchR.style.transform=`translateX(calc(-50% + ${tx}px)) translateY(${ty}px)`;
-    glitchB.style.transform=`translateX(calc(-50% + ${tx}px)) translateY(${ty}px)`;
-    requestAnimationFrame(loop);
-  })();
-
-  // ── RED LINE ANIMATE ─────────────────────────────────────────────
-  setTimeout(()=>{
-    redLine.style.transition='transform 0.8s ease 0.6s';
-    redLine.style.transform='scaleX(1)';
-  }, 200);
-
-  // ── ENTRANCE ─────────────────────────────────────────────────────
-  function entrance() {
-    SRCS.forEach((s,i)=>imgs[i].src=s);
-    glitchR.src=SRCS[0]; glitchB.src=SRCS[0];
-    const seq=[
-      {d:100,op:'0.25',dx:'-7px'},{d:190,op:'0.5',dx:'5px'},
-      {d:280,op:'0.75',dx:'-3px'},{d:390,op:'0.9',dx:'2px'},
-      {d:520,op:'1.0', dx:'0px'},
-    ];
-    seq.forEach(({d,op,dx})=>{
-      setTimeout(()=>{
-        imgs[0].style.transition='opacity 0.12s ease';
-        imgs[0].style.opacity=op;
-        glitchR.style.opacity=(parseFloat(op)*0.45).toFixed(2);
-        glitchB.style.opacity=(parseFloat(op)*0.35).toFixed(2);
-        glitchR.style.transform=`translateX(calc(-50% + ${dx}))`;
-        glitchB.style.transform=`translateX(calc(-50% + ${dx==='0px'?'0px':(-parseFloat(dx)*1.3)+'px'}))`;
-      }, d);
-    });
-    setTimeout(()=>{ imgs[0].style.transition=''; glitchR.style.opacity='0'; glitchB.style.opacity='0'; }, 750);
-  }
-
-  document.readyState==='complete' ? setTimeout(entrance,380) : window.addEventListener('load',()=>setTimeout(entrance,380));
+if (document.readyState === 'complete') setTimeout(entrance, 320);
+else window.addEventListener('load', () => setTimeout(entrance, 320));
 
 })();
-/* main.js — GSAP + ScrollTrigger
-   Scroll journey 600vh com 3 fases do atleta
+
+})();
+/* main.js v6 — SCROLL LIMPO E FLUIDO
+   Hero: 250vh pinado (simples, 1 transição principal)
+   Stats: extensão visual do hero
+   Resto: animações no scroll bem orquestradas
 */
 (function () {
-  gsap.registerPlugin(ScrollTrigger);
+'use strict';
 
-  // ── CURSOR ──────────────────────────────────────────────────────
-  const cur  = document.getElementById('cursor');
-  const ring = document.getElementById('cursor-ring');
-  let mx=0,my=0,rx=0,ry=0;
-  document.addEventListener('mousemove', e => {
-    mx=e.clientX; my=e.clientY;
-    cur.style.left=mx+'px'; cur.style.top=my+'px';
+gsap.registerPlugin(ScrollTrigger);
+
+// ── CURSOR ───────────────────────────────────────────────
+const cur  = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx+'px'; cur.style.top=my+'px';
+});
+(function cursorLoop(){
+  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(cursorLoop);
+})();
+document.querySelectorAll('a,button,.service-card,.hscroll-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ cur.style.width='16px'; cur.style.height='16px'; ring.style.width='52px'; ring.style.height='52px'; });
+  el.addEventListener('mouseleave',()=>{ cur.style.width='10px'; cur.style.height='10px'; ring.style.width='38px'; ring.style.height='38px'; });
+});
+
+// ── PROGRESS BAR ────────────────────────────────────────
+const pb = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  pb.style.width = (window.scrollY/(document.body.scrollHeight-innerHeight)*100)+'%';
+}, { passive: true });
+
+// ── NAV ──────────────────────────────────────────────────
+const nav = document.getElementById('main-nav');
+window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY>60), { passive:true });
+
+// ════════════════════════════════════════════════════════
+// HERO INTRO — carregamento da página
+// ════════════════════════════════════════════════════════
+const heroTlIntro = gsap.timeline({ delay: 0.35 });
+heroTlIntro
+  .to('.hero-word', {
+    y: 0, duration: 1.3, stagger: 0.08, ease: 'power4.out'
+  })
+  .to('.hero-label', {
+    opacity: 1, duration: 0.7, ease: 'power3.out'
+  }, '-=0.9')
+  .to('.hero-sub-main', {
+    opacity: 1, duration: 0.7, ease: 'power3.out'
+  }, '-=0.5')
+  .to('.hero-cta-inline', {
+    opacity: 1, y: 0, duration: 0.6, ease: 'power3.out'
+  }, '-=0.3')
+  .to('#scroll-hint', {
+    opacity: 1, duration: 0.5
+  }, '-=0.1');
+
+// ════════════════════════════════════════════════════════
+// HERO SCROLL — 250vh
+// Filosofia: 1 ato claro, não 5 atos confusos
+// ════════════════════════════════════════════════════════
+const phase1  = document.getElementById('hero-phase-1');
+const phase2  = document.getElementById('hero-phase-2');
+const phase3  = document.getElementById('hero-phase-3');
+const hint    = document.getElementById('scroll-hint');
+const scan    = document.getElementById('scan-line');
+const p2nums  = document.querySelectorAll('.phase2-num');
+const p2tags  = document.querySelectorAll('.phase2-tag');
+const cam     = window.camState || { x:0, y:0, z:32 };
+
+// Proxy para progress do atleta (0→1)
+const progressProxy = { val: 0 };
+
+const heroST = ScrollTrigger.create({
+  trigger: '#hero-wrapper',
+  start:   'top top',
+  end:     'bottom bottom',
+  pin:     '#hero-sticky',
+  anticipatePin: 1,
+  scrub: false, // NÃO usamos scrub — controlamos manualmente para fluidez
+  onUpdate(self) {
+    // Passa progresso para o sistema de vida do atleta
+    if (window.setAthletePhase) window.setAthletePhase(self.progress);
+
+    // Câmera Three.js acompanha suavemente
+    cam.z = 32 - self.progress * 4;
+    cam.x = Math.sin(self.progress * Math.PI * 0.5) * 1.5;
+  }
+});
+
+// ── TIMELINE scrubada ao scroll ──────────────────────────
+const heroTl = gsap.timeline({
+  scrollTrigger: {
+    trigger: '#hero-wrapper',
+    start:   'top top',
+    end:     'bottom bottom',
+    scrub:   1.4,
+    pin:     '#hero-sticky',
+    anticipatePin: 1,
+  }
+});
+
+heroTl
+  // 0–25%: câmera avança, texto presente
+  .to(cam, { z: 28, duration: 2.5, ease: 'none' }, 0)
+
+  // 25–40%: texto sai elegantemente para cima
+  .to(phase1, { opacity: 0, y: -50, duration: 1.5, ease: 'power2.in' }, 2.5)
+  .to(hint,   { opacity: 0, duration: 0.8 }, 2.5)
+
+  // 35–45%: scan line diagnóstico (sutil, 1x)
+  .to(scan, { opacity: 0.5, duration: 0.2 }, 3.0)
+  .to(scan, { top: '100%', duration: 1.0, ease: 'none' }, 3.0)
+  .to(scan, { opacity: 0,  duration: 0.2 }, 3.9)
+
+  // 40–70%: fase 2 — stats entram limpos
+  .to(phase2, { opacity: 1, duration: 1.2, ease: 'power2.out' }, 3.5)
+  .to(p2nums, { x: 0, opacity: 1, stagger: 0.18, duration: 0.9, ease: 'power3.out' }, 3.7)
+  .to(p2tags, { x: 0, opacity: 1, stagger: 0.10, duration: 0.6, ease: 'power3.out' }, 4.0)
+
+  // 70–80%: fase 2 sai, câmera recua levemente
+  .to(phase2, { opacity: 0, duration: 1.0, ease: 'power2.in' }, 6.5)
+  .to(cam,    { z: 34, duration: 2.0, ease: 'power2.inOut' }, 6.0)
+
+  // 80–100%: CTA final
+  .to(phase3,        { opacity: 1, duration: 1.2, ease: 'power2.out' }, 7.5)
+  .to('#phase3-line',{ width: 140, duration: 0.8, ease: 'power2.out' }, 8.0);
+
+// ════════════════════════════════════════════════════════
+// STATS — CONTINUAÇÃO DO HERO
+// Animação de entrada que parece que o conteúdo desceu do hero
+// ════════════════════════════════════════════════════════
+document.querySelectorAll('.stat-item').forEach((item, i) => {
+  const countEl = item.querySelector('.count');
+  const target  = parseInt(countEl?.dataset.target || 0);
+
+  // Entra vindo de baixo com delay escalonado
+  gsap.from(item, {
+    y: 40,
+    opacity: 0,
+    duration: 0.8,
+    delay: i * 0.1,
+    ease: 'power3.out',
+    scrollTrigger: { trigger: item, start: 'top 88%', once: true }
   });
-  (function loop(){ rx+=(mx-rx)*0.1; ry+=(my-ry)*0.1; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
-  document.querySelectorAll('a,button,.service-card,.hscroll-card').forEach(el=>{
-    el.addEventListener('mouseenter',()=>{ cur.style.width='18px'; cur.style.height='18px'; ring.style.width='56px'; ring.style.height='56px'; });
-    el.addEventListener('mouseleave',()=>{ cur.style.width='10px'; cur.style.height='10px'; ring.style.width='38px'; ring.style.height='38px'; });
+
+  if (!countEl) return;
+  ScrollTrigger.create({
+    trigger: item,
+    start: 'top 85%',
+    once: true,
+    onEnter() {
+      item.classList.add('is-active');
+      gsap.to({ v: 0 }, {
+        v: target,
+        duration: 2.0,
+        delay: i * 0.1,
+        ease: 'power2.out',
+        onUpdate() { countEl.textContent = Math.round(this.targets()[0].v); }
+      });
+    }
   });
+});
 
-  // ── PROGRESS BAR ────────────────────────────────────────────────
-  const pb = document.getElementById('progress-bar');
-  window.addEventListener('scroll', () => {
-    pb.style.width=(window.scrollY/(document.body.scrollHeight-innerHeight)*100)+'%';
+// ── DIVISORES ────────────────────────────────────────────
+document.querySelectorAll('[data-divider]').forEach(el => {
+  gsap.to(el, {
+    width: '100%', duration: 1.6, ease: 'power2.inOut',
+    scrollTrigger: { trigger: el, start: 'top 92%', once: true }
   });
+});
 
-  // ── NAV ─────────────────────────────────────────────────────────
-  const nav = document.getElementById('main-nav');
-  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY>80));
+// ── EYEBROWS ─────────────────────────────────────────────
+gsap.utils.toArray('.section-eyebrow').forEach(el => {
+  gsap.to(el, {
+    opacity: 1, x: 0, duration: 0.8, ease: 'power3.out',
+    scrollTrigger: { trigger: el, start: 'top 88%', once: true }
+  });
+});
 
-  // ── HERO INTRO ──────────────────────────────────────────────────
-  gsap.timeline({ delay: 0.5 })
-    .to('.hero-word',     { y:0, duration:1.4, stagger:0.1,  ease:'power4.out' })
-    .to('.hero-label',    { opacity:1, duration:0.8, ease:'power3.out' }, '-=0.9')
-    .to('.hero-sub-main', { opacity:1, duration:0.8, ease:'power3.out' }, '-=0.5')
-    .to('#scroll-hint',   { opacity:1, duration:0.6 }, '-=0.3');
-
-  // ── HERO SCROLL JOURNEY ─────────────────────────────────────────
-  const phase1     = document.getElementById('hero-phase-1');
-  const phase2     = document.getElementById('hero-phase-2');
-  const phase3     = document.getElementById('hero-phase-3');
-  const scanLine   = document.getElementById('scan-line');
-  const scrollHint = document.getElementById('scroll-hint');
-  const p2nums     = document.querySelectorAll('.phase2-num');
-  const p2tags     = document.querySelectorAll('.phase2-tag');
-  const camProxy   = window.camState;
-
-  // Proxy para controlar o progresso do atleta via scrub
-  const athleteProxy = { progress: 0 };
-
-  const heroTl = gsap.timeline({
+// ── PALAVRAS STAGGER ─────────────────────────────────────
+gsap.utils.toArray('.s-word').forEach(w => {
+  gsap.to(w, {
+    y: 0, opacity: 1, duration: 1.0, ease: 'power4.out',
     scrollTrigger: {
-      trigger:       '#hero-wrapper',
-      start:         'top top',
-      end:           'bottom bottom',
-      scrub:         1.6,
-      pin:           '#hero-sticky',
-      anticipatePin: 1,
-      onUpdate: self => {
-        // Mapeia progresso do scroll → fases do atleta
-        if (window.setAthletePhase) window.setAthletePhase(self.progress);
-      }
+      trigger: w.closest('.section-title') || w,
+      start: 'top 88%', once: true
     }
   });
+});
 
-  heroTl
-    // ── FASE 1 (0–30%): Atleta 1 — Autoridade
-    // Câmera avança suavemente, texto do hero presente
-    .to(camProxy, { posZ:24, duration:3, ease:'power1.inOut' }, 0)
-
-    // ── FASE 1→2 (30–35%): Transição — texto some, scan line
-    .to(phase1,   { opacity:0, y:-60, duration:1.2, ease:'power2.in' }, 3)
-    .to(scrollHint, { opacity:0, duration:0.5 }, 3)
-    .to(camProxy, { posX:4, posZ:22, lookY:1, duration:1.5, ease:'power1.inOut' }, 3.5)
-    // Scan line diagnóstico
-    .to(scanLine, { opacity:0.8, duration:0.15 }, 3.2)
-    .to(scanLine, { top:'100%', duration:1.2, ease:'none' }, 3.2)
-    .to(scanLine, { opacity:0, duration:0.2 }, 4.2)
-
-    // ── FASE 2 (35–65%): Atleta 2 — Força
-    // Stats entram pela esquerda
-    .to(phase2,   { opacity:1, duration:1.0, ease:'power2.out' }, 4.0)
-    .to(p2nums,   { x:0, opacity:1, stagger:0.2, duration:0.8, ease:'power3.out' }, 4.2)
-    .to(p2tags,   { x:0, opacity:1, stagger:0.12, duration:0.6, ease:'power3.out' }, 4.5)
-    .to(camProxy, { posX:-4, posZ:20, lookY:0, duration:3, ease:'power1.inOut' }, 4.0)
-
-    // ── FASE 2→3 (65–70%): Transição — stats somem, câmera retorna
-    .to(phase2,   { opacity:0, duration:1.0, ease:'power2.in' }, 6.5)
-    .to(camProxy, { posX:0, posZ:26, lookY:-1, duration:2, ease:'power2.inOut' }, 6.5)
-    // Segundo scan line
-    .to(scanLine, { top:'0%', opacity:0.6, duration:0.1 }, 6.8)
-    .to(scanLine, { top:'100%', duration:1.0, ease:'none', opacity:0.6 }, 6.8)
-    .to(scanLine, { opacity:0, duration:0.2 }, 7.7)
-
-    // ── FASE 3 (70–100%): Atleta 3 — Resultado
-    // CTA final
-    .to(phase3,        { opacity:1, duration:1.2, ease:'power2.out' }, 7.5)
-    .to('#phase3-line',{ width:160, duration:0.8, ease:'power2.out' }, 8.0)
-    .to(camProxy,      { posZ:28, duration:2, ease:'power1.inOut' }, 7.5);
-
-  // ── DIVIDERS ────────────────────────────────────────────────────
-  document.querySelectorAll('[data-divider]').forEach(el => {
-    gsap.to(el, { width:'100%', duration:1.8, ease:'power2.inOut',
-      scrollTrigger:{ trigger:el, start:'top 92%' } });
+// ── SERVICE CARDS ─────────────────────────────────────────
+document.querySelectorAll('.service-card').forEach((card, i) => {
+  gsap.from(card, {
+    y: 30, opacity: 0, duration: 0.7, delay: (i % 3) * 0.1,
+    ease: 'power3.out',
+    scrollTrigger: { trigger: card, start: 'top 88%', once: true }
   });
-
-  // ── STATS COUNTER ───────────────────────────────────────────────
-  document.querySelectorAll('.stat-item').forEach((s, i) => {
-    const el  = s.querySelector('.count');
-    const tgt = parseInt(el.dataset.target);
-    ScrollTrigger.create({ trigger:s, start:'top 82%', onEnter:() => {
-      s.classList.add('is-active');
-      gsap.to({v:0},{v:tgt,duration:2.2,delay:i*0.12,ease:'power2.out',
-        onUpdate:function(){ el.textContent=Math.round(this.targets()[0].v); }});
-    }});
-  });
-
-  // ── EYEBROWS ────────────────────────────────────────────────────
-  gsap.utils.toArray('.section-eyebrow').forEach(el => {
-    gsap.to(el,{ opacity:1, x:0, duration:0.8, ease:'power3.out',
-      scrollTrigger:{ trigger:el, start:'top 88%' } });
-  });
-
-  // ── STAGGER WORDS ───────────────────────────────────────────────
-  gsap.utils.toArray('.s-word').forEach(w => {
-    gsap.to(w,{ y:0, opacity:1, duration:1.0, ease:'power4.out',
-      scrollTrigger:{ trigger:w.closest('.section-title')||w, start:'top 88%' } });
-  });
-
-  // ── SERVICE CARDS ───────────────────────────────────────────────
-  document.querySelectorAll('.service-card').forEach((c, i) => {
-    ScrollTrigger.create({ trigger:c, start:'top 88%', onEnter:() => {
-      setTimeout(() => {
-        const b=c.querySelector('.service-bar');
-        const n=c.querySelector('.service-name');
-        const d=c.querySelector('.service-desc');
-        const l=c.querySelector('.service-link');
-        if(b) b.style.cssText='transform:scaleX(1);transition:transform 0.8s ease';
-        if(n) n.style.cssText='transform:translateY(0);opacity:1;transition:all 0.6s ease 0.15s';
-        if(d) d.style.cssText='transform:translateY(0);opacity:1;transition:all 0.6s ease 0.25s';
-        if(l) l.style.cssText='transform:translateY(0);opacity:1;transition:all 0.6s ease 0.35s';
-      }, i*70);
-    }});
-  });
-
-  // ── HORIZONTAL SCROLL ───────────────────────────────────────────
-  const ht = document.getElementById('hscroll-track');
-  if(ht){ gsap.to(ht,{ x:()=>-(ht.scrollWidth-innerWidth+128), ease:'none',
-    scrollTrigger:{ trigger:'.hscroll-section', start:'top top', end:'bottom bottom',
-      scrub:1.2, pin:'.hscroll-sticky', anticipatePin:1 } }); }
-
-  // ── TRANSFORM CANVAS ────────────────────────────────────────────
-  const tc = document.getElementById('transform-canvas-2');
-  if(tc){
-    const tS=new THREE.Scene(),tC=new THREE.PerspectiveCamera(60,1,0.1,100);
-    const tR=new THREE.WebGLRenderer({canvas:tc,antialias:true,alpha:true});
-    tR.setClearColor(0x141418,1); tC.position.z=8;
-    tS.add(new THREE.AmbientLight(0xffffff,0.4));
-    const tL=new THREE.PointLight(0xE8213A,3,20); tL.position.set(3,3,5); tS.add(tL);
-    const hG=new THREE.Group();
-    const sG=new THREE.SphereGeometry(0.12,8,8);
-    const mR=new THREE.MeshBasicMaterial({color:0xE8213A});
-    const mD=new THREE.MeshBasicMaterial({color:0x2a2a35});
-    for(let i=0;i<60;i++){
-      const a=(i/60)*Math.PI*4, y=(i/60)*10-5;
-      const s1=new THREE.Mesh(sG,mR); s1.position.set(Math.cos(a)*1.6,y,Math.sin(a)*1.6); hG.add(s1);
-      const s2=new THREE.Mesh(sG,mD); s2.position.set(Math.cos(a+Math.PI)*1.6,y,Math.sin(a+Math.PI)*1.6); hG.add(s2);
-      if(i%5===0){
-        const bg=new THREE.CylinderGeometry(0.015,0.015,3.2,4);
-        const bm=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:0x332225,transparent:true,opacity:0.5}));
-        bm.position.y=y; bm.rotation.z=Math.PI/2; bm.rotation.x=a; hG.add(bm);
-      }
+  ScrollTrigger.create({
+    trigger: card, start: 'top 88%', once: true,
+    onEnter() {
+      const b = card.querySelector('.service-bar');
+      const n = card.querySelector('.service-name');
+      const d = card.querySelector('.service-desc');
+      const l = card.querySelector('.service-link');
+      if(b) b.style.cssText = 'transform:scaleX(1);transition:transform 0.7s ease 0.1s';
+      if(n) n.style.cssText = 'transform:translateY(0);opacity:1;transition:all 0.6s ease 0.2s';
+      if(d) d.style.cssText = 'transform:translateY(0);opacity:1;transition:all 0.6s ease 0.3s';
+      if(l) l.style.cssText = 'transform:translateY(0);opacity:1;transition:all 0.6s ease 0.4s';
     }
-    tS.add(hG);
-    function resizeT(){ const p=tc.parentElement; if(!p)return; tR.setSize(p.clientWidth,p.clientHeight); tC.aspect=p.clientWidth/p.clientHeight; tC.updateProjectionMatrix(); }
-    const tClk=new THREE.Clock(); let tRun=false;
-    function renderT(){ if(!tRun)return; requestAnimationFrame(renderT); hG.rotation.y=tClk.getElapsedTime()*0.45; tR.render(tS,tC); }
-    ScrollTrigger.create({ trigger:'.transform-visual', start:'top 72%', onEnter:()=>{
-      document.querySelector('.transform-frame-outer').classList.add('is-visible');
-      document.querySelector('.transform-badge').classList.add('is-visible');
-      resizeT(); tRun=true; renderT();
-    }});
-    window.addEventListener('resize',resizeT); setTimeout(resizeT,100);
+  });
+});
+
+// ── HORIZONTAL SCROLL ─────────────────────────────────────
+const ht = document.getElementById('hscroll-track');
+if (ht) {
+  gsap.to(ht, {
+    x: () => -(ht.scrollWidth - innerWidth + 128),
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '.hscroll-section', start: 'top top', end: 'bottom bottom',
+      scrub: 1.0, pin: '.hscroll-sticky', anticipatePin: 1
+    }
+  });
+}
+
+// ── TRANSFORM CANVAS ──────────────────────────────────────
+const tc = document.getElementById('transform-canvas-2');
+if (tc && typeof THREE !== 'undefined') {
+  const tS = new THREE.Scene();
+  const tC = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+  const tR = new THREE.WebGLRenderer({ canvas: tc, antialias: true, alpha: true });
+  tR.setClearColor(0x141418, 1);
+  tC.position.z = 8;
+  tS.add(new THREE.AmbientLight(0xffffff, 0.4));
+  const tL = new THREE.PointLight(0xE8213A, 3, 20);
+  tL.position.set(3, 3, 5);
+  tS.add(tL);
+
+  const hG = new THREE.Group();
+  const sGeo = new THREE.SphereGeometry(0.12, 8, 8);
+  const mR = new THREE.MeshBasicMaterial({ color: 0xE8213A });
+  const mD = new THREE.MeshBasicMaterial({ color: 0x2a2a35 });
+  for (let i = 0; i < 60; i++) {
+    const a = (i/60)*Math.PI*4, y = (i/60)*10-5;
+    const s1 = new THREE.Mesh(sGeo, mR); s1.position.set(Math.cos(a)*1.6,y,Math.sin(a)*1.6); hG.add(s1);
+    const s2 = new THREE.Mesh(sGeo, mD); s2.position.set(Math.cos(a+Math.PI)*1.6,y,Math.sin(a+Math.PI)*1.6); hG.add(s2);
+    if (i%5===0) {
+      const bg = new THREE.CylinderGeometry(0.015,0.015,3.2,4);
+      const bm = new THREE.Mesh(bg, new THREE.MeshBasicMaterial({color:0x332225,transparent:true,opacity:0.5}));
+      bm.position.y=y; bm.rotation.z=Math.PI/2; bm.rotation.x=a; hG.add(bm);
+    }
+  }
+  tS.add(hG);
+
+  function resizeT() {
+    const p = tc.parentElement; if (!p) return;
+    tR.setSize(p.clientWidth, p.clientHeight);
+    tC.aspect = p.clientWidth / p.clientHeight;
+    tC.updateProjectionMatrix();
   }
 
-  // ── TRANSFORM TEXT ──────────────────────────────────────────────
-  document.querySelectorAll('.transform-body,.feature-row').forEach((el,i)=>{
-    ScrollTrigger.create({ trigger:el, start:'top 88%',
-      onEnter:()=>setTimeout(()=>el.classList.add('is-visible'),i*90) });
+  const tClk = new THREE.Clock();
+  let tRun = false;
+  function renderT() {
+    if (!tRun) return;
+    requestAnimationFrame(renderT);
+    hG.rotation.y = tClk.getElapsedTime() * 0.42;
+    tR.render(tS, tC);
+  }
+
+  ScrollTrigger.create({
+    trigger: '.transform-visual', start: 'top 75%', once: true,
+    onEnter() {
+      const fo = document.querySelector('.transform-frame-outer');
+      const tb = document.querySelector('.transform-badge');
+      if (fo) fo.classList.add('is-visible');
+      if (tb) tb.classList.add('is-visible');
+      resizeT(); tRun = true; renderT();
+    }
   });
+  window.addEventListener('resize', resizeT);
+  setTimeout(resizeT, 100);
+}
 
-  // ── PROCESS ─────────────────────────────────────────────────────
-  const pF=document.getElementById('process-fill');
-  if(pF){ gsap.to(pF,{ width:'100%', ease:'none',
-    scrollTrigger:{ trigger:'.process-section', start:'top 65%', end:'bottom 65%', scrub:1 } }); }
-  document.querySelectorAll('.process-step').forEach((s,i)=>{
-    ScrollTrigger.create({ trigger:s, start:'top 82%',
-      onEnter:()=>setTimeout(()=>s.classList.add('is-visible'),i*160) });
+// ── TRANSFORM TEXT ────────────────────────────────────────
+document.querySelectorAll('.transform-body,.feature-row').forEach((el, i) => {
+  ScrollTrigger.create({
+    trigger: el, start: 'top 88%', once: true,
+    onEnter() { setTimeout(() => el.classList.add('is-visible'), i * 80); }
   });
+});
 
-  // ── TESTIMONIALS ────────────────────────────────────────────────
-  const tt=document.getElementById('testimonials-track');
-  if(tt){ gsap.to(tt,{ x:()=>-(tt.scrollWidth-innerWidth+128), ease:'none',
-    scrollTrigger:{ trigger:'.testimonials-section', start:'top 80%',
-      end:()=>'+='+(tt.scrollWidth*0.9), scrub:1.4 } }); }
-
-  // ── CTA ─────────────────────────────────────────────────────────
-  gsap.from('.cta-title',{ y:60, opacity:0, duration:1.2, ease:'power4.out',
-    scrollTrigger:{ trigger:'.cta-title', start:'top 82%' } });
-
-  // ── SMOOTH ANCHORS ──────────────────────────────────────────────
-  document.querySelectorAll('a[href^="#"]').forEach(a=>{
-    a.addEventListener('click',e=>{
-      const t=document.querySelector(a.getAttribute('href'));
-      if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
-    });
+// ── PROCESS ──────────────────────────────────────────────
+const pFill = document.getElementById('process-fill');
+if (pFill) {
+  gsap.to(pFill, {
+    width: '100%', ease: 'none',
+    scrollTrigger: { trigger: '.process-section', start: 'top 60%', end: 'bottom 60%', scrub: 0.8 }
   });
+}
+document.querySelectorAll('.process-step').forEach((s, i) => {
+  ScrollTrigger.create({
+    trigger: s, start: 'top 82%', once: true,
+    onEnter() { setTimeout(() => s.classList.add('is-visible'), i * 140); }
+  });
+});
 
-  window.addEventListener('resize',()=>ScrollTrigger.refresh());
+// ── TESTIMONIALS ──────────────────────────────────────────
+const tt = document.getElementById('testimonials-track');
+if (tt) {
+  gsap.to(tt, {
+    x: () => -(tt.scrollWidth - innerWidth + 128),
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '.testimonials-section',
+      start: 'top 80%',
+      end: () => '+=' + (tt.scrollWidth * 0.85),
+      scrub: 1.2
+    }
+  });
+}
+
+// ── CTA ───────────────────────────────────────────────────
+gsap.from('.cta-title', {
+  y: 50, opacity: 0, duration: 1.0, ease: 'power4.out',
+  scrollTrigger: { trigger: '.cta-title', start: 'top 84%', once: true }
+});
+
+// ── SMOOTH ANCHORS ────────────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
+
+window.addEventListener('resize', () => ScrollTrigger.refresh());
 
 })();
 </script></body></html>
