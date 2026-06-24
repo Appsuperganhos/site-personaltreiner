@@ -804,6 +804,10 @@ footer {
 }
 .btn-red:hover::before { transform: scaleX(1); }
 .btn-red span { position: relative; z-index: 1; }
+/* Garante que elementos críticos nunca ficam invisíveis por falha de JS */
+.hero-word { transition: transform 0s; }
+#hero-phase-1 { pointer-events: none; }
+#hero-phase-1 a { pointer-events: auto; }
 </style>
 </head>
 <body>
@@ -829,6 +833,7 @@ footer {
     <div class="hero-vignette"></div>
     <div class="scan-line" id="scan-line"></div>
 
+    <!-- Phase 1: JS reconstrói em grid — conteúdo estático aqui -->
     <div class="hero-overlay" id="hero-phase-1">
       <div>
         <p class="hero-label">Elite Personal Training · São Paulo</p>
@@ -857,11 +862,11 @@ footer {
     </div>
 
     <div class="hero-overlay" id="hero-phase-3">
-      <div style="text-align:left;padding-left:72px">
+      <div style="padding-left:72px">
         <h2 class="phase3-title">PRONTO PARA<br><span style="color:var(--red)">EVOLUIR?</span></h2>
         <div class="phase3-line" id="phase3-line" style="margin:0 0 28px 0"></div>
         <p class="phase3-sub" style="text-align:left">Vagas limitadas · Próxima turma em 15 dias</p>
-        <a href="#contato" class="phase3-btn"><span>Reservar Minha Vaga</span></a>
+        <a href="#contato" class="phase3-btn" style="pointer-events:auto"><span>Reservar Minha Vaga</span></a>
       </div>
     </div>
 
@@ -872,7 +877,6 @@ footer {
   </div>
 </div>
 
-<!-- Stats — extensão visual do hero (mesmo fundo) -->
 <section class="stats-section">
   <div class="stat-item"><div class="stat-number"><span class="count" data-target="850">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Alunos Transformados</div></div>
   <div class="stat-item"><div class="stat-number"><span class="count" data-target="12">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Anos de Experiência</div></div>
@@ -993,10 +997,7 @@ footer {
 </section>
 
 <footer>
-  <div>
-    <a href="#" class="footer-logo">APE<span>X</span></a>
-    <p class="footer-tagline">Metodologia de elite para quem leva a vida a sério. São Paulo · Brasil</p>
-  </div>
+  <div><a href="#" class="footer-logo">APE<span>X</span></a><p class="footer-tagline">Metodologia de elite para quem leva a vida a sério. São Paulo · Brasil</p></div>
   <div class="footer-col"><h4>Serviços</h4><ul><li><a href="#services">Treino Personalizado</a></li><li><a href="#services">Nutrição</a></li><li><a href="#services">Online Premium</a></li><li><a href="#services">High Performance</a></li></ul></div>
   <div class="footer-col"><h4>Links</h4><ul><li><a href="#">Sobre</a></li><li><a href="#depoimentos">Resultados</a></li><li><a href="#">Blog</a></li><li><a href="#contato">Contato</a></li></ul></div>
   <div class="footer-col"><h4>Contato</h4><ul><li><a href="mailto:contato@apex.com.br">contato@apex.com.br</a></li><li><a href="tel:+5511999990000">+55 (11) 99999-0000</a></li><li><a href="#">Instagram</a></li><li><a href="#">WhatsApp</a></li></ul></div>
@@ -1010,18 +1011,18 @@ footer {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
-/* hero3d.js v6 — VIDA PRÓPRIA
-   Princípios desta revisão:
-   - 1 coisa feita muito bem > 10 coisas medianas
-   - Atleta respira, reage ao mouse, escala com scroll
-   - Three.js: campo de partículas com profundidade real + glow shader atrás do atleta
-   - Zero CapsuleGeometry, zero Object.assign em Three.js
+/* hero3d.js v7
+   Fixes:
+   - DOM estático no HTML, JS só adiciona elementos extras (sem innerHTML = '')
+   - Entrada com fallback: se GSAP falhar, elementos ficam visíveis
+   - Imagens carregam independente do timing
+   - Three.js canvas transparente com fundo via CSS
 */
 (function () {
 'use strict';
 
 // ════════════════════════════════════════════════════════════
-// 1. THREE.JS — BACKGROUND ATMOSFÉRICO
+// 1. THREE.JS — BACKGROUND
 // ════════════════════════════════════════════════════════════
 const canvas = document.getElementById('hero-canvas');
 if (!canvas) return;
@@ -1034,135 +1035,115 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.setClearColor(0x000000, 0);
 camera.position.z = 32;
 
-// Exposição para o GSAP em main.js
 window.camState = { x: 0, y: 0, z: 32 };
 
-// ── Campo de partículas em 3 camadas de profundidade ──────
-function buildParticleLayer(count, spread, zRange, redChance, size) {
+function buildParticles(count, spread, depth, redChance, size) {
   const pos = new Float32Array(count * 3);
   const col = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const i3 = i * 3;
     pos[i3]   = (Math.random() - 0.5) * spread;
-    pos[i3+1] = (Math.random() - 0.5) * spread * 0.6;
-    pos[i3+2] = -zRange * Math.random();
+    pos[i3+1] = (Math.random() - 0.5) * spread * 0.55;
+    pos[i3+2] = -depth * Math.random();
     if (Math.random() < redChance) {
-      col[i3] = 0.91; col[i3+1] = 0.13; col[i3+2] = 0.23;
+      col[i3]=0.91; col[i3+1]=0.13; col[i3+2]=0.23;
     } else {
-      const v = 0.04 + Math.random() * 0.12;
-      col[i3] = v; col[i3+1] = v; col[i3+2] = v * 1.05;
+      const v = 0.04 + Math.random()*0.11;
+      col[i3]=v; col[i3+1]=v; col[i3+2]=v;
     }
   }
   const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
-  const mat = new THREE.PointsMaterial({
-    size, vertexColors: true,
-    transparent: true, opacity: 0.7,
-    blending: THREE.AdditiveBlending, depthWrite: false
-  });
-  return new THREE.Points(geo, mat);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',    new THREE.BufferAttribute(col,3));
+  return new THREE.Points(geo, new THREE.PointsMaterial({
+    size, vertexColors:true, transparent:true, opacity:0.65,
+    blending:THREE.AdditiveBlending, depthWrite:false
+  }));
 }
 
-const layerFar  = buildParticleLayer(800,  200, 60, 0.08, 0.12);
-const layerMid  = buildParticleLayer(400,  120, 30, 0.18, 0.18);
-const layerNear = buildParticleLayer(120,   60, 10, 0.35, 0.28);
-scene.add(layerFar, layerMid, layerNear);
+const pFar  = buildParticles(700,  200, 60, 0.08, 0.11);
+const pMid  = buildParticles(380,  120, 30, 0.18, 0.17);
+const pNear = buildParticles(100,   55, 10, 0.32, 0.26);
+scene.add(pFar, pMid, pNear);
 
-// ── Anel de energia atrás do atleta ──────────────────────
-const ringGeo = new THREE.TorusGeometry(5.5, 0.022, 8, 100);
-const ringMat = new THREE.MeshBasicMaterial({
-  color: 0xE8213A, transparent: true, opacity: 0.0,
-  blending: THREE.AdditiveBlending
-});
-const ring = new THREE.Mesh(ringGeo, ringMat);
-ring.position.set(6, 0, -2); // posicionado atrás e à direita (onde o atleta fica)
-ring.rotation.x = 0.3;
-scene.add(ring);
-
+const ringGeo = new THREE.TorusGeometry(5.5, 0.02, 8, 100);
+const ringMat = new THREE.MeshBasicMaterial({ color:0xE8213A, transparent:true, opacity:0, blending:THREE.AdditiveBlending });
+const ring  = new THREE.Mesh(ringGeo, ringMat);
 const ring2 = new THREE.Mesh(
-  new THREE.TorusGeometry(7.5, 0.012, 6, 80),
-  new THREE.MeshBasicMaterial({ color: 0xE8213A, transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending })
+  new THREE.TorusGeometry(7.8, 0.012, 6, 80),
+  new THREE.MeshBasicMaterial({ color:0xE8213A, transparent:true, opacity:0, blending:THREE.AdditiveBlending })
 );
-ring2.position.set(6, 0, -4);
-ring2.rotation.x = 0.2;
-ring2.rotation.z = 0.5;
-scene.add(ring2);
+ring.position.set(6,0,-2);  ring.rotation.x = 0.3;
+ring2.position.set(6,0,-4); ring2.rotation.x = 0.2; ring2.rotation.z = 0.5;
+scene.add(ring, ring2);
 
-// ── Luzes ─────────────────────────────────────────────────
-const redLight = new THREE.PointLight(0xE8213A, 0, 40);
+const redLight = new THREE.PointLight(0xE8213A, 0, 45);
 redLight.position.set(8, 2, 6);
 scene.add(redLight);
-const ambLight = new THREE.AmbientLight(0x111118, 1);
-scene.add(ambLight);
 
-// ── Mouse suave ───────────────────────────────────────────
-let mX = 0, mY = 0, smX = 0, smY = 0;
+let mX=0, mY=0, smX=0, smY=0;
 document.addEventListener('mousemove', e => {
-  mX = (e.clientX / innerWidth  - 0.5);
-  mY = (e.clientY / innerHeight - 0.5);
-});
+  mX = (e.clientX/innerWidth  - 0.5);
+  mY = (e.clientY/innerHeight - 0.5);
+}, {passive:true});
 
-// ── Scroll progress (0→1 dentro do hero) ─────────────────
 window.heroScrollProgress = 0;
-
-// ── Render Loop ───────────────────────────────────────────
 const clk = new THREE.Clock();
+
 (function renderLoop() {
   requestAnimationFrame(renderLoop);
   const t  = clk.getElapsedTime();
-  const sp = window.heroScrollProgress; // 0→1
+  const sp = window.heroScrollProgress;
+  const cs = window.camState;
 
-  // Mouse lerp
   smX += (mX - smX) * 0.04;
   smY += (mY - smY) * 0.04;
 
-  // Camera parallax suave
-  const cs = window.camState;
-  camera.position.x += (cs.x + smX * 2 - camera.position.x) * 0.04;
-  camera.position.y += (cs.y - smY * 1  - camera.position.y) * 0.04;
-  camera.position.z += (cs.z            - camera.position.z) * 0.04;
+  camera.position.x += (cs.x + smX*2 - camera.position.x) * 0.04;
+  camera.position.y += (cs.y - smY*1  - camera.position.y) * 0.04;
+  camera.position.z += (cs.z          - camera.position.z) * 0.04;
   camera.lookAt(0, 0, 0);
 
-  // Layers de partícula em velocidades diferentes → parallax de profundidade
-  layerFar.rotation.y  = t * 0.004 + smX * 0.05;
-  layerMid.rotation.y  = t * 0.008 + smX * 0.10;
-  layerNear.rotation.y = t * 0.015 + smX * 0.18;
-  layerNear.rotation.x = smY * 0.06;
+  pFar.rotation.y  = t*0.004 + smX*0.04;
+  pMid.rotation.y  = t*0.008 + smX*0.09;
+  pNear.rotation.y = t*0.014 + smX*0.17;
+  pNear.rotation.x = smY*0.05;
 
-  // Rings pulsam quando hero está visível, somem ao sair
-  const ringVis = 1 - sp;
-  const pulse   = 0.10 + Math.sin(t * 1.8) * 0.04;
-  ring.material.opacity  = pulse * ringVis;
-  ring2.material.opacity = (pulse * 0.5) * ringVis;
-  ring.rotation.z  = t * 0.25;
-  ring2.rotation.z = -t * 0.15;
+  const vis = Math.max(0, 1 - sp*1.5);
+  const pulse = 0.09 + Math.sin(t*1.8)*0.04;
+  ring.material.opacity  = pulse * vis;
+  ring2.material.opacity = pulse * 0.45 * vis;
+  ring.rotation.z  = t*0.22;
+  ring2.rotation.z = -t*0.14;
 
-  // Luz vermelha pulsa e orbita atrás do atleta
-  redLight.intensity = (1.8 + Math.sin(t * 2.0) * 0.7) * ringVis;
-  redLight.position.x = 8 + Math.sin(t * 0.5) * 2;
-  redLight.position.y = 2 + Math.cos(t * 0.7) * 1.5;
+  redLight.intensity = (1.6 + Math.sin(t*1.9)*0.6) * vis;
+  redLight.position.x = 8 + Math.sin(t*0.45)*2;
+  redLight.position.y = 2 + Math.cos(t*0.65)*1.5;
 
   renderer.render(scene, camera);
 })();
 
 window.addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
+  camera.aspect = innerWidth/innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
 });
 
 
 // ════════════════════════════════════════════════════════════
-// 2. ATLETA — VIDA PRÓPRIA
+// 2. ATHLETE SYSTEM — imagens com vida própria
+//    DOM é 100% estático no HTML.
+//    JS só injeta CSS + elementos extras (glow, dots, label)
+//    e controla as imagens que já existem no DOM.
 // ════════════════════════════════════════════════════════════
 (function () {
 
-const style = document.createElement('style');
-style.textContent = `
-  #hero-sticky { background: #060608; }
+// ── CSS ────────────────────────────────────────────────────
+const S = document.createElement('style');
+S.textContent = `
+  #hero-sticky { background:#060608; }
 
-  /* ── Layout: texto esquerda / atleta direita ── */
+  /* Layout split fixo — definido aqui, não por JS */
   #hero-phase-1 {
     position: absolute !important;
     inset: 0 !important;
@@ -1170,60 +1151,54 @@ style.textContent = `
     grid-template-columns: 1fr 1fr !important;
     align-items: center !important;
     justify-content: unset !important;
-    padding: 100px 72px 0 72px !important;
-    pointer-events: none;
+    padding: 96px 72px 0 72px !important;
   }
 
-  /* Bloco de texto — esquerda */
+  /* Coluna esquerda — texto */
   #hero-text-block {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 0;
     position: relative;
     z-index: 3;
-    pointer-events: auto;
   }
-
   .hero-label {
     text-align: left !important;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     font-size: 10px;
     letter-spacing: 7px;
     text-transform: uppercase;
     color: var(--red);
-    opacity: 0;
+    opacity: 0; /* animado pelo GSAP; fallback via .hero-ready */
   }
-
-  /* Linha vermelha que cresce antes do título */
   #hero-accent-line {
-    width: 0px;
+    width: 0;
     height: 2px;
     background: var(--red);
     box-shadow: 0 0 10px var(--red);
-    margin-bottom: 18px;
-    transition: width 0.9s cubic-bezier(0.16,1,0.3,1) 0.4s;
+    margin-bottom: 16px;
+    transition: width 0.85s cubic-bezier(0.16,1,0.3,1) 0.45s;
   }
   #hero-accent-line.on { width: 52px; }
 
   .hero-title-main {
     font-family: 'Bebas Neue', sans-serif !important;
-    font-size: clamp(76px, 9.5vw, 140px) !important;
+    font-size: clamp(74px, 9.2vw, 138px) !important;
     line-height: 0.87 !important;
     letter-spacing: -2px !important;
     text-align: left !important;
+    margin: 0 !important;
   }
-  .hero-title-main .hero-line  { display: block; overflow: hidden; }
-  .hero-title-main .hero-word  { display: inline-block; transform: translateY(105%); }
+  .hero-title-main .hero-line { display: block; overflow: hidden; }
+  .hero-title-main .hero-word { display: inline-block; transform: translateY(105%); }
   .hero-word-red { color: var(--red); }
 
   .hero-sub-main {
-    margin-top: 24px !important;
+    margin-top: 22px !important;
     font-size: 14px !important;
     color: rgba(245,245,240,.42) !important;
     letter-spacing: 1.2px !important;
     font-weight: 300 !important;
-    line-height: 1.7 !important;
+    line-height: 1.75 !important;
     text-align: left !important;
     max-width: 340px;
     opacity: 0;
@@ -1231,11 +1206,10 @@ style.textContent = `
 
   /* CTA no hero */
   .hero-cta-inline {
-    margin-top: 36px;
+    margin-top: 34px;
     display: inline-flex;
-    gap: 12px;
     align-items: center;
-    padding: 15px 38px;
+    padding: 15px 36px;
     background: var(--red);
     color: #060608;
     font-family: 'Inter', sans-serif;
@@ -1244,298 +1218,262 @@ style.textContent = `
     letter-spacing: 3px;
     text-transform: uppercase;
     text-decoration: none;
-    pointer-events: auto;
+    align-self: flex-start;
     position: relative;
     overflow: hidden;
     opacity: 0;
-    transform: translateY(14px);
-    align-self: flex-start;
+    transform: translateY(12px);
+    transition: color 0.3s;
   }
   .hero-cta-inline::before {
     content: '';
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background: #ff3351;
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform 0.35s ease;
+    transition: transform 0.32s ease;
   }
   .hero-cta-inline:hover::before { transform: scaleX(1); }
   .hero-cta-inline span { position: relative; z-index: 1; }
 
-  /* ── Coluna do atleta — direita ── */
+  /* FALLBACK: se GSAP não animar, .hero-ready torna tudo visível */
+  .hero-ready .hero-label,
+  .hero-ready .hero-sub-main,
+  .hero-ready .hero-cta-inline {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none;
+  }
+  .hero-ready .hero-word { transform: translateY(0) !important; }
+
+  /* Coluna direita — atleta */
   #athlete-col {
     position: relative;
     height: 100vh;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    overflow: visible;
+    overflow: hidden;
   }
 
-  /* Container da imagem — controlado por JS */
   #athlete-wrap {
     position: absolute;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
+    height: 88vh;
     width: auto;
-    height: 90vh;
-    display: flex;
-    align-items: flex-end;
     will-change: transform;
+    z-index: 1;
   }
 
-  /* Glow atmosférico atrás */
+  /* Glow atrás do atleta */
   #athlete-glow {
     position: absolute;
-    bottom: -5%;
-    left: 50%;
+    bottom: -4%; left: 50%;
     transform: translateX(-50%);
-    width: 110%;
-    height: 85%;
+    width: 115%; height: 80%;
     background: radial-gradient(ellipse at 50% 85%,
-      rgba(232,33,58,0.18) 0%,
-      rgba(232,33,58,0.06) 40%,
+      rgba(232,33,58,0.16) 0%,
+      rgba(232,33,58,0.04) 45%,
       transparent 70%);
     z-index: 0;
     pointer-events: none;
-    animation: glowBreath 3.2s ease-in-out infinite;
+    animation: glowB 3.4s ease-in-out infinite;
   }
-  @keyframes glowBreath {
-    0%,100% { opacity: 0.75; transform: translateX(-50%) scaleX(1); }
-    50%      { opacity: 1.00; transform: translateX(-50%) scaleX(1.08); }
+  @keyframes glowB {
+    0%,100% { opacity:0.7; transform:translateX(-50%) scaleX(1); }
+    50%      { opacity:1.0; transform:translateX(-50%) scaleX(1.07); }
   }
 
-  /* Gradiente de chão */
+  /* Gradiente chão */
   #athlete-ground {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 28%;
-    background: linear-gradient(to top, #060608 0%, rgba(6,6,8,0.7) 50%, transparent 100%);
-    z-index: 2;
-    pointer-events: none;
+    position: absolute; bottom:0; left:0; right:0; height:26%;
+    background: linear-gradient(to top, #060608 0%, rgba(6,6,8,0.6) 55%, transparent 100%);
+    z-index: 2; pointer-events: none;
   }
 
-  /* As imagens */
+  /* Imagens */
   .athlete-img {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
+    position: absolute; bottom:0; left:50%;
     transform: translateX(-50%);
-    height: 90vh;
-    width: auto;
-    max-width: none;
-    object-fit: contain;
-    object-position: bottom center;
+    height: 88vh; width: auto;
+    object-fit: contain; object-position: bottom center;
     opacity: 0;
     z-index: 1;
     will-change: opacity, transform, filter;
     filter: brightness(1.05) contrast(1.04) saturate(1.08);
+    /* sem transition aqui — controlada por JS */
   }
 
-  /* Linha de separação vertical entre texto e atleta */
-  #hero-divider-v {
+  /* Linha vertical decorativa */
+  #hero-vline {
     position: absolute;
-    left: 50%;
-    top: 15%;
-    bottom: 8%;
+    left: calc(50% - 1px); top: 14%; bottom: 7%;
     width: 1px;
     background: linear-gradient(to bottom,
-      transparent 0%,
-      rgba(232,33,58,0.25) 20%,
-      rgba(232,33,58,0.25) 80%,
-      transparent 100%);
-    z-index: 4;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 1s ease 1s;
+      transparent, rgba(232,33,58,0.22) 20%,
+      rgba(232,33,58,0.22) 80%, transparent);
+    z-index: 4; pointer-events: none;
+    opacity: 0; transition: opacity 1.1s ease 0.9s;
   }
-  #hero-divider-v.on { opacity: 1; }
+  #hero-vline.on { opacity: 1; }
 
-  /* Número de scroll (canto direito) */
+  /* Scroll hint vertical */
   #hero-scroll-num {
-    position: absolute;
-    right: 28px;
-    bottom: 44px;
-    z-index: 10;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 11px;
-    letter-spacing: 4px;
-    color: rgba(245,245,240,0.2);
+    position: absolute; right:26px; bottom:42px;
+    z-index:10;
+    font-family:'Bebas Neue',sans-serif;
+    font-size:10px; letter-spacing:4px;
+    color: rgba(245,245,240,0.18);
     writing-mode: vertical-rl;
-    opacity: 0;
-    transition: opacity 1s ease 1.2s;
+    opacity:0; transition: opacity 1s ease 1.2s;
   }
-  #hero-scroll-num.on { opacity: 1; }
+  #hero-scroll-num.on { opacity:1; }
 
-  /* Phase dots — canto esquerdo baixo */
+  /* Phase dots */
   #phase-dots {
-    position: absolute;
-    left: 72px;
-    bottom: 44px;
-    display: flex;
-    gap: 8px;
-    z-index: 15;
-    pointer-events: none;
+    position: absolute; left:72px; bottom:42px;
+    display:flex; gap:8px; z-index:15; pointer-events:none;
   }
   .phase-dot {
-    width: 4px; height: 4px; border-radius: 50%;
-    background: rgba(255,255,255,0.15);
+    width:4px; height:4px; border-radius:50%;
+    background:rgba(255,255,255,0.14);
     transition: all 0.4s;
   }
   .phase-dot.active {
-    background: var(--red);
-    transform: scale(1.6);
-    box-shadow: 0 0 6px var(--red);
+    background:var(--red); transform:scale(1.6);
+    box-shadow:0 0 6px var(--red);
   }
 
   /* Phase label */
   #phase-label {
-    position: absolute;
-    right: 72px;
-    top: 50%;
+    position:absolute; right:68px; top:50%;
     transform: translateY(-50%);
-    z-index: 15;
-    pointer-events: none;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 9px;
-    letter-spacing: 7px;
-    color: rgba(232,33,58,0.45);
-    text-transform: uppercase;
-    writing-mode: vertical-rl;
-    opacity: 0;
-    transition: opacity 0.5s;
+    z-index:15; pointer-events:none;
+    font-family:'Bebas Neue',sans-serif;
+    font-size:9px; letter-spacing:7px;
+    color:rgba(232,33,58,0.4);
+    text-transform:uppercase; writing-mode:vertical-rl;
+    opacity:0; transition:opacity 0.5s;
   }
 
-  /* Vinheta: mais intensa nas bordas, preserva centro */
+  /* Vinheta preserva centro */
   .hero-vignette {
     background: radial-gradient(
-      ellipse 65% 90% at 50% 50%,
-      transparent 50%,
-      rgba(6,6,8,0.6) 85%,
-      rgba(6,6,8,0.92) 100%
+      ellipse 70% 90% at 50% 50%,
+      transparent 45%,
+      rgba(6,6,8,0.55) 80%,
+      rgba(6,6,8,0.9) 100%
     ) !important;
   }
 
-  /* ── SEÇÃO STATS — continuação visual do hero ── */
+  /* Stats como extensão do hero */
   .stats-section {
-    margin-top: 0 !important;
-    border-top: none !important;
-    background: #060608 !important; /* mesmo fundo do hero */
+    background: #060608 !important;
     position: relative;
   }
-  /* Linha de separação sutil, não corte abrupto */
   .stats-section::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 72px; right: 72px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(232,33,58,0.3), transparent);
+    content:'';
+    position:absolute; top:0; left:72px; right:72px; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(232,33,58,0.28), transparent);
   }
-
-  .stat-item {
-    background: transparent !important;
-    border-right: 1px solid rgba(255,255,255,0.04) !important;
-    padding: 56px 48px !important;
-  }
-  .stat-item:last-child { border-right: none !important; }
-
-  /* Ticker — conecta hero com stats */
-  .ticker-wrap {
-    background: #060608 !important;
-    border-top: 1px solid rgba(232,33,58,0.12) !important;
-    border-bottom: 1px solid rgba(232,33,58,0.12) !important;
-    padding: 24px 0 !important;
-  }
+  .stat-item { background:transparent !important; border-right:1px solid rgba(255,255,255,0.04) !important; }
+  .stat-item:last-child { border-right:none !important; }
+  .ticker-wrap { background:#060608 !important; border-top:1px solid rgba(232,33,58,0.1) !important; border-bottom:1px solid rgba(232,33,58,0.1) !important; }
 `;
-document.head.appendChild(style);
+document.head.appendChild(S);
 
-// ── Reconstrução do DOM ────────────────────────────────────
+// ── Referências ao DOM estático ────────────────────────────
 const phase1     = document.getElementById('hero-phase-1');
 const heroSticky = document.getElementById('hero-sticky');
 
-// Extrai conteúdo do div interno
-const inner = phase1.querySelector('div');
+// ── Reestrutura o phase-1 preservando os filhos ────────────
+// O HTML tem: <div class="hero-overlay" id="hero-phase-1"><div>...conteúdo...</div></div>
+// Precisamos transformar em: grid com 2 colunas
+// Fazemos isso MOVENDO os elementos, não destruindo
 
-// Bloco de texto (esquerda)
+const innerDiv = phase1.querySelector('div');
+
+// Bloco de texto
 const textBlock = document.createElement('div');
 textBlock.id = 'hero-text-block';
 
-// Accent line
+// Linha accent antes do título
 const accentLine = document.createElement('div');
 accentLine.id = 'hero-accent-line';
-textBlock.appendChild(accentLine);
-setTimeout(() => accentLine.classList.add('on'), 300);
 
-// Move label + título + sub para textBlock
-if (inner) {
-  while (inner.firstChild) textBlock.appendChild(inner.firstChild);
-  inner.remove();
+// Insere antes do label
+textBlock.appendChild(accentLine);
+
+// Move os filhos do innerDiv para textBlock
+if (innerDiv) {
+  while (innerDiv.firstChild) textBlock.appendChild(innerDiv.firstChild);
+  innerDiv.remove();
 }
 
-// CTA inline
-const ctaBtn = document.createElement('a');
-ctaBtn.href = '#contato';
-ctaBtn.className = 'hero-cta-inline';
-ctaBtn.innerHTML = '<span>Quero Transformar</span>';
-textBlock.appendChild(ctaBtn);
+// CTA
+const cta = document.createElement('a');
+cta.href = '#contato';
+cta.className = 'hero-cta-inline';
+cta.innerHTML = '<span>Quero Transformar</span>';
+textBlock.appendChild(cta);
 
-// Coluna do atleta (direita)
+// Coluna do atleta
 const athleteCol = document.createElement('div');
 athleteCol.id = 'athlete-col';
 
-  // Glow
-  const glow = document.createElement('div');
-  glow.id = 'athlete-glow';
-  athleteCol.appendChild(glow);
+const glow = document.createElement('div');
+glow.id = 'athlete-glow';
 
-  // Wrap da imagem (controlado por JS para vida própria)
-  const wrap = document.createElement('div');
-  wrap.id = 'athlete-wrap';
-  athleteCol.appendChild(wrap);
+const wrap = document.createElement('div');
+wrap.id = 'athlete-wrap';
 
-  // Ground gradient
-  const ground = document.createElement('div');
-  ground.id = 'athlete-ground';
-  athleteCol.appendChild(ground);
+const ground = document.createElement('div');
+ground.id = 'athlete-ground';
 
-// Monta o grid no phase1
+athleteCol.appendChild(glow);
+athleteCol.appendChild(wrap);
+athleteCol.appendChild(ground);
+
+// Limpa phase1 e monta o grid
 phase1.innerHTML = '';
 phase1.appendChild(textBlock);
 phase1.appendChild(athleteCol);
 
-// Linha vertical divisória
-const divV = document.createElement('div');
-divV.id = 'hero-divider-v';
-heroSticky.appendChild(divV);
-setTimeout(() => divV.classList.add('on'), 800);
+// Elementos extras no hero sticky
+const vline = document.createElement('div');
+vline.id = 'hero-vline';
+heroSticky.appendChild(vline);
 
-// Scroll number
 const scrollNum = document.createElement('div');
 scrollNum.id = 'hero-scroll-num';
 scrollNum.textContent = 'ROLE PARA VER MAIS';
 heroSticky.appendChild(scrollNum);
-setTimeout(() => scrollNum.classList.add('on'), 1200);
 
-// Phase dots
 const dotsWrap = document.createElement('div');
 dotsWrap.id = 'phase-dots';
 dotsWrap.innerHTML = '<div class="phase-dot active"></div><div class="phase-dot"></div><div class="phase-dot"></div>';
 heroSticky.appendChild(dotsWrap);
 
-// Phase label
 const phaseLabel = document.createElement('div');
 phaseLabel.id = 'phase-label';
 heroSticky.appendChild(phaseLabel);
 
+// Ativa elementos com delay
+setTimeout(() => { accentLine.classList.add('on'); }, 300);
+setTimeout(() => { vline.classList.add('on'); scrollNum.classList.add('on'); }, 900);
+
 // ── Imagens ────────────────────────────────────────────────
 const SRCS   = ['images/hero/athlete-2.png','images/hero/athlete-1.png','images/hero/athlete-3.png'];
 const LABELS = ['AUTORIDADE','FORÇA','RESULTADO'];
+const dots   = dotsWrap.querySelectorAll('.phase-dot');
+let curPhase = 0;
+let breathT  = 0;
+let mOX=0,mOY=0,smOX=0,smOY=0;
 
-const imgs = SRCS.map((src, i) => {
+const imgs = SRCS.map((src,i) => {
   const img = document.createElement('img');
-  img.src = src;
   img.className = 'athlete-img';
   img.alt = '';
   img.draggable = false;
@@ -1543,452 +1481,340 @@ const imgs = SRCS.map((src, i) => {
   return img;
 });
 
-// ── Estado ─────────────────────────────────────────────────
-let curPhase = 0;
-let breathT  = 0;
-let mouseOffX = 0, mouseOffY = 0, smOX = 0, smOY = 0;
-const dots = dotsWrap.querySelectorAll('.phase-dot');
+// Carrega imagens com Promise — garante que estão prontas
+function loadImg(img, src) {
+  return new Promise(res => {
+    img.onload = img.onerror = res;
+    img.src = src;
+  });
+}
 
-// ── Mouse sobre o atleta → parallax 3D suave ──────────────
-document.addEventListener('mousemove', e => {
-  mouseOffX = (e.clientX / innerWidth  - 0.5) * 28;
-  mouseOffY = (e.clientY / innerHeight - 0.5) * 14;
+// ── Entrada ────────────────────────────────────────────────
+// Carrega a imagem 0 primeiro, depois as demais em paralelo
+Promise.all([loadImg(imgs[0], SRCS[0])]).then(() => {
+  // Materializa com blur-to-sharp
+  const steps = [
+    {op:'0.2', blur:'5px', delay:80},
+    {op:'0.45',blur:'3px', delay:170},
+    {op:'0.68',blur:'2px', delay:280},
+    {op:'0.85',blur:'1px', delay:400},
+    {op:'1',   blur:'0px', delay:560},
+  ];
+  steps.forEach(({op,blur,delay}) => {
+    setTimeout(() => {
+      imgs[0].style.transition = 'opacity 0.12s ease, filter 0.18s ease';
+      imgs[0].style.opacity = op;
+      imgs[0].style.filter = `brightness(1.05) contrast(1.04) saturate(1.08) blur(${blur})`;
+    }, delay);
+  });
+  setTimeout(() => {
+    imgs[0].style.transition = '';
+    imgs[0].style.filter = 'brightness(1.05) contrast(1.04) saturate(1.08)';
+  }, 700);
+
+  // Carrega demais em background
+  loadImg(imgs[1], SRCS[1]);
+  loadImg(imgs[2], SRCS[2]);
 });
 
-// ── Vida própria: breathing + mouse parallax ──────────────
-let rafId;
+// ── FALLBACK: garante que texto aparece mesmo sem GSAP ──────
+// Após 2.5s, se os elementos ainda estiverem invisíveis, força a exibição
+setTimeout(() => {
+  const label = document.querySelector('.hero-label');
+  if (label && getComputedStyle(label).opacity === '0') {
+    phase1.classList.add('hero-ready');
+    console.warn('APEX: GSAP fallback ativado');
+  }
+}, 2500);
+
+// ── Mouse parallax ─────────────────────────────────────────
+document.addEventListener('mousemove', e => {
+  mOX = (e.clientX/innerWidth  - 0.5) * 24;
+  mOY = (e.clientY/innerHeight - 0.5) * 12;
+}, {passive:true});
+
+// ── Vida própria: breathing + parallax ────────────────────
 (function lifeLoop() {
-  rafId = requestAnimationFrame(lifeLoop);
-  breathT += 0.012;
+  requestAnimationFrame(lifeLoop);
+  breathT += 0.011;
+  smOX += (mOX - smOX) * 0.055;
+  smOY += (mOY - smOY) * 0.055;
 
-  // Smooth mouse
-  smOX += (mouseOffX - smOX) * 0.05;
-  smOY += (mouseOffY - smOY) * 0.05;
-
-  // Scroll progress influencia escala e posição
   const sp = window.heroScrollProgress || 0;
+  const breathY = Math.sin(breathT * 0.85) * 5;
+  const breathS = 1 + Math.sin(breathT * 0.65) * 0.011;
+  const tiltX   = smOY * 0.016;
+  const tiltY   = smOX * 0.02;
+  const scrollY = sp * -45;
+  const dim     = 1 - sp * 0.55;
 
-  // Breathing: oscilação suave em escala e Y
-  const breatheY = Math.sin(breathT * 0.9) * 5;
-  const breatheS = 1 + Math.sin(breathT * 0.7) * 0.012;
-
-  // Mouse: rotação perspectiva leve
-  const tiltX = smOY * 0.018;
-  const tiltY = smOX * 0.022;
-
-  // Scroll: atleta sobe levemente e escurece ao sair do hero
-  const scrollShift = sp * -40;
-  const scrollDim   = 1 - sp * 0.6;
-
-  const transform = [
+  wrap.style.transform = [
     `translateX(-50%)`,
-    `translateY(${breatheY + scrollShift}px)`,
-    `scale(${breatheS})`,
-    `perspective(900px)`,
+    `translateY(${breathY + scrollY}px)`,
+    `scale(${breathS})`,
+    `perspective(1000px)`,
     `rotateX(${tiltX}deg)`,
     `rotateY(${tiltY}deg)`,
   ].join(' ');
 
-  wrap.style.transform = transform;
+  // Aplica dim apenas na imagem ativa
   imgs.forEach(img => {
-    if (parseFloat(img.style.opacity) > 0.05) {
-      img.style.filter = `brightness(${1.05 * scrollDim}) contrast(1.04) saturate(1.08)`;
+    if (parseFloat(img.style.opacity||0) > 0.1) {
+      img.style.filter = `brightness(${1.05*dim}) contrast(1.04) saturate(1.08)`;
     }
   });
 })();
 
-// ── Controle de fases (chamado pelo main.js via scroll) ───
-window.setAthletePhase = function(progress) {
-  window.heroScrollProgress = progress;
-  phaseLabel.style.opacity = progress > 0.08 && progress < 0.92 ? '1' : '0';
+// ── Controle de fases via scroll ──────────────────────────
+window.setAthletePhase = function(p) {
+  window.heroScrollProgress = p;
+  phaseLabel.style.opacity = p > 0.08 && p < 0.92 ? '1' : '0';
 
-  const newPhase = progress < 0.38 ? 0 : progress < 0.72 ? 1 : 2;
-  if (newPhase === curPhase) return;
-  curPhase = newPhase;
+  const np = p < 0.38 ? 0 : p < 0.72 ? 1 : 2;
+  if (np === curPhase) return;
+  curPhase = np;
 
-  dots.forEach((d, i) => d.classList.toggle('active', i === newPhase));
-  phaseLabel.textContent = LABELS[newPhase];
+  dots.forEach((d,i) => d.classList.toggle('active', i===np));
+  phaseLabel.textContent = LABELS[np];
 
-  // Crossfade
-  imgs.forEach((img, i) => {
-    img.style.transition = i === newPhase
-      ? 'opacity 1s cubic-bezier(0.16,1,0.3,1)'
+  imgs.forEach((img,i) => {
+    img.style.transition = i===np
+      ? 'opacity 0.9s cubic-bezier(0.16,1,0.3,1)'
       : 'opacity 0.4s ease';
-    img.style.opacity = i === newPhase ? '1' : '0';
+    img.style.opacity = i===np ? '1' : '0';
   });
 };
 
-// ── Entrada com efeito de materialização ──────────────────
-function entrance() {
-  SRCS.forEach((src, i) => { imgs[i].src = src; });
+})(); // fim athlete system
 
-  // Fase 0 materializa
-  let step = 0;
-  const steps = [0.0, 0.15, 0.35, 0.6, 0.82, 1.0];
-  const delays = [80, 160, 260, 380, 500, 680];
-
-  delays.forEach((delay, i) => {
-    setTimeout(() => {
-      imgs[0].style.transition = 'opacity 0.1s ease, filter 0.2s ease';
-      imgs[0].style.opacity = steps[i].toFixed(2);
-      // Slight blur que desaparece → materialização
-      const blurPx = (1 - steps[i]) * 4;
-      imgs[0].style.filter = `brightness(${1.05}) contrast(1.04) saturate(1.08) blur(${blurPx}px)`;
-    }, delay);
-  });
-
-  setTimeout(() => {
-    imgs[0].style.transition = '';
-    imgs[0].style.filter = '';
-  }, 900);
-}
-
-if (document.readyState === 'complete') setTimeout(entrance, 320);
-else window.addEventListener('load', () => setTimeout(entrance, 320));
-
-})();
-
-})();
-/* main.js v6 — SCROLL LIMPO E FLUIDO
-   Hero: 250vh pinado (simples, 1 transição principal)
-   Stats: extensão visual do hero
-   Resto: animações no scroll bem orquestradas
-*/
+})(); // fim IIFE principal
+/* main.js v7 — timing corrigido */
 (function () {
 'use strict';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ── CURSOR ───────────────────────────────────────────────
-const cur  = document.getElementById('cursor');
-const ring = document.getElementById('cursor-ring');
+// ── CURSOR ────────────────────────────────────────────────
+const cur=document.getElementById('cursor'), ring=document.getElementById('cursor-ring');
 let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove', e => {
-  mx=e.clientX; my=e.clientY;
-  cur.style.left=mx+'px'; cur.style.top=my+'px';
-});
-(function cursorLoop(){
-  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
-  ring.style.left=rx+'px'; ring.style.top=ry+'px';
-  requestAnimationFrame(cursorLoop);
-})();
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';},{passive:true});
+(function curLoop(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(curLoop);})();
 document.querySelectorAll('a,button,.service-card,.hscroll-card').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{ cur.style.width='16px'; cur.style.height='16px'; ring.style.width='52px'; ring.style.height='52px'; });
-  el.addEventListener('mouseleave',()=>{ cur.style.width='10px'; cur.style.height='10px'; ring.style.width='38px'; ring.style.height='38px'; });
+  el.addEventListener('mouseenter',()=>{cur.style.width='16px';cur.style.height='16px';ring.style.width='52px';ring.style.height='52px';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';ring.style.width='38px';ring.style.height='38px';});
 });
 
-// ── PROGRESS BAR ────────────────────────────────────────
-const pb = document.getElementById('progress-bar');
-window.addEventListener('scroll', () => {
-  pb.style.width = (window.scrollY/(document.body.scrollHeight-innerHeight)*100)+'%';
-}, { passive: true });
+// ── PROGRESS BAR ──────────────────────────────────────────
+const pb=document.getElementById('progress-bar');
+window.addEventListener('scroll',()=>{pb.style.width=(window.scrollY/(document.body.scrollHeight-innerHeight)*100)+'%';},{passive:true});
 
-// ── NAV ──────────────────────────────────────────────────
-const nav = document.getElementById('main-nav');
-window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY>60), { passive:true });
+// ── NAV ───────────────────────────────────────────────────
+const nav=document.getElementById('main-nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>60),{passive:true});
 
-// ════════════════════════════════════════════════════════
-// HERO INTRO — carregamento da página
-// ════════════════════════════════════════════════════════
-const heroTlIntro = gsap.timeline({ delay: 0.35 });
-heroTlIntro
-  .to('.hero-word', {
-    y: 0, duration: 1.3, stagger: 0.08, ease: 'power4.out'
-  })
-  .to('.hero-label', {
-    opacity: 1, duration: 0.7, ease: 'power3.out'
-  }, '-=0.9')
-  .to('.hero-sub-main', {
-    opacity: 1, duration: 0.7, ease: 'power3.out'
-  }, '-=0.5')
-  .to('.hero-cta-inline', {
-    opacity: 1, y: 0, duration: 0.6, ease: 'power3.out'
-  }, '-=0.3')
-  .to('#scroll-hint', {
-    opacity: 1, duration: 0.5
-  }, '-=0.1');
+// ── HERO INTRO ────────────────────────────────────────────
+// Aguarda o DOM ser reconstruído pelo hero3d.js antes de animar
+// Usa requestAnimationFrame + delay para garantir que os elementos existem
+function initHeroAnim() {
+  const words = document.querySelectorAll('.hero-word');
+  const label = document.querySelector('.hero-label');
+  const sub   = document.querySelector('.hero-sub-main');
+  const cta   = document.querySelector('.hero-cta-inline');
+  const hint  = document.getElementById('scroll-hint');
 
-// ════════════════════════════════════════════════════════
-// HERO SCROLL — 250vh
-// Filosofia: 1 ato claro, não 5 atos confusos
-// ════════════════════════════════════════════════════════
-const phase1  = document.getElementById('hero-phase-1');
-const phase2  = document.getElementById('hero-phase-2');
-const phase3  = document.getElementById('hero-phase-3');
-const hint    = document.getElementById('scroll-hint');
-const scan    = document.getElementById('scan-line');
-const p2nums  = document.querySelectorAll('.phase2-num');
-const p2tags  = document.querySelectorAll('.phase2-tag');
-const cam     = window.camState || { x:0, y:0, z:32 };
+  // Se elementos não existem ainda, tenta de novo
+  if (!words.length || !label) {
+    requestAnimationFrame(initHeroAnim);
+    return;
+  }
 
-// Proxy para progress do atleta (0→1)
-const progressProxy = { val: 0 };
+  // Define estado inicial explicitamente (garante posição mesmo com cache)
+  gsap.set(words, { y: '105%' });
+  gsap.set([label, sub, cta], { opacity: 0 });
+  gsap.set(cta, { y: 12 });
 
-const heroST = ScrollTrigger.create({
+  gsap.timeline({ delay: 0.25 })
+    .to(words, { y: 0, duration: 1.2, stagger: 0.07, ease: 'power4.out' })
+    .to(label, { opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.8')
+    .to(sub,   { opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.45')
+    .to(cta,   { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, '-=0.3')
+    .to(hint,  { opacity: 1, duration: 0.45 }, '-=0.1');
+}
+
+// Inicia após micro delay para hero3d.js ter tempo de reconstruir o DOM
+setTimeout(initHeroAnim, 100);
+
+// ── HERO SCROLL JOURNEY ───────────────────────────────────
+const phase1 = document.getElementById('hero-phase-1');
+const phase2 = document.getElementById('hero-phase-2');
+const phase3 = document.getElementById('hero-phase-3');
+const scan   = document.getElementById('scan-line');
+const cam    = window.camState || {x:0,y:0,z:32};
+const p2nums = document.querySelectorAll('.phase2-num');
+const p2tags = document.querySelectorAll('.phase2-tag');
+
+// ScrollTrigger para progress do atleta
+ScrollTrigger.create({
   trigger: '#hero-wrapper',
   start:   'top top',
   end:     'bottom bottom',
-  pin:     '#hero-sticky',
-  anticipatePin: 1,
-  scrub: false, // NÃO usamos scrub — controlamos manualmente para fluidez
   onUpdate(self) {
-    // Passa progresso para o sistema de vida do atleta
     if (window.setAthletePhase) window.setAthletePhase(self.progress);
-
-    // Câmera Three.js acompanha suavemente
     cam.z = 32 - self.progress * 4;
-    cam.x = Math.sin(self.progress * Math.PI * 0.5) * 1.5;
+    cam.x = Math.sin(self.progress * Math.PI * 0.45) * 1.2;
   }
 });
 
-// ── TIMELINE scrubada ao scroll ──────────────────────────
+// Timeline scrubada — animações do texto
 const heroTl = gsap.timeline({
   scrollTrigger: {
     trigger: '#hero-wrapper',
-    start:   'top top',
-    end:     'bottom bottom',
-    scrub:   1.4,
-    pin:     '#hero-sticky',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 1.2,
+    pin: '#hero-sticky',
     anticipatePin: 1,
   }
 });
 
 heroTl
-  // 0–25%: câmera avança, texto presente
-  .to(cam, { z: 28, duration: 2.5, ease: 'none' }, 0)
+  .to(cam, { z:28, duration:2, ease:'none' }, 0)
+  // Texto fase 1 sai (25-40%)
+  .to(phase1, { opacity:0, y:-48, duration:1.4, ease:'power2.in' }, 2.0)
+  .to(document.getElementById('scroll-hint'), { opacity:0, duration:0.6 }, 2.0)
+  // Scan line (35%)
+  .to(scan, { opacity:0.45, duration:0.15 }, 2.8)
+  .to(scan, { top:'100%', duration:0.9, ease:'none' }, 2.8)
+  .to(scan, { opacity:0, duration:0.15 }, 3.6)
+  // Fase 2 entra (40-70%)
+  .to(phase2, { opacity:1, duration:1.0, ease:'power2.out' }, 3.2)
+  .to(p2nums, { x:0, opacity:1, stagger:0.16, duration:0.8, ease:'power3.out' }, 3.4)
+  .to(p2tags, { x:0, opacity:1, stagger:0.09, duration:0.55, ease:'power3.out' }, 3.7)
+  .to(cam, { z:26, x:-1.2, duration:2.5, ease:'power1.inOut' }, 3.0)
+  // Fase 2 sai (70-80%)
+  .to(phase2, { opacity:0, duration:0.9, ease:'power2.in' }, 6.0)
+  .to(cam, { z:33, x:0, duration:1.8, ease:'power2.inOut' }, 5.8)
+  // Fase 3 CTA (80-100%)
+  .to(phase3, { opacity:1, duration:1.0, ease:'power2.out' }, 7.0)
+  .to('#phase3-line', { width:140, duration:0.7, ease:'power2.out' }, 7.4);
 
-  // 25–40%: texto sai elegantemente para cima
-  .to(phase1, { opacity: 0, y: -50, duration: 1.5, ease: 'power2.in' }, 2.5)
-  .to(hint,   { opacity: 0, duration: 0.8 }, 2.5)
-
-  // 35–45%: scan line diagnóstico (sutil, 1x)
-  .to(scan, { opacity: 0.5, duration: 0.2 }, 3.0)
-  .to(scan, { top: '100%', duration: 1.0, ease: 'none' }, 3.0)
-  .to(scan, { opacity: 0,  duration: 0.2 }, 3.9)
-
-  // 40–70%: fase 2 — stats entram limpos
-  .to(phase2, { opacity: 1, duration: 1.2, ease: 'power2.out' }, 3.5)
-  .to(p2nums, { x: 0, opacity: 1, stagger: 0.18, duration: 0.9, ease: 'power3.out' }, 3.7)
-  .to(p2tags, { x: 0, opacity: 1, stagger: 0.10, duration: 0.6, ease: 'power3.out' }, 4.0)
-
-  // 70–80%: fase 2 sai, câmera recua levemente
-  .to(phase2, { opacity: 0, duration: 1.0, ease: 'power2.in' }, 6.5)
-  .to(cam,    { z: 34, duration: 2.0, ease: 'power2.inOut' }, 6.0)
-
-  // 80–100%: CTA final
-  .to(phase3,        { opacity: 1, duration: 1.2, ease: 'power2.out' }, 7.5)
-  .to('#phase3-line',{ width: 140, duration: 0.8, ease: 'power2.out' }, 8.0);
-
-// ════════════════════════════════════════════════════════
-// STATS — CONTINUAÇÃO DO HERO
-// Animação de entrada que parece que o conteúdo desceu do hero
-// ════════════════════════════════════════════════════════
-document.querySelectorAll('.stat-item').forEach((item, i) => {
-  const countEl = item.querySelector('.count');
-  const target  = parseInt(countEl?.dataset.target || 0);
-
-  // Entra vindo de baixo com delay escalonado
-  gsap.from(item, {
-    y: 40,
-    opacity: 0,
-    duration: 0.8,
-    delay: i * 0.1,
-    ease: 'power3.out',
-    scrollTrigger: { trigger: item, start: 'top 88%', once: true }
-  });
-
-  if (!countEl) return;
-  ScrollTrigger.create({
-    trigger: item,
-    start: 'top 85%',
-    once: true,
+// ── STATS ─────────────────────────────────────────────────
+document.querySelectorAll('.stat-item').forEach((item,i) => {
+  const el  = item.querySelector('.count');
+  const tgt = parseInt(el?.dataset.target||0);
+  gsap.from(item, { y:36, opacity:0, duration:0.75, delay:i*0.09, ease:'power3.out',
+    scrollTrigger:{ trigger:item, start:'top 90%', once:true } });
+  if (!el) return;
+  ScrollTrigger.create({ trigger:item, start:'top 87%', once:true,
     onEnter() {
       item.classList.add('is-active');
-      gsap.to({ v: 0 }, {
-        v: target,
-        duration: 2.0,
-        delay: i * 0.1,
-        ease: 'power2.out',
-        onUpdate() { countEl.textContent = Math.round(this.targets()[0].v); }
-      });
+      gsap.to({v:0},{v:tgt,duration:1.9,delay:i*0.09,ease:'power2.out',
+        onUpdate() { el.textContent=Math.round(this.targets()[0].v); }});
     }
   });
 });
 
-// ── DIVISORES ────────────────────────────────────────────
-document.querySelectorAll('[data-divider]').forEach(el => {
-  gsap.to(el, {
-    width: '100%', duration: 1.6, ease: 'power2.inOut',
-    scrollTrigger: { trigger: el, start: 'top 92%', once: true }
-  });
+// ── DIVIDERS ──────────────────────────────────────────────
+document.querySelectorAll('[data-divider]').forEach(el=>{
+  gsap.to(el,{width:'100%',duration:1.6,ease:'power2.inOut',
+    scrollTrigger:{trigger:el,start:'top 92%',once:true}});
 });
 
-// ── EYEBROWS ─────────────────────────────────────────────
-gsap.utils.toArray('.section-eyebrow').forEach(el => {
-  gsap.to(el, {
-    opacity: 1, x: 0, duration: 0.8, ease: 'power3.out',
-    scrollTrigger: { trigger: el, start: 'top 88%', once: true }
-  });
+// ── EYEBROWS ──────────────────────────────────────────────
+gsap.utils.toArray('.section-eyebrow').forEach(el=>{
+  gsap.to(el,{opacity:1,x:0,duration:0.75,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 88%',once:true}});
 });
 
-// ── PALAVRAS STAGGER ─────────────────────────────────────
-gsap.utils.toArray('.s-word').forEach(w => {
-  gsap.to(w, {
-    y: 0, opacity: 1, duration: 1.0, ease: 'power4.out',
-    scrollTrigger: {
-      trigger: w.closest('.section-title') || w,
-      start: 'top 88%', once: true
-    }
-  });
+// ── S-WORDS ───────────────────────────────────────────────
+gsap.utils.toArray('.s-word').forEach(w=>{
+  gsap.to(w,{y:0,opacity:1,duration:0.95,ease:'power4.out',
+    scrollTrigger:{trigger:w.closest('.section-title')||w,start:'top 88%',once:true}});
 });
 
 // ── SERVICE CARDS ─────────────────────────────────────────
-document.querySelectorAll('.service-card').forEach((card, i) => {
-  gsap.from(card, {
-    y: 30, opacity: 0, duration: 0.7, delay: (i % 3) * 0.1,
-    ease: 'power3.out',
-    scrollTrigger: { trigger: card, start: 'top 88%', once: true }
-  });
-  ScrollTrigger.create({
-    trigger: card, start: 'top 88%', once: true,
-    onEnter() {
-      const b = card.querySelector('.service-bar');
-      const n = card.querySelector('.service-name');
-      const d = card.querySelector('.service-desc');
-      const l = card.querySelector('.service-link');
-      if(b) b.style.cssText = 'transform:scaleX(1);transition:transform 0.7s ease 0.1s';
-      if(n) n.style.cssText = 'transform:translateY(0);opacity:1;transition:all 0.6s ease 0.2s';
-      if(d) d.style.cssText = 'transform:translateY(0);opacity:1;transition:all 0.6s ease 0.3s';
-      if(l) l.style.cssText = 'transform:translateY(0);opacity:1;transition:all 0.6s ease 0.4s';
-    }
-  });
+document.querySelectorAll('.service-card').forEach((c,i)=>{
+  gsap.from(c,{y:28,opacity:0,duration:0.65,delay:(i%3)*0.09,ease:'power3.out',
+    scrollTrigger:{trigger:c,start:'top 89%',once:true}});
+  ScrollTrigger.create({trigger:c,start:'top 89%',once:true,onEnter(){
+    const b=c.querySelector('.service-bar'),n=c.querySelector('.service-name'),
+          d=c.querySelector('.service-desc'),l=c.querySelector('.service-link');
+    if(b) b.style.cssText='transform:scaleX(1);transition:transform 0.65s ease 0.05s';
+    if(n) n.style.cssText='transform:translateY(0);opacity:1;transition:all 0.55s ease 0.18s';
+    if(d) d.style.cssText='transform:translateY(0);opacity:1;transition:all 0.55s ease 0.28s';
+    if(l) l.style.cssText='transform:translateY(0);opacity:1;transition:all 0.55s ease 0.38s';
+  }});
 });
 
 // ── HORIZONTAL SCROLL ─────────────────────────────────────
-const ht = document.getElementById('hscroll-track');
-if (ht) {
-  gsap.to(ht, {
-    x: () => -(ht.scrollWidth - innerWidth + 128),
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '.hscroll-section', start: 'top top', end: 'bottom bottom',
-      scrub: 1.0, pin: '.hscroll-sticky', anticipatePin: 1
-    }
-  });
+const ht=document.getElementById('hscroll-track');
+if(ht){
+  gsap.to(ht,{x:()=>-(ht.scrollWidth-innerWidth+128),ease:'none',
+    scrollTrigger:{trigger:'.hscroll-section',start:'top top',end:'bottom bottom',
+      scrub:1.0,pin:'.hscroll-sticky',anticipatePin:1}});
 }
 
 // ── TRANSFORM CANVAS ──────────────────────────────────────
-const tc = document.getElementById('transform-canvas-2');
-if (tc && typeof THREE !== 'undefined') {
-  const tS = new THREE.Scene();
-  const tC = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
-  const tR = new THREE.WebGLRenderer({ canvas: tc, antialias: true, alpha: true });
-  tR.setClearColor(0x141418, 1);
-  tC.position.z = 8;
-  tS.add(new THREE.AmbientLight(0xffffff, 0.4));
-  const tL = new THREE.PointLight(0xE8213A, 3, 20);
-  tL.position.set(3, 3, 5);
-  tS.add(tL);
-
-  const hG = new THREE.Group();
-  const sGeo = new THREE.SphereGeometry(0.12, 8, 8);
-  const mR = new THREE.MeshBasicMaterial({ color: 0xE8213A });
-  const mD = new THREE.MeshBasicMaterial({ color: 0x2a2a35 });
-  for (let i = 0; i < 60; i++) {
-    const a = (i/60)*Math.PI*4, y = (i/60)*10-5;
-    const s1 = new THREE.Mesh(sGeo, mR); s1.position.set(Math.cos(a)*1.6,y,Math.sin(a)*1.6); hG.add(s1);
-    const s2 = new THREE.Mesh(sGeo, mD); s2.position.set(Math.cos(a+Math.PI)*1.6,y,Math.sin(a+Math.PI)*1.6); hG.add(s2);
-    if (i%5===0) {
-      const bg = new THREE.CylinderGeometry(0.015,0.015,3.2,4);
-      const bm = new THREE.Mesh(bg, new THREE.MeshBasicMaterial({color:0x332225,transparent:true,opacity:0.5}));
-      bm.position.y=y; bm.rotation.z=Math.PI/2; bm.rotation.x=a; hG.add(bm);
-    }
+const tc=document.getElementById('transform-canvas-2');
+if(tc && typeof THREE!=='undefined'){
+  const tS=new THREE.Scene(),tC=new THREE.PerspectiveCamera(60,1,0.1,100);
+  const tR=new THREE.WebGLRenderer({canvas:tc,antialias:true,alpha:true});
+  tR.setClearColor(0x141418,1); tC.position.z=8;
+  tS.add(new THREE.AmbientLight(0xffffff,0.4));
+  const tL=new THREE.PointLight(0xE8213A,3,20); tL.position.set(3,3,5); tS.add(tL);
+  const hG=new THREE.Group();
+  const sG=new THREE.SphereGeometry(0.12,8,8);
+  const mR=new THREE.MeshBasicMaterial({color:0xE8213A}),mD=new THREE.MeshBasicMaterial({color:0x2a2a35});
+  for(let i=0;i<60;i++){
+    const a=(i/60)*Math.PI*4,y=(i/60)*10-5;
+    const s1=new THREE.Mesh(sG,mR); s1.position.set(Math.cos(a)*1.6,y,Math.sin(a)*1.6); hG.add(s1);
+    const s2=new THREE.Mesh(sG,mD); s2.position.set(Math.cos(a+Math.PI)*1.6,y,Math.sin(a+Math.PI)*1.6); hG.add(s2);
+    if(i%5===0){const bg=new THREE.CylinderGeometry(0.015,0.015,3.2,4);const bm=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:0x332225,transparent:true,opacity:0.5}));bm.position.y=y;bm.rotation.z=Math.PI/2;bm.rotation.x=a;hG.add(bm);}
   }
   tS.add(hG);
-
-  function resizeT() {
-    const p = tc.parentElement; if (!p) return;
-    tR.setSize(p.clientWidth, p.clientHeight);
-    tC.aspect = p.clientWidth / p.clientHeight;
-    tC.updateProjectionMatrix();
-  }
-
-  const tClk = new THREE.Clock();
-  let tRun = false;
-  function renderT() {
-    if (!tRun) return;
-    requestAnimationFrame(renderT);
-    hG.rotation.y = tClk.getElapsedTime() * 0.42;
-    tR.render(tS, tC);
-  }
-
-  ScrollTrigger.create({
-    trigger: '.transform-visual', start: 'top 75%', once: true,
-    onEnter() {
-      const fo = document.querySelector('.transform-frame-outer');
-      const tb = document.querySelector('.transform-badge');
-      if (fo) fo.classList.add('is-visible');
-      if (tb) tb.classList.add('is-visible');
-      resizeT(); tRun = true; renderT();
-    }
-  });
-  window.addEventListener('resize', resizeT);
-  setTimeout(resizeT, 100);
+  const resT=()=>{const p=tc.parentElement;if(!p)return;tR.setSize(p.clientWidth,p.clientHeight);tC.aspect=p.clientWidth/p.clientHeight;tC.updateProjectionMatrix();};
+  const tClk=new THREE.Clock(); let tRun=false;
+  const renderT=()=>{if(!tRun)return;requestAnimationFrame(renderT);hG.rotation.y=tClk.getElapsedTime()*0.42;tR.render(tS,tC);};
+  ScrollTrigger.create({trigger:'.transform-visual',start:'top 75%',once:true,onEnter(){
+    document.querySelector('.transform-frame-outer')?.classList.add('is-visible');
+    document.querySelector('.transform-badge')?.classList.add('is-visible');
+    resT(); tRun=true; renderT();
+  }});
+  window.addEventListener('resize',resT); setTimeout(resT,100);
 }
 
 // ── TRANSFORM TEXT ────────────────────────────────────────
-document.querySelectorAll('.transform-body,.feature-row').forEach((el, i) => {
-  ScrollTrigger.create({
-    trigger: el, start: 'top 88%', once: true,
-    onEnter() { setTimeout(() => el.classList.add('is-visible'), i * 80); }
-  });
+document.querySelectorAll('.transform-body,.feature-row').forEach((el,i)=>{
+  ScrollTrigger.create({trigger:el,start:'top 88%',once:true,
+    onEnter(){setTimeout(()=>el.classList.add('is-visible'),i*80);}});
 });
 
-// ── PROCESS ──────────────────────────────────────────────
-const pFill = document.getElementById('process-fill');
-if (pFill) {
-  gsap.to(pFill, {
-    width: '100%', ease: 'none',
-    scrollTrigger: { trigger: '.process-section', start: 'top 60%', end: 'bottom 60%', scrub: 0.8 }
-  });
-}
-document.querySelectorAll('.process-step').forEach((s, i) => {
-  ScrollTrigger.create({
-    trigger: s, start: 'top 82%', once: true,
-    onEnter() { setTimeout(() => s.classList.add('is-visible'), i * 140); }
-  });
+// ── PROCESS ───────────────────────────────────────────────
+const pF=document.getElementById('process-fill');
+if(pF){gsap.to(pF,{width:'100%',ease:'none',scrollTrigger:{trigger:'.process-section',start:'top 62%',end:'bottom 62%',scrub:0.8}});}
+document.querySelectorAll('.process-step').forEach((s,i)=>{
+  ScrollTrigger.create({trigger:s,start:'top 83%',once:true,
+    onEnter(){setTimeout(()=>s.classList.add('is-visible'),i*130);}});
 });
 
 // ── TESTIMONIALS ──────────────────────────────────────────
-const tt = document.getElementById('testimonials-track');
-if (tt) {
-  gsap.to(tt, {
-    x: () => -(tt.scrollWidth - innerWidth + 128),
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '.testimonials-section',
-      start: 'top 80%',
-      end: () => '+=' + (tt.scrollWidth * 0.85),
-      scrub: 1.2
-    }
-  });
-}
+const tt=document.getElementById('testimonials-track');
+if(tt){gsap.to(tt,{x:()=>-(tt.scrollWidth-innerWidth+128),ease:'none',
+  scrollTrigger:{trigger:'.testimonials-section',start:'top 80%',end:()=>'+='+(tt.scrollWidth*0.85),scrub:1.1}});}
 
 // ── CTA ───────────────────────────────────────────────────
-gsap.from('.cta-title', {
-  y: 50, opacity: 0, duration: 1.0, ease: 'power4.out',
-  scrollTrigger: { trigger: '.cta-title', start: 'top 84%', once: true }
-});
+gsap.from('.cta-title',{y:48,opacity:0,duration:0.95,ease:'power4.out',
+  scrollTrigger:{trigger:'.cta-title',start:'top 85%',once:true}});
 
 // ── SMOOTH ANCHORS ────────────────────────────────────────
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    const t = document.querySelector(a.getAttribute('href'));
-    if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'});}
   });
 });
 
-window.addEventListener('resize', () => ScrollTrigger.refresh());
+window.addEventListener('resize',()=>ScrollTrigger.refresh());
 
 })();
 </script></body></html>
