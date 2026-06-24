@@ -807,7 +807,6 @@ footer {
 </head>
 <body>
 
-<!-- CURSOR -->
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
 <div id="progress-bar"></div>
@@ -1262,7 +1261,9 @@ footer {
   const redLight = new THREE.PointLight(0xE8213A, 4, 30);
   redLight.position.set(3, 6, 6);
   scene.add(redLight);
-  scene.add(Object.assign(new THREE.PointLight(0x0a1aff, 1.5, 25), { position: new THREE.Vector3(-4,2,4) }));
+  const blueLight = new THREE.PointLight(0x0a1aff, 1.5, 25);
+  blueLight.position.set(-4, 2, 4);
+  scene.add(blueLight);
   const rimLight = new THREE.DirectionalLight(0xffffff, 0.4);
   rimLight.position.set(-5, 8, -5);
   scene.add(rimLight);
