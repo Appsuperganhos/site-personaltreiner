@@ -807,7 +807,6 @@ footer {
 </style>
 </head>
 <body>
-
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
 <div id="progress-bar"></div>
@@ -828,6 +827,8 @@ footer {
     <canvas id="hero-canvas"></canvas>
     <div class="hero-vignette"></div>
     <div class="scan-line" id="scan-line"></div>
+
+    <!-- Fase 1: só texto lado esquerdo (atleta fica em layer separado) -->
     <div class="hero-overlay" id="hero-phase-1">
       <div>
         <p class="hero-label">Elite Personal Training · São Paulo</p>
@@ -839,6 +840,8 @@ footer {
         <p class="hero-sub-main">Metodologia de alta performance para quem exige o máximo</p>
       </div>
     </div>
+
+    <!-- Fase 2: stats -->
     <div class="hero-overlay" id="hero-phase-2">
       <div class="phase2-left">
         <div class="phase2-stat"><span class="phase2-num">850+</span><span class="phase2-label">Alunos Transformados</span></div>
@@ -853,14 +856,17 @@ footer {
         <div class="phase2-tag">PERFORMANCE</div>
       </div>
     </div>
+
+    <!-- Fase 3: CTA centralizado -->
     <div class="hero-overlay" id="hero-phase-3">
-      <div style="padding-left:72px">
+      <div>
         <h2 class="phase3-title">PRONTO PARA<br><span style="color:var(--red)">EVOLUIR?</span></h2>
-        <div class="phase3-line" id="phase3-line" style="margin:0 0 28px 0"></div>
-        <p class="phase3-sub" style="text-align:left">Vagas limitadas · Próxima turma em 15 dias</p>
+        <div class="phase3-line" id="phase3-line"></div>
+        <p class="phase3-sub">Vagas limitadas · Próxima turma em 15 dias</p>
         <a href="#contato" class="phase3-btn" style="pointer-events:auto"><span>Reservar Minha Vaga</span></a>
       </div>
     </div>
+
     <div class="hero-scroll-hint" id="scroll-hint">
       <span>Role para explorar</span>
       <div class="scroll-line-anim"></div>
@@ -868,6 +874,7 @@ footer {
   </div>
 </div>
 
+<!-- Stats — extensão do hero -->
 <section class="stats-section">
   <div class="stat-item"><div class="stat-number"><span class="count" data-target="850">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Alunos Transformados</div></div>
   <div class="stat-item"><div class="stat-number"><span class="count" data-target="12">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Anos de Experiência</div></div>
@@ -877,18 +884,7 @@ footer {
 
 <div class="ticker-wrap">
   <div class="ticker-track">
-    <span class="ticker-item">FORÇA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">RESISTÊNCIA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">DISCIPLINA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">RESULTADO</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">PERFORMANCE</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">ELITE TRAINING</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">FORÇA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">RESISTÊNCIA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">DISCIPLINA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">RESULTADO</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">PERFORMANCE</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">ELITE TRAINING</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">FORÇA</span><span class="ticker-item accent">✦</span><span class="ticker-item">RESISTÊNCIA</span><span class="ticker-item accent">✦</span><span class="ticker-item">DISCIPLINA</span><span class="ticker-item accent">✦</span><span class="ticker-item">RESULTADO</span><span class="ticker-item accent">✦</span><span class="ticker-item">PERFORMANCE</span><span class="ticker-item accent">✦</span><span class="ticker-item">ELITE TRAINING</span><span class="ticker-item accent">✦</span><span class="ticker-item">FORÇA</span><span class="ticker-item accent">✦</span><span class="ticker-item">RESISTÊNCIA</span><span class="ticker-item accent">✦</span><span class="ticker-item">DISCIPLINA</span><span class="ticker-item accent">✦</span><span class="ticker-item">RESULTADO</span><span class="ticker-item accent">✦</span><span class="ticker-item">PERFORMANCE</span><span class="ticker-item accent">✦</span><span class="ticker-item">ELITE TRAINING</span><span class="ticker-item accent">✦</span>
   </div>
 </div>
 
@@ -1002,18 +998,17 @@ footer {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
-/* hero3d.js v8
-   2 atletas (homem + mulher) alternando no scroll
-   Efeito tilt 3D real por mouse (perspective + rotateX/Y)
-   Imagens 100vh — dominam o hero
-   mix-blend-mode: screen — fundo preto some, atleta flutua
-   Three.js: partículas em 3 camadas + rings de energia
+/* hero3d.js v9 — HERO ROBUSTO
+   CORREÇÃO PRINCIPAL: atleta é layer independente, NUNCA some com as fases
+   As fases (texto/stats/CTA) sobrepõem o atleta que fica sempre vivo
+   Three.js: partículas 3 camadas + rings de energia persistentes
+   Atleta: tilt 3D + breathing + crossfade homem/mulher
 */
 (function () {
 'use strict';
 
 // ══════════════════════════════════════════════════════════
-// THREE.JS — ATMOSFERA DE FUNDO
+// THREE.JS — ATMOSFERA PERSISTENTE
 // ══════════════════════════════════════════════════════════
 const canvas = document.getElementById('hero-canvas');
 if (!canvas) return;
@@ -1027,7 +1022,7 @@ renderer.setClearColor(0x000000, 0);
 camera.position.z = 32;
 window.camState = { x:0, y:0, z:32 };
 
-// Partículas em 3 camadas de profundidade
+// Partículas em 3 camadas
 function makePts(n, spread, depth, redR, sz) {
   const pos=new Float32Array(n*3), col=new Float32Array(n*3);
   for(let i=0;i<n;i++){
@@ -1040,18 +1035,18 @@ function makePts(n, spread, depth, redR, sz) {
   }
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  g.setAttribute('color',   new THREE.BufferAttribute(col,3));
+  g.setAttribute('color',new THREE.BufferAttribute(col,3));
   return new THREE.Points(g,new THREE.PointsMaterial({
     size:sz,vertexColors:true,transparent:true,opacity:.65,
     blending:THREE.AdditiveBlending,depthWrite:false
   }));
 }
-const pFar =makePts(700,200,60,.07,.11);
-const pMid =makePts(380,120,30,.17,.17);
-const pNear=makePts(100, 55,10,.30,.25);
+const pFar =makePts(800,200,60,.07,.11);
+const pMid =makePts(400,120,30,.17,.17);
+const pNear=makePts(120, 55,10,.30,.25);
 scene.add(pFar,pMid,pNear);
 
-// Rings de energia (ficam atrás dos atletas)
+// Rings de energia — persistem todo o scroll
 function makeRing(r,thick,segs,x,y,z,rx,rz){
   const m=new THREE.Mesh(
     new THREE.TorusGeometry(r,thick,6,segs),
@@ -1060,9 +1055,12 @@ function makeRing(r,thick,segs,x,y,z,rx,rz){
   m.position.set(x,y,z); m.rotation.x=rx; m.rotation.z=rz;
   scene.add(m); return m;
 }
-const ring1=makeRing(6,.022,100, 5,0,-2,.3,0);
-const ring2=makeRing(8,.013, 80, 5,0,-4,.2,.5);
-const ring3=makeRing(4,.018, 60,-5,0,-2,.3,0); // lado da mulher
+const rings=[
+  makeRing(6,.022,100, 5, 0,-2,.3, 0),
+  makeRing(8,.013, 80, 5, 0,-4,.2,.5),
+  makeRing(4,.018, 60,-5, 0,-2,.3, 0),
+  makeRing(10,.008, 60, 0, 0,-8,.1,.2), // ring grande de fundo
+];
 
 const redLight=new THREE.PointLight(0xE8213A,0,45);
 redLight.position.set(8,2,6);
@@ -1077,27 +1075,36 @@ document.addEventListener('mousemove',e=>{
 window.heroScrollProgress=0;
 const clk=new THREE.Clock();
 
-(function loop(){
-  requestAnimationFrame(loop);
-  const t=clk.getElapsedTime(), sp=window.heroScrollProgress, cs=window.camState;
+(function bgLoop(){
+  requestAnimationFrame(bgLoop);
+  const t=clk.getElapsedTime(), sp=window.heroScrollProgress||0;
+  const cs=window.camState;
   smX+=(mX-smX)*.04; smY+=(mY-smY)*.04;
+
   camera.position.x+=(cs.x+smX*2-camera.position.x)*.04;
-  camera.position.y+=(cs.y-smY*1 -camera.position.y)*.04;
-  camera.position.z+=(cs.z       -camera.position.z)*.04;
+  camera.position.y+=(cs.y-smY  -camera.position.y)*.04;
+  camera.position.z+=(cs.z      -camera.position.z)*.04;
   camera.lookAt(0,0,0);
+
+  // Camadas em velocidades diferentes — parallax de profundidade
   pFar.rotation.y =t*.004+smX*.04;
   pMid.rotation.y =t*.008+smX*.09;
   pNear.rotation.y=t*.014+smX*.16;
   pNear.rotation.x=smY*.05;
-  const vis=Math.max(0,1-sp*1.5);
-  const pulse=.09+Math.sin(t*1.8)*.04;
-  ring1.material.opacity=pulse*vis;
-  ring2.material.opacity=pulse*.45*vis;
-  ring3.material.opacity=pulse*.6*vis;
-  ring1.rotation.z=t*.22; ring2.rotation.z=-t*.14; ring3.rotation.z=t*.19;
-  redLight.intensity=(1.6+Math.sin(t*1.9)*.6)*vis;
+
+  // Rings sempre visíveis, intensidade varia com scroll e tempo
+  const pulse=.08+Math.sin(t*1.8)*.035;
+  rings[0].material.opacity=pulse*(1-sp*.3);
+  rings[1].material.opacity=pulse*.45*(1-sp*.3);
+  rings[2].material.opacity=pulse*.55*(1-sp*.3);
+  rings[3].material.opacity=.04+Math.sin(t*.8)*.02; // sempre sutil
+  rings.forEach((r,i)=>{ r.rotation.z=t*(.22-i*.04)*(i%2?1:-1); });
+
+  // Luz vermelha pulsa e orbita — sempre ativa
+  redLight.intensity=1.4+Math.sin(t*1.9)*.55;
   redLight.position.x=8+Math.sin(t*.45)*2;
   redLight.position.y=2+Math.cos(t*.65)*1.5;
+
   renderer.render(scene,camera);
 })();
 
@@ -1109,10 +1116,7 @@ window.addEventListener('resize',()=>{
 
 
 // ══════════════════════════════════════════════════════════
-// ATHLETE SYSTEM v8
-// 2 imagens: male.png / female.png
-// Efeito tilt 3D real + breathing + 100vh
-// mix-blend-mode: screen (fundo preto some)
+// ATHLETE LAYER — INDEPENDENTE DAS FASES DE TEXTO
 // ══════════════════════════════════════════════════════════
 (function(){
 
@@ -1120,20 +1124,95 @@ const S=document.createElement('style');
 S.textContent=`
   #hero-sticky { background:#060608; }
 
-  /* Grid 50/50 */
-  #hero-phase-1 {
-    position:absolute !important; inset:0 !important;
-    display:grid !important;
-    grid-template-columns:1fr 1fr !important;
-    align-items:center !important;
-    justify-content:unset !important;
-    padding:96px 72px 0 72px !important;
+  /* ── ATLETA: layer fixo, sempre visível no hero ── */
+  /* Fica ENTRE o canvas (z:0) e as fases de texto (z:2+) */
+  #athlete-layer {
+    position:absolute;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    overflow:hidden;
   }
 
-  /* Texto — esquerda */
+  /* Container de posicionamento — direita da tela */
+  #athlete-stage {
+    position:absolute;
+    right:0; top:0; bottom:0;
+    width:52%;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  /* Glow atrás dos atletas */
+  #athlete-glow {
+    position:absolute;
+    bottom:-5%; left:50%;
+    transform:translateX(-50%);
+    width:120%; height:85%;
+    background:radial-gradient(ellipse at 50% 85%,
+      rgba(232,33,58,.20) 0%,
+      rgba(232,33,58,.06) 40%,
+      transparent 68%);
+    pointer-events:none;
+    animation:glowPulse 3.2s ease-in-out infinite;
+    z-index:0;
+  }
+  @keyframes glowPulse{
+    0%,100%{opacity:.7;transform:translateX(-50%) scaleX(1);}
+    50%{opacity:1;transform:translateX(-50%) scaleX(1.09);}
+  }
+
+  /* Gradiente de chão */
+  #athlete-ground {
+    position:absolute;
+    bottom:0;left:0;right:0;height:20%;
+    background:linear-gradient(to top,#060608 0%,rgba(6,6,8,.4) 60%,transparent 100%);
+    z-index:3; pointer-events:none;
+  }
+
+  /* Tilt container — recebe a transformação 3D */
+  #athlete-tilt {
+    position:absolute;
+    bottom:0; left:50%;
+    transform:translateX(-50%);
+    transform-style:preserve-3d;
+    will-change:transform;
+    z-index:1;
+    height:100vh;
+    width:auto;
+  }
+
+  /* As imagens — 100vh, transparência real */
+  .athlete-img {
+    position:absolute;
+    bottom:0; left:50%;
+    transform:translateX(-50%);
+    height:100vh; width:auto;
+    object-fit:contain;
+    object-position:bottom center;
+    opacity:0;
+    mix-blend-mode:normal;
+    filter:brightness(1.06) contrast(1.04) saturate(1.08);
+    will-change:opacity;
+  }
+
+  /* ── FASE 1: texto — z acima do atleta ── */
+  #hero-phase-1 {
+    position:absolute !important;
+    inset:0 !important;
+    z-index:2 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    padding:96px 0 0 72px !important;
+    pointer-events:none;
+    background:transparent !important;
+  }
   #hero-text-block {
     display:flex; flex-direction:column;
-    position:relative; z-index:3;
+    max-width:52%; pointer-events:auto;
   }
   .hero-label {
     text-align:left !important; margin-bottom:14px;
@@ -1144,14 +1223,16 @@ S.textContent=`
     width:0; height:2px;
     background:var(--red); box-shadow:0 0 10px var(--red);
     margin-bottom:16px;
-    transition:width .85s cubic-bezier(.16,1,.3,1) .45s;
+    transition:width .85s cubic-bezier(.16,1,.3,1) .5s;
   }
-  #hero-accent-line.on { width:52px; }
+  #hero-accent-line.on{width:52px;}
   .hero-title-main {
     font-family:'Bebas Neue',sans-serif !important;
-    font-size:clamp(74px,9.2vw,138px) !important;
-    line-height:.87 !important; letter-spacing:-2px !important;
-    text-align:left !important; margin:0 !important;
+    font-size:clamp(72px,9vw,136px) !important;
+    line-height:.87 !important;
+    letter-spacing:-2px !important;
+    text-align:left !important;
+    margin:0 !important;
   }
   .hero-title-main .hero-line{display:block;overflow:hidden;}
   .hero-title-main .hero-word{display:inline-block;transform:translateY(105%);}
@@ -1161,10 +1242,10 @@ S.textContent=`
     color:rgba(245,245,240,.42) !important;
     letter-spacing:1.2px !important; font-weight:300 !important;
     line-height:1.75 !important; text-align:left !important;
-    max-width:340px; opacity:0;
+    max-width:360px; opacity:0;
   }
   .hero-cta-inline {
-    margin-top:34px;
+    margin-top:32px;
     display:inline-flex; align-items:center;
     padding:15px 36px;
     background:var(--red); color:#060608;
@@ -1173,6 +1254,7 @@ S.textContent=`
     text-decoration:none; align-self:flex-start;
     position:relative; overflow:hidden;
     opacity:0; transform:translateY(12px);
+    pointer-events:auto;
   }
   .hero-cta-inline::before{
     content:'';position:absolute;inset:0;background:#ff3351;
@@ -1184,133 +1266,121 @@ S.textContent=`
   /* Fallback visibilidade */
   .hero-ready .hero-label,
   .hero-ready .hero-sub-main,
-  .hero-ready .hero-cta-inline { opacity:1 !important; transform:none !important; }
-  .hero-ready .hero-word { transform:translateY(0) !important; }
+  .hero-ready .hero-cta-inline{opacity:1!important;transform:none!important;}
+  .hero-ready .hero-word{transform:translateY(0)!important;}
 
-  /* Coluna do atleta — direita */
-  #athlete-col {
-    position:relative; height:100vh;
-    display:flex; align-items:flex-end;
-    justify-content:center; overflow:hidden;
+  /* ── FASE 2: stats dentro do hero ── */
+  #hero-phase-2 {
+    z-index:3 !important;
   }
 
-  /* Glow atmosférico */
-  #athlete-glow {
-    position:absolute; bottom:-4%; left:50%;
-    transform:translateX(-50%);
-    width:120%; height:80%;
-    background:radial-gradient(ellipse at 50% 85%,
-      rgba(232,33,58,.18) 0%, rgba(232,33,58,.05) 45%, transparent 70%);
-    z-index:0; pointer-events:none;
-    animation:glowB 3.4s ease-in-out infinite;
+  /* ── FASE 3: CTA dentro do hero ── */
+  #hero-phase-3 {
+    z-index:3 !important;
   }
-  @keyframes glowB{
-    0%,100%{opacity:.7;transform:translateX(-50%) scaleX(1);}
-    50%{opacity:1;transform:translateX(-50%) scaleX(1.08);}
+  #hero-phase-3 > div {
+    text-align:center;
+    padding:0 !important;
   }
+  .phase3-title{text-align:center !important;}
+  .phase3-sub{text-align:center !important;}
 
-  /* Gradiente de chão */
-  #athlete-ground {
-    position:absolute; bottom:0; left:0; right:0; height:22%;
-    background:linear-gradient(to top,#060608 0%,rgba(6,6,8,.5) 55%,transparent 100%);
-    z-index:2; pointer-events:none;
-  }
-
-  /* Container do tilt 3D — recebe o transform */
-  #athlete-tilt {
-    position:absolute; bottom:0; left:50%;
-    transform:translateX(-50%);
-    width:auto; height:100vh;
-    transform-style:preserve-3d;
-    will-change:transform;
-    z-index:1;
-  }
-
-  /* As imagens — 100vh, dominam a tela */
-  .athlete-img {
-    position:absolute; bottom:0; left:50%;
-    transform:translateX(-50%);
-    height:100vh; width:auto;
-    object-fit:contain; object-position:bottom center;
-    opacity:0; z-index:1;
-    will-change:opacity;
-    /* MÁGICA: fundo preto some completamente */
-    mix-blend-mode:normal;
-    filter:brightness(1.08) contrast(1.05) saturate(1.1);
-  }
-
-  /* Label de fase */
-  #phase-label {
-    position:absolute; right:64px; top:50%;
-    transform:translateY(-50%);
-    z-index:15; pointer-events:none;
-    font-family:'Bebas Neue',sans-serif;
-    font-size:9px; letter-spacing:7px;
-    color:rgba(232,33,58,.4); text-transform:uppercase;
-    writing-mode:vertical-rl; opacity:0; transition:opacity .5s;
-  }
-
-  /* Dots */
-  #phase-dots {
-    position:absolute; left:72px; bottom:42px;
-    display:flex; gap:10px; z-index:15; pointer-events:none;
-  }
-  .phase-dot {
-    width:4px; height:4px; border-radius:50%;
-    background:rgba(255,255,255,.15); transition:all .4s;
-  }
-  .phase-dot.active {
-    background:var(--red); transform:scale(1.6);
-    box-shadow:0 0 6px var(--red);
-  }
-
-  /* Linha vertical decorativa */
+  /* Linha divisória vertical (decorativa) */
   #hero-vline {
-    position:absolute; left:calc(50% - 1px); top:14%; bottom:7%;
+    position:absolute; left:50%; top:14%; bottom:7%;
     width:1px;
-    background:linear-gradient(to bottom,transparent,rgba(232,33,58,.2) 20%,rgba(232,33,58,.2) 80%,transparent);
-    z-index:4; pointer-events:none; opacity:0;
-    transition:opacity 1.1s ease .9s;
+    background:linear-gradient(to bottom,transparent,rgba(232,33,58,.18) 20%,rgba(232,33,58,.18) 80%,transparent);
+    z-index:2; pointer-events:none;
+    opacity:0; transition:opacity 1.1s ease 1s;
   }
   #hero-vline.on{opacity:1;}
 
-  /* Scroll num */
+  /* Scroll indicator */
   #hero-scroll-num {
     position:absolute; right:26px; bottom:42px;
     z-index:10; font-family:'Bebas Neue',sans-serif;
     font-size:10px; letter-spacing:4px;
     color:rgba(245,245,240,.18); writing-mode:vertical-rl;
-    opacity:0; transition:opacity 1s ease 1.2s;
+    opacity:0; transition:opacity 1s ease 1.3s;
   }
   #hero-scroll-num.on{opacity:1;}
 
-  /* Vinheta */
-  .hero-vignette {
+  /* Phase dots */
+  #phase-dots{
+    position:absolute; left:72px; bottom:42px;
+    display:flex; gap:10px; z-index:10; pointer-events:none;
+  }
+  .phase-dot{
+    width:4px;height:4px;border-radius:50%;
+    background:rgba(255,255,255,.15);transition:all .4s;
+  }
+  .phase-dot.active{
+    background:var(--red);transform:scale(1.6);
+    box-shadow:0 0 6px var(--red);
+  }
+
+  /* Phase label vertical */
+  #phase-label{
+    position:absolute;right:64px;top:50%;
+    transform:translateY(-50%);
+    z-index:10;pointer-events:none;
+    font-family:'Bebas Neue',sans-serif;
+    font-size:9px;letter-spacing:7px;
+    color:rgba(232,33,58,.4);text-transform:uppercase;
+    writing-mode:vertical-rl;
+    opacity:0;transition:opacity .5s;
+  }
+
+  /* Vinheta centralizada */
+  .hero-vignette{
     background:radial-gradient(
-      ellipse 70% 90% at 50% 50%,
-      transparent 45%,rgba(6,6,8,.5) 80%,rgba(6,6,8,.9) 100%
-    ) !important;
+      ellipse 75% 90% at 50% 50%,
+      transparent 40%,rgba(6,6,8,.55) 78%,rgba(6,6,8,.92) 100%
+    )!important;
+    z-index:2 !important;
   }
 
   /* Stats como extensão do hero */
-  .stats-section { background:#060608 !important; position:relative; }
-  .stats-section::before {
-    content:''; position:absolute; top:0; left:72px; right:72px; height:1px;
+  .stats-section{background:#060608!important;position:relative;}
+  .stats-section::before{
+    content:'';position:absolute;top:0;left:72px;right:72px;height:1px;
     background:linear-gradient(90deg,transparent,rgba(232,33,58,.28),transparent);
   }
-  .stat-item { background:transparent !important; border-right:1px solid rgba(255,255,255,.04) !important; }
-  .stat-item:last-child { border-right:none !important; }
-  .ticker-wrap {
-    background:#060608 !important;
-    border-top:1px solid rgba(232,33,58,.1) !important;
-    border-bottom:1px solid rgba(232,33,58,.1) !important;
+  .stat-item{background:transparent!important;border-right:1px solid rgba(255,255,255,.04)!important;}
+  .stat-item:last-child{border-right:none!important;}
+  .ticker-wrap{
+    background:#060608!important;
+    border-top:1px solid rgba(232,33,58,.1)!important;
+    border-bottom:1px solid rgba(232,33,58,.1)!important;
   }
 `;
 document.head.appendChild(S);
 
-// ── Reconstrução do DOM ──────────────────────────────────
-const phase1=document.getElementById('hero-phase-1');
+// ── DOM: atleta em layer separado das fases ─────────────
 const heroSticky=document.getElementById('hero-sticky');
+
+// ATHLETE LAYER — independente do phase-1
+const athleteLayer=document.createElement('div');
+athleteLayer.id='athlete-layer';
+
+const athleteStage=document.createElement('div');
+athleteStage.id='athlete-stage';
+
+const glow=document.createElement('div'); glow.id='athlete-glow';
+const tilt=document.createElement('div'); tilt.id='athlete-tilt';
+const ground=document.createElement('div'); ground.id='athlete-ground';
+
+athleteStage.appendChild(glow);
+athleteStage.appendChild(tilt);
+athleteStage.appendChild(ground);
+athleteLayer.appendChild(athleteStage);
+
+// Insere ANTES das overlays de texto (z-index menor)
+const firstOverlay=heroSticky.querySelector('.hero-overlay,.hero-vignette');
+heroSticky.insertBefore(athleteLayer, firstOverlay);
+
+// Reconfigura phase-1: só texto, lado esquerdo
+const phase1=document.getElementById('hero-phase-1');
 const innerDiv=phase1.querySelector('div');
 
 const textBlock=document.createElement('div');
@@ -1319,7 +1389,7 @@ textBlock.id='hero-text-block';
 const accentLine=document.createElement('div');
 accentLine.id='hero-accent-line';
 textBlock.appendChild(accentLine);
-setTimeout(()=>accentLine.classList.add('on'),300);
+setTimeout(()=>accentLine.classList.add('on'),350);
 
 if(innerDiv){
   while(innerDiv.firstChild) textBlock.appendChild(innerDiv.firstChild);
@@ -1331,21 +1401,10 @@ cta.href='#contato'; cta.className='hero-cta-inline';
 cta.innerHTML='<span>Quero Transformar</span>';
 textBlock.appendChild(cta);
 
-// Coluna atleta
-const athleteCol=document.createElement('div');
-athleteCol.id='athlete-col';
-const glow=document.createElement('div'); glow.id='athlete-glow';
-const tilt=document.createElement('div'); tilt.id='athlete-tilt';
-const ground=document.createElement('div'); ground.id='athlete-ground';
-athleteCol.appendChild(glow);
-athleteCol.appendChild(tilt);
-athleteCol.appendChild(ground);
-
 phase1.innerHTML='';
 phase1.appendChild(textBlock);
-phase1.appendChild(athleteCol);
 
-// Extras
+// Extras no hero-sticky
 const vline=document.createElement('div'); vline.id='hero-vline';
 const scrollNum=document.createElement('div'); scrollNum.id='hero-scroll-num';
 scrollNum.textContent='ROLE PARA VER MAIS';
@@ -1354,13 +1413,11 @@ dotsWrap.innerHTML='<div class="phase-dot active"></div><div class="phase-dot"><
 const phaseLabel=document.createElement('div'); phaseLabel.id='phase-label';
 
 heroSticky.append(vline,scrollNum,dotsWrap,phaseLabel);
-setTimeout(()=>{vline.classList.add('on');scrollNum.classList.add('on');},900);
+setTimeout(()=>{vline.classList.add('on');scrollNum.classList.add('on');},950);
 
-// ── Imagens ──────────────────────────────────────────────
-// Fase 0: Homem (autoridade)
-// Fase 1: Mulher (resultado)
+// ── Imagens ─────────────────────────────────────────────
 const SRCS  =['images/hero/male.png','images/hero/female.png'];
-const LABELS=['ELE PODE. VOCÊ TAMBÉM.','ELA TRANSFORMOU. SUA VEZ.'];
+const LABELS=['ELE PODE', 'ELA TAMBÉM'];
 const dots  =dotsWrap.querySelectorAll('.phase-dot');
 
 const imgs=SRCS.map((src,i)=>{
@@ -1371,55 +1428,48 @@ const imgs=SRCS.map((src,i)=>{
 });
 
 // ── Estado ───────────────────────────────────────────────
-let curPhase=0;
-let breathT=0;
-// Tilt 3D state
-let tiltX=0, tiltY=0, smoothTX=0, smoothTY=0;
-// Mouse raw
-let rawMX=0, rawMY=0;
+let curPhase=0, breathT=0;
+let rawMX=0,rawMY=0,smMX=0,smMY=0;
 
 document.addEventListener('mousemove',e=>{
-  rawMX=(e.clientX/innerWidth -.5)*2; // -1 a 1
+  rawMX=(e.clientX/innerWidth -.5)*2;
   rawMY=(e.clientY/innerHeight-.5)*2;
 },{passive:true});
 
-// ── Loop de vida ─────────────────────────────────────────
+// ── Loop de vida — SEMPRE RODA, independente das fases ──
 (function lifeLoop(){
   requestAnimationFrame(lifeLoop);
   breathT+=.01;
-
-  // Smooth mouse
-  smoothTX+=(rawMX-smoothTX)*.06;
-  smoothTY+=(rawMY-smoothTY)*.06;
+  smMX+=(rawMX-smMX)*.055;
+  smMY+=(rawMY-smMY)*.055;
 
   const sp=window.heroScrollProgress||0;
 
-  // Breathing sutil
-  const breathY =Math.sin(breathT*.85)*4;
-  const breathS =1+Math.sin(breathT*.65)*.01;
+  // Breathing
+  const bY=Math.sin(breathT*.85)*4.5;
+  const bS=1+Math.sin(breathT*.65)*.011;
 
-  // Tilt 3D: ângulos máximos 8° horizontal, 5° vertical
-  const rotY= smoothTX*8;   // mouse esq/dir → rotação Y
-  const rotX=-smoothTY*5;   // mouse cima/baixo → rotação X
+  // Tilt 3D real
+  const rotY=smMX*8;
+  const rotX=-smMY*5;
 
-  // Scroll: atleta sobe e escurece
-  const scrollShift=sp*-50;
-  const dim=1-sp*.5;
+  // Scroll: sobe levemente
+  const scrollY=sp*-40;
+  // Brilho diminui suavemente conforme scroll avança
+  const dim=Math.max(0.3, 1-sp*.4);
 
-  // Aplica tudo no container tilt
   tilt.style.transform=[
     `translateX(-50%)`,
-    `translateY(${breathY+scrollShift}px)`,
-    `scale(${breathS})`,
+    `translateY(${bY+scrollY}px)`,
+    `scale(${bS})`,
     `perspective(1200px)`,
     `rotateY(${rotY}deg)`,
     `rotateX(${rotX}deg)`,
   ].join(' ');
 
-  // Brightness no scroll
   imgs.forEach(img=>{
     if(parseFloat(img.style.opacity||0)>.05){
-      img.style.filter=`brightness(${1.08*dim}) contrast(1.05) saturate(1.1)`;
+      img.style.filter=`brightness(${1.06*dim}) contrast(1.04) saturate(1.08)`;
     }
   });
 })();
@@ -1427,9 +1477,9 @@ document.addEventListener('mousemove',e=>{
 // ── Controle de fases ────────────────────────────────────
 window.setAthletePhase=function(p){
   window.heroScrollProgress=p;
-  phaseLabel.style.opacity=p>.08&&p<.92?'1':'0';
+  phaseLabel.style.opacity=p>.05&&p<.95?'1':'0';
 
-  // 2 fases: 0-50% homem, 50-100% mulher
+  // 0-50%: homem, 50-100%: mulher
   const np=p<.5?0:1;
   if(np===curPhase) return;
   curPhase=np;
@@ -1444,35 +1494,34 @@ window.setAthletePhase=function(p){
   });
 };
 
-// ── Carregamento e entrada ───────────────────────────────
+// ── Carregamento + materialização ───────────────────────
 function loadImg(img,src){
-  return new Promise(res=>{ img.onload=img.onerror=res; img.src=src; });
+  return new Promise(res=>{img.onload=img.onerror=res; img.src=src;});
 }
 
 Promise.all([loadImg(imgs[0],SRCS[0])]).then(()=>{
-  // Materialização blur→sharp
   const steps=[
-    {op:'.18',blur:'6px',d:60},
-    {op:'.40',blur:'4px',d:150},
-    {op:'.65',blur:'2px',d:260},
-    {op:'.85',blur:'1px',d:390},
-    {op:'1',  blur:'0px',d:560},
+    {op:'.15',blur:'7px',d:50 },
+    {op:'.38',blur:'4px',d:140},
+    {op:'.62',blur:'2px',d:250},
+    {op:'.82',blur:'1px',d:380},
+    {op:'1',  blur:'0px',d:540},
   ];
   steps.forEach(({op,blur,d})=>{
     setTimeout(()=>{
-      imgs[0].style.transition='opacity .1s ease, filter .16s ease';
+      imgs[0].style.transition='opacity .1s ease,filter .16s ease';
       imgs[0].style.opacity=op;
-      imgs[0].style.filter=`brightness(1.08) contrast(1.05) saturate(1.1) blur(${blur})`;
+      imgs[0].style.filter=`brightness(1.06) contrast(1.04) saturate(1.08) blur(${blur})`;
     },d);
   });
   setTimeout(()=>{
     imgs[0].style.transition='';
-    imgs[0].style.filter='brightness(1.08) contrast(1.05) saturate(1.1)';
-    loadImg(imgs[1],SRCS[1]); // carrega mulher em background
-  },750);
+    imgs[0].style.filter='brightness(1.06) contrast(1.04) saturate(1.08)';
+    loadImg(imgs[1],SRCS[1]);
+  },720);
 });
 
-// Fallback: força visibilidade após 2.5s
+// Fallback
 setTimeout(()=>{
   const lbl=document.querySelector('.hero-label');
   if(lbl&&getComputedStyle(lbl).opacity==='0'){
@@ -1480,19 +1529,18 @@ setTimeout(()=>{
   }
 },2500);
 
-})(); // fim athlete system
-})(); // fim IIFE
-/* main.js v7 — timing corrigido */
-(function () {
+})(); // athlete system
+})(); // main IIFE
+/* main.js v9 — scroll limpo, atleta sempre presente */
+(function(){
 'use strict';
-
 gsap.registerPlugin(ScrollTrigger);
 
 // ── CURSOR ────────────────────────────────────────────────
-const cur=document.getElementById('cursor'), ring=document.getElementById('cursor-ring');
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
 let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';},{passive:true});
-(function curLoop(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(curLoop);})();
+(function cl(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(cl);})();
 document.querySelectorAll('a,button,.service-card,.hscroll-card').forEach(el=>{
   el.addEventListener('mouseenter',()=>{cur.style.width='16px';cur.style.height='16px';ring.style.width='52px';ring.style.height='52px';});
   el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';ring.style.width='38px';ring.style.height='38px';});
@@ -1507,200 +1555,199 @@ const nav=document.getElementById('main-nav');
 window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>60),{passive:true});
 
 // ── HERO INTRO ────────────────────────────────────────────
-// Aguarda o DOM ser reconstruído pelo hero3d.js antes de animar
-// Usa requestAnimationFrame + delay para garantir que os elementos existem
-function initHeroAnim() {
-  const words = document.querySelectorAll('.hero-word');
-  const label = document.querySelector('.hero-label');
-  const sub   = document.querySelector('.hero-sub-main');
-  const cta   = document.querySelector('.hero-cta-inline');
-  const hint  = document.getElementById('scroll-hint');
-
-  // Se elementos não existem ainda, tenta de novo
-  if (!words.length || !label) {
-    requestAnimationFrame(initHeroAnim);
-    return;
-  }
-
-  // Define estado inicial explicitamente (garante posição mesmo com cache)
-  gsap.set(words, { y: '105%' });
-  gsap.set([label, sub, cta], { opacity: 0 });
-  gsap.set(cta, { y: 12 });
-
-  gsap.timeline({ delay: 0.25 })
-    .to(words, { y: 0, duration: 1.2, stagger: 0.07, ease: 'power4.out' })
-    .to(label, { opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.8')
-    .to(sub,   { opacity: 1, duration: 0.6, ease: 'power3.out' }, '-=0.45')
-    .to(cta,   { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, '-=0.3')
-    .to(hint,  { opacity: 1, duration: 0.45 }, '-=0.1');
+function initHeroAnim(){
+  const words=document.querySelectorAll('.hero-word');
+  const label=document.querySelector('.hero-label');
+  const sub=document.querySelector('.hero-sub-main');
+  const cta=document.querySelector('.hero-cta-inline');
+  const hint=document.getElementById('scroll-hint');
+  if(!words.length||!label){requestAnimationFrame(initHeroAnim);return;}
+  gsap.set(words,{y:'105%'});
+  gsap.set([label,sub,cta],{opacity:0});
+  gsap.set(cta,{y:12});
+  gsap.timeline({delay:.28})
+    .to(words,{y:0,duration:1.2,stagger:.07,ease:'power4.out'})
+    .to(label,{opacity:1,duration:.6,ease:'power3.out'},'-=.85')
+    .to(sub,  {opacity:1,duration:.6,ease:'power3.out'},'-=.45')
+    .to(cta,  {opacity:1,y:0,duration:.55,ease:'power3.out'},'-=.3')
+    .to(hint, {opacity:1,duration:.4},'-=.1');
 }
+setTimeout(initHeroAnim,80);
 
-// Inicia após micro delay para hero3d.js ter tempo de reconstruir o DOM
-setTimeout(initHeroAnim, 100);
+// ══════════════════════════════════════════════════════════
+// HERO SCROLL — 250vh pinado
+// Atleta persiste SEMPRE. Só o texto/overlay muda.
+// ══════════════════════════════════════════════════════════
+const phase1=document.getElementById('hero-phase-1');
+const phase2=document.getElementById('hero-phase-2');
+const phase3=document.getElementById('hero-phase-3');
+const scan  =document.getElementById('scan-line');
+const hint  =document.getElementById('scroll-hint');
+const cam   =window.camState||{x:0,y:0,z:32};
+const p2nums=document.querySelectorAll('.phase2-num');
+const p2tags=document.querySelectorAll('.phase2-tag');
 
-// ── HERO SCROLL JOURNEY ───────────────────────────────────
-const phase1 = document.getElementById('hero-phase-1');
-const phase2 = document.getElementById('hero-phase-2');
-const phase3 = document.getElementById('hero-phase-3');
-const scan   = document.getElementById('scan-line');
-const cam    = window.camState || {x:0,y:0,z:32};
-const p2nums = document.querySelectorAll('.phase2-num');
-const p2tags = document.querySelectorAll('.phase2-tag');
-
-// ScrollTrigger para progress do atleta
+// Atualiza progress do atleta via onUpdate (não scrub)
 ScrollTrigger.create({
-  trigger: '#hero-wrapper',
-  start:   'top top',
-  end:     'bottom bottom',
-  onUpdate(self) {
-    if (window.setAthletePhase) window.setAthletePhase(self.progress);
-    cam.z = 32 - self.progress * 4;
-    cam.x = Math.sin(self.progress * Math.PI * 0.45) * 1.2;
+  trigger:'#hero-wrapper', start:'top top', end:'bottom bottom',
+  onUpdate(self){
+    if(window.setAthletePhase) window.setAthletePhase(self.progress);
+    // Câmera Three.js acompanha
+    cam.z=32-self.progress*5;
+    cam.x=Math.sin(self.progress*Math.PI*.6)*1.8;
   }
 });
 
-// Timeline scrubada — animações do texto
-const heroTl = gsap.timeline({
-  scrollTrigger: {
-    trigger: '#hero-wrapper',
-    start: 'top top',
-    end: 'bottom bottom',
-    scrub: 1.2,
-    pin: '#hero-sticky',
-    anticipatePin: 1,
+// Timeline de texto scrubada
+const heroTl=gsap.timeline({
+  scrollTrigger:{
+    trigger:'#hero-wrapper', start:'top top', end:'bottom bottom',
+    scrub:1.3, pin:'#hero-sticky', anticipatePin:1,
   }
 });
 
 heroTl
-  .to(cam, { z:28, duration:2, ease:'none' }, 0)
-  // Texto fase 1 sai (25-40%)
-  .to(phase1, { opacity:0, y:-48, duration:1.4, ease:'power2.in' }, 2.0)
-  .to(document.getElementById('scroll-hint'), { opacity:0, duration:0.6 }, 2.0)
-  // Scan line (35%)
-  .to(scan, { opacity:0.45, duration:0.15 }, 2.8)
-  .to(scan, { top:'100%', duration:0.9, ease:'none' }, 2.8)
-  .to(scan, { opacity:0, duration:0.15 }, 3.6)
-  // Fase 2 entra (40-70%)
-  .to(phase2, { opacity:1, duration:1.0, ease:'power2.out' }, 3.2)
-  .to(p2nums, { x:0, opacity:1, stagger:0.16, duration:0.8, ease:'power3.out' }, 3.4)
-  .to(p2tags, { x:0, opacity:1, stagger:0.09, duration:0.55, ease:'power3.out' }, 3.7)
-  .to(cam, { z:26, x:-1.2, duration:2.5, ease:'power1.inOut' }, 3.0)
-  // Fase 2 sai (70-80%)
-  .to(phase2, { opacity:0, duration:0.9, ease:'power2.in' }, 6.0)
-  .to(cam, { z:33, x:0, duration:1.8, ease:'power2.inOut' }, 5.8)
-  // Fase 3 CTA (80-100%)
-  .to(phase3, { opacity:1, duration:1.0, ease:'power2.out' }, 7.0)
-  .to('#phase3-line', { width:140, duration:0.7, ease:'power2.out' }, 7.4);
+  // 0–20%: câmera avança, tudo normal
+  .to(cam,{z:28,duration:2,ease:'none'},0)
 
-// ── STATS ─────────────────────────────────────────────────
-document.querySelectorAll('.stat-item').forEach((item,i) => {
-  const el  = item.querySelector('.count');
-  const tgt = parseInt(el?.dataset.target||0);
-  gsap.from(item, { y:36, opacity:0, duration:0.75, delay:i*0.09, ease:'power3.out',
-    scrollTrigger:{ trigger:item, start:'top 90%', once:true } });
-  if (!el) return;
-  ScrollTrigger.create({ trigger:item, start:'top 87%', once:true,
-    onEnter() {
+  // 20–35%: texto fase 1 sai elegante
+  .to(phase1,{opacity:0,y:-52,duration:1.5,ease:'power2.in'},1.8)
+  .to(hint,  {opacity:0,duration:.7},1.8)
+
+  // 32–38%: scan line
+  .to(scan,{opacity:.5,duration:.15},3.0)
+  .to(scan,{top:'100%',duration:1.0,ease:'none'},3.0)
+  .to(scan,{opacity:0,duration:.15},3.9)
+
+  // 38–68%: fase 2 — stats + palavras
+  .to(phase2,{opacity:1,duration:1.1,ease:'power2.out'},3.4)
+  .to(p2nums,{x:0,opacity:1,stagger:.18,duration:.9,ease:'power3.out'},3.6)
+  .to(p2tags,{x:0,opacity:1,stagger:.10,duration:.6,ease:'power3.out'},3.9)
+  .to(cam,   {z:27,x:-1.5,duration:2.5,ease:'power1.inOut'},3.4)
+
+  // 68–78%: fase 2 sai
+  .to(phase2,{opacity:0,duration:1.0,ease:'power2.in'},6.2)
+  .to(cam,   {z:33,x:0,duration:1.8,ease:'power2.inOut'},6.0)
+
+  // 78–100%: CTA final — centralizado sobre o atleta
+  .to(phase3,       {opacity:1,duration:1.1,ease:'power2.out'},7.2)
+  .to('#phase3-line',{width:140,duration:.8,ease:'power2.out'},7.7);
+
+// ══════════════════════════════════════════════════════════
+// RESTO DA PÁGINA
+// ══════════════════════════════════════════════════════════
+
+// Stats
+document.querySelectorAll('.stat-item').forEach((item,i)=>{
+  const el=item.querySelector('.count');
+  const tgt=parseInt(el?.dataset.target||0);
+  gsap.from(item,{y:32,opacity:0,duration:.75,delay:i*.09,ease:'power3.out',
+    scrollTrigger:{trigger:item,start:'top 90%',once:true}});
+  if(!el)return;
+  ScrollTrigger.create({trigger:item,start:'top 87%',once:true,
+    onEnter(){
       item.classList.add('is-active');
-      gsap.to({v:0},{v:tgt,duration:1.9,delay:i*0.09,ease:'power2.out',
-        onUpdate() { el.textContent=Math.round(this.targets()[0].v); }});
+      gsap.to({v:0},{v:tgt,duration:1.9,delay:i*.09,ease:'power2.out',
+        onUpdate(){el.textContent=Math.round(this.targets()[0].v);}});
     }
   });
 });
 
-// ── DIVIDERS ──────────────────────────────────────────────
+// Dividers
 document.querySelectorAll('[data-divider]').forEach(el=>{
   gsap.to(el,{width:'100%',duration:1.6,ease:'power2.inOut',
     scrollTrigger:{trigger:el,start:'top 92%',once:true}});
 });
 
-// ── EYEBROWS ──────────────────────────────────────────────
+// Eyebrows
 gsap.utils.toArray('.section-eyebrow').forEach(el=>{
-  gsap.to(el,{opacity:1,x:0,duration:0.75,ease:'power3.out',
+  gsap.to(el,{opacity:1,x:0,duration:.75,ease:'power3.out',
     scrollTrigger:{trigger:el,start:'top 88%',once:true}});
 });
 
-// ── S-WORDS ───────────────────────────────────────────────
+// S-words
 gsap.utils.toArray('.s-word').forEach(w=>{
-  gsap.to(w,{y:0,opacity:1,duration:0.95,ease:'power4.out',
+  gsap.to(w,{y:0,opacity:1,duration:.95,ease:'power4.out',
     scrollTrigger:{trigger:w.closest('.section-title')||w,start:'top 88%',once:true}});
 });
 
-// ── SERVICE CARDS ─────────────────────────────────────────
+// Service cards
 document.querySelectorAll('.service-card').forEach((c,i)=>{
-  gsap.from(c,{y:28,opacity:0,duration:0.65,delay:(i%3)*0.09,ease:'power3.out',
+  gsap.from(c,{y:28,opacity:0,duration:.65,delay:(i%3)*.09,ease:'power3.out',
     scrollTrigger:{trigger:c,start:'top 89%',once:true}});
   ScrollTrigger.create({trigger:c,start:'top 89%',once:true,onEnter(){
     const b=c.querySelector('.service-bar'),n=c.querySelector('.service-name'),
           d=c.querySelector('.service-desc'),l=c.querySelector('.service-link');
-    if(b) b.style.cssText='transform:scaleX(1);transition:transform 0.65s ease 0.05s';
-    if(n) n.style.cssText='transform:translateY(0);opacity:1;transition:all 0.55s ease 0.18s';
-    if(d) d.style.cssText='transform:translateY(0);opacity:1;transition:all 0.55s ease 0.28s';
-    if(l) l.style.cssText='transform:translateY(0);opacity:1;transition:all 0.55s ease 0.38s';
+    if(b)b.style.cssText='transform:scaleX(1);transition:transform .65s ease .05s';
+    if(n)n.style.cssText='transform:translateY(0);opacity:1;transition:all .55s ease .18s';
+    if(d)d.style.cssText='transform:translateY(0);opacity:1;transition:all .55s ease .28s';
+    if(l)l.style.cssText='transform:translateY(0);opacity:1;transition:all .55s ease .38s';
   }});
 });
 
-// ── HORIZONTAL SCROLL ─────────────────────────────────────
+// Horizontal scroll
 const ht=document.getElementById('hscroll-track');
-if(ht){
-  gsap.to(ht,{x:()=>-(ht.scrollWidth-innerWidth+128),ease:'none',
-    scrollTrigger:{trigger:'.hscroll-section',start:'top top',end:'bottom bottom',
-      scrub:1.0,pin:'.hscroll-sticky',anticipatePin:1}});
-}
+if(ht){gsap.to(ht,{x:()=>-(ht.scrollWidth-innerWidth+128),ease:'none',
+  scrollTrigger:{trigger:'.hscroll-section',start:'top top',end:'bottom bottom',
+    scrub:1.0,pin:'.hscroll-sticky',anticipatePin:1}});}
 
-// ── TRANSFORM CANVAS ──────────────────────────────────────
+// Transform canvas
 const tc=document.getElementById('transform-canvas-2');
-if(tc && typeof THREE!=='undefined'){
-  const tS=new THREE.Scene(),tC=new THREE.PerspectiveCamera(60,1,0.1,100);
+if(tc&&typeof THREE!=='undefined'){
+  const tS=new THREE.Scene(),tC=new THREE.PerspectiveCamera(60,1,.1,100);
   const tR=new THREE.WebGLRenderer({canvas:tc,antialias:true,alpha:true});
   tR.setClearColor(0x141418,1); tC.position.z=8;
-  tS.add(new THREE.AmbientLight(0xffffff,0.4));
+  tS.add(new THREE.AmbientLight(0xffffff,.4));
   const tL=new THREE.PointLight(0xE8213A,3,20); tL.position.set(3,3,5); tS.add(tL);
   const hG=new THREE.Group();
-  const sG=new THREE.SphereGeometry(0.12,8,8);
+  const sG=new THREE.SphereGeometry(.12,8,8);
   const mR=new THREE.MeshBasicMaterial({color:0xE8213A}),mD=new THREE.MeshBasicMaterial({color:0x2a2a35});
   for(let i=0;i<60;i++){
     const a=(i/60)*Math.PI*4,y=(i/60)*10-5;
     const s1=new THREE.Mesh(sG,mR); s1.position.set(Math.cos(a)*1.6,y,Math.sin(a)*1.6); hG.add(s1);
     const s2=new THREE.Mesh(sG,mD); s2.position.set(Math.cos(a+Math.PI)*1.6,y,Math.sin(a+Math.PI)*1.6); hG.add(s2);
-    if(i%5===0){const bg=new THREE.CylinderGeometry(0.015,0.015,3.2,4);const bm=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:0x332225,transparent:true,opacity:0.5}));bm.position.y=y;bm.rotation.z=Math.PI/2;bm.rotation.x=a;hG.add(bm);}
+    if(i%5===0){const bg=new THREE.CylinderGeometry(.015,.015,3.2,4);
+      const bm=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:0x332225,transparent:true,opacity:.5}));
+      bm.position.y=y;bm.rotation.z=Math.PI/2;bm.rotation.x=a;hG.add(bm);}
   }
   tS.add(hG);
   const resT=()=>{const p=tc.parentElement;if(!p)return;tR.setSize(p.clientWidth,p.clientHeight);tC.aspect=p.clientWidth/p.clientHeight;tC.updateProjectionMatrix();};
   const tClk=new THREE.Clock(); let tRun=false;
-  const renderT=()=>{if(!tRun)return;requestAnimationFrame(renderT);hG.rotation.y=tClk.getElapsedTime()*0.42;tR.render(tS,tC);};
+  const renderT=()=>{if(!tRun)return;requestAnimationFrame(renderT);hG.rotation.y=tClk.getElapsedTime()*.42;tR.render(tS,tC);};
   ScrollTrigger.create({trigger:'.transform-visual',start:'top 75%',once:true,onEnter(){
     document.querySelector('.transform-frame-outer')?.classList.add('is-visible');
     document.querySelector('.transform-badge')?.classList.add('is-visible');
-    resT(); tRun=true; renderT();
+    resT();tRun=true;renderT();
   }});
   window.addEventListener('resize',resT); setTimeout(resT,100);
 }
 
-// ── TRANSFORM TEXT ────────────────────────────────────────
+// Transform text
 document.querySelectorAll('.transform-body,.feature-row').forEach((el,i)=>{
   ScrollTrigger.create({trigger:el,start:'top 88%',once:true,
     onEnter(){setTimeout(()=>el.classList.add('is-visible'),i*80);}});
 });
 
-// ── PROCESS ───────────────────────────────────────────────
+// Process
 const pF=document.getElementById('process-fill');
-if(pF){gsap.to(pF,{width:'100%',ease:'none',scrollTrigger:{trigger:'.process-section',start:'top 62%',end:'bottom 62%',scrub:0.8}});}
+if(pF){gsap.to(pF,{width:'100%',ease:'none',
+  scrollTrigger:{trigger:'.process-section',start:'top 62%',end:'bottom 62%',scrub:.8}});}
 document.querySelectorAll('.process-step').forEach((s,i)=>{
   ScrollTrigger.create({trigger:s,start:'top 83%',once:true,
     onEnter(){setTimeout(()=>s.classList.add('is-visible'),i*130);}});
 });
 
-// ── TESTIMONIALS ──────────────────────────────────────────
+// Testimonials
 const tt=document.getElementById('testimonials-track');
 if(tt){gsap.to(tt,{x:()=>-(tt.scrollWidth-innerWidth+128),ease:'none',
-  scrollTrigger:{trigger:'.testimonials-section',start:'top 80%',end:()=>'+='+(tt.scrollWidth*0.85),scrub:1.1}});}
+  scrollTrigger:{trigger:'.testimonials-section',start:'top 80%',
+    end:()=>'+='+(tt.scrollWidth*.85),scrub:1.1}});}
 
-// ── CTA ───────────────────────────────────────────────────
-gsap.from('.cta-title',{y:48,opacity:0,duration:0.95,ease:'power4.out',
+// CTA
+gsap.from('.cta-title',{y:48,opacity:0,duration:.95,ease:'power4.out',
   scrollTrigger:{trigger:'.cta-title',start:'top 85%',once:true}});
 
-// ── SMOOTH ANCHORS ────────────────────────────────────────
+// Smooth anchors
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
   a.addEventListener('click',e=>{
     const t=document.querySelector(a.getAttribute('href'));
@@ -1709,6 +1756,5 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 });
 
 window.addEventListener('resize',()=>ScrollTrigger.refresh());
-
 })();
 </script></body></html>
