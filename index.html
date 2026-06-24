@@ -825,15 +825,11 @@ footer {
 
 <div id="hero-wrapper">
   <div id="hero-sticky">
-
-    <!-- z-index 0: canvas Three.js (transparente) -->
     <canvas id="hero-canvas"></canvas>
-
-    <!-- Vinheta e scan line -->
     <div class="hero-vignette"></div>
     <div class="scan-line" id="scan-line"></div>
 
-    <!-- z-index 2: textos (acima do atleta) -->
+    <!-- FASE 1: grid esquerda/direita — JS reconstrói o DOM -->
     <div class="hero-overlay" id="hero-phase-1">
       <div>
         <p class="hero-label">Elite Personal Training · São Paulo</p>
@@ -874,7 +870,6 @@ footer {
       <span>Role para explorar</span>
       <div class="scroll-line-anim"></div>
     </div>
-
   </div>
 </div>
 
@@ -1015,139 +1010,217 @@ footer {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
-/* hero3d.js — ATHLETE IMAGE HERO v3
-   Fixes:
-   - Canvas alpha transparente (fundo via CSS)
-   - Z-index correto: canvas(0) → atleta(1) → texto(2)
-   - mix-blend-mode: screen (melhor que lighten para este caso)
-   - Atleta à frente do texto com pointer-events:none
+/* hero3d.js v5 — SPLIT LAYOUT
+   ESQUERDA: texto grande
+   DIREITA: atleta PNG (fundo removido), posicionado baixo
+   Canvas Three.js: partículas + rings no fundo
 */
 (function () {
 
-  // ── THREE.JS CANVAS — FUNDO TRANSPARENTE ────────────────────────
+  // ── THREE.JS BACKGROUND ─────────────────────────────────────────
   const canvas   = document.getElementById('hero-canvas');
   const scene    = new THREE.Scene();
   const camera   = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  // CRÍTICO: alpha 0 = canvas transparente, fundo vem do CSS (#hero-sticky background)
   renderer.setClearColor(0x000000, 0);
+  camera.position.set(0, 0, 28);
 
-  window.camState = { posX: 0, posY: 0, posZ: 30, lookY: 0 };
-  camera.position.set(0, 0, 30);
+  window.camState = { posX: 0, posY: 0, posZ: 28, lookY: 0 };
 
-  // ── PARTÍCULAS ATMOSFÉRICAS ──────────────────────────────────────
-  const N = 1800;
+  // Partículas
+  const N = 1600;
   const pPos = new Float32Array(N * 3);
   const pCol = new Float32Array(N * 3);
   for (let i = 0; i < N; i++) {
     const i3 = i * 3;
     pPos[i3]   = (Math.random() - 0.5) * 180;
-    pPos[i3+1] = (Math.random() - 0.5) * 120;
+    pPos[i3+1] = (Math.random() - 0.5) * 100;
     pPos[i3+2] = (Math.random() - 0.5) * 80 - 20;
-    const isRed = Math.random() < 0.15;
-    if (isRed) {
-      pCol[i3]=0.91; pCol[i3+1]=0.13; pCol[i3+2]=0.23;
-    } else {
-      const v = 0.05 + Math.random() * 0.1;
-      pCol[i3]=v; pCol[i3+1]=v; pCol[i3+2]=v * 1.1;
-    }
+    const r = Math.random() < 0.14;
+    if (r) { pCol[i3]=0.91; pCol[i3+1]=0.13; pCol[i3+2]=0.23; }
+    else { const v=0.04+Math.random()*0.1; pCol[i3]=v; pCol[i3+1]=v; pCol[i3+2]=v; }
   }
   const pGeo = new THREE.BufferGeometry();
-  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-  pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos,3));
+  pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol,3));
   const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
-    size: 0.16, vertexColors: true,
-    transparent: true, opacity: 0.65,
-    blending: THREE.AdditiveBlending, depthWrite: false
+    size:0.14, vertexColors:true, transparent:true, opacity:0.6,
+    blending:THREE.AdditiveBlending, depthWrite:false
   }));
   scene.add(particles);
 
-  // ── ENERGY RINGS ─────────────────────────────────────────────────
-  const rings = [-8, 0, 8].map((y, i) => {
+  // Rings decorativos
+  const rings = [0, 6, -6].map((y, i) => {
     const m = new THREE.Mesh(
-      new THREE.TorusGeometry(10 + i * 2, 0.015, 6, 80),
-      new THREE.MeshBasicMaterial({
-        color: 0xE8213A, transparent: true, opacity: 0.07,
-        blending: THREE.AdditiveBlending
-      })
+      new THREE.TorusGeometry(12+i*3, 0.012, 6, 80),
+      new THREE.MeshBasicMaterial({ color:0xE8213A, transparent:true, opacity:0.05, blending:THREE.AdditiveBlending })
     );
-    m.position.y = y;
-    m.rotation.x = Math.PI / 2;
-    scene.add(m);
-    return m;
+    m.position.y = y; m.rotation.x = Math.PI/2; scene.add(m); return m;
   });
 
-  // ── RED POINT LIGHT ──────────────────────────────────────────────
-  const redLight = new THREE.PointLight(0xE8213A, 1.8, 50);
-  redLight.position.set(0, 0, 8);
+  const redLight = new THREE.PointLight(0xE8213A, 1.5, 50);
   scene.add(redLight);
 
-  // ── MOUSE ────────────────────────────────────────────────────────
-  let mX = 0, mY = 0;
+  let mX=0, mY=0;
   document.addEventListener('mousemove', e => {
-    mX = (e.clientX / innerWidth  - 0.5);
-    mY = (e.clientY / innerHeight - 0.5);
+    mX=(e.clientX/innerWidth -0.5);
+    mY=(e.clientY/innerHeight-0.5);
   });
 
-  // ── RENDER LOOP ──────────────────────────────────────────────────
-  const clock = new THREE.Clock();
+  const clk = new THREE.Clock();
   function render() {
     requestAnimationFrame(render);
-    const t  = clock.getElapsedTime();
-    const cs = window.camState;
-
-    camera.position.x += (cs.posX + mX * 1.2 - camera.position.x) * 0.05;
-    camera.position.y += (cs.posY - mY * 0.7  - camera.position.y) * 0.05;
-    camera.position.z += (cs.posZ              - camera.position.z) * 0.05;
+    const t=clk.getElapsedTime(), cs=window.camState;
+    camera.position.x += (cs.posX + mX*1.0 - camera.position.x)*0.05;
+    camera.position.y += (cs.posY - mY*0.6 - camera.position.y)*0.05;
+    camera.position.z += (cs.posZ          - camera.position.z)*0.05;
     camera.lookAt(0, cs.lookY, 0);
-
-    particles.rotation.y = t * 0.007;
-    particles.rotation.x = t * 0.003;
-
-    rings.forEach((r, i) => {
-      r.rotation.z = t * (0.08 + i * 0.05);
-      r.material.opacity = 0.04 + Math.sin(t * 1.1 + i * 1.3) * 0.03;
-    });
-
-    redLight.position.x = Math.sin(t * 0.3) * 10;
-    redLight.position.z = Math.cos(t * 0.3) * 8 + 6;
-    redLight.intensity  = 1.5 + Math.sin(t * 1.4) * 0.6;
-
+    particles.rotation.y = t*0.006;
+    rings.forEach((r,i)=>{ r.rotation.z=t*(0.07+i*0.04); r.material.opacity=0.03+Math.sin(t*1.1+i)*0.02; });
+    redLight.position.set(Math.sin(t*0.3)*12, 0, Math.cos(t*0.3)*8+6);
+    redLight.intensity = 1.2+Math.sin(t*1.3)*0.5;
     renderer.render(scene, camera);
   }
   render();
 
-  window.addEventListener('resize', () => {
-    camera.aspect = innerWidth / innerHeight;
+  window.addEventListener('resize', ()=>{
+    camera.aspect=innerWidth/innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
+    renderer.setSize(innerWidth,innerHeight);
   });
 
 })();
 
 
-// ── ATHLETE IMAGE SYSTEM ─────────────────────────────────────────
+// ── ATHLETE IMAGE LAYER ──────────────────────────────────────────
 (function () {
 
-  // ── CSS INJECTION ────────────────────────────────────────────────
   const style = document.createElement('style');
   style.textContent = `
-    /* Hero sticky precisa de fundo escuro explícito (canvas é transparente) */
-    #hero-sticky {
-      background: #060608;
+    /* Fundo escuro explícito */
+    #hero-sticky { background: #060608; }
+
+    /* ── LAYOUT SPLIT: esquerda=texto, direita=atleta ── */
+    #hero-phase-1 {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      align-items: end !important;
+      justify-content: unset !important;
+      padding: 0 80px 0 72px;
+      padding-top: 0;
     }
 
-    /* Camada das imagens — ENTRE o canvas e o texto */
-    #athlete-layer {
+    /* Bloco de texto — alinhado verticalmente ao centro */
+    #hero-text-block {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-bottom: 60px;
+      position: relative;
+      z-index: 3;
+    }
+
+    /* Título GRANDE — ocupa o espaço da esquerda */
+    .hero-title-main {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(80px, 10vw, 144px) !important;
+      line-height: 0.86 !important;
+      letter-spacing: -2px;
+      text-align: left !important;
+    }
+    .hero-label {
+      text-align: left !important;
+      margin-bottom: 20px;
+    }
+    .hero-sub-main {
+      text-align: left !important;
+      margin-top: 28px;
+      max-width: 380px;
+    }
+
+    /* Botão CTA direto no hero */
+    .hero-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 40px;
+      padding: 16px 40px;
+      background: var(--red);
+      color: #060608;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-decoration: none;
+      pointer-events: auto;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+      align-self: flex-start;
+    }
+    .hero-cta-btn::before {
+      content: '';
       position: absolute;
       inset: 0;
-      z-index: 1;
-      pointer-events: none;
+      background: #ff3351;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+    .hero-cta-btn:hover::before { transform: scaleX(1); }
+    .hero-cta-btn span { position: relative; z-index: 1; }
+
+    /* Linha decorativa vermelha antes do título */
+    .hero-red-line {
+      width: 48px;
+      height: 2px;
+      background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+      margin-bottom: 20px;
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    /* ── CONTAINER DA IMAGEM — lado direito ── */
+    #athlete-container {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
       overflow: hidden;
-      /* CRÍTICO: sem transform aqui — evita criar stacking context que
-         quebra o mix-blend-mode com elementos externos */
+    }
+
+    /* Gradiente inferior — atleta "emerge" do chão */
+    #athlete-container::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 22%;
+      background: linear-gradient(to top, #060608 0%, transparent 100%);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Glow vermelho atrás do atleta */
+    #athlete-glow-bg {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 80%;
+      background: radial-gradient(ellipse at 50% 80%, rgba(232,33,58,0.14) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+      animation: glowBreath 3s ease-in-out infinite;
+    }
+    @keyframes glowBreath {
+      0%,100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+      50%      { opacity: 1.0; transform: translateX(-50%) scale(1.06); }
     }
 
     /* As imagens do atleta */
@@ -1156,20 +1229,18 @@ footer {
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      height: 95%;
+      /* Altura: 88vh — começa bem abaixo do menu, os pés ficam no chão */
+      height: 88vh;
       width: auto;
       max-width: none;
       object-fit: contain;
-
-      /* SCREEN é mais seguro que lighten para fundos quase-pretos:
-         resultado = 1-(1-a)*(1-b) → preto some, cores preservadas */
-      mix-blend-mode: screen;
-
+      object-position: bottom;
       opacity: 0;
-      will-change: opacity;
-      filter: brightness(1.1) contrast(1.05) saturate(1.1);
-      transform-origin: bottom center;
-      transition: opacity 0s; /* controlado por JS */
+      z-index: 1;
+      will-change: opacity, transform;
+      /* Com fundo removido: normal blend mode */
+      mix-blend-mode: normal;
+      filter: brightness(1.04) contrast(1.06);
     }
 
     /* Glitch copies */
@@ -1178,300 +1249,281 @@ footer {
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      height: 95%;
+      height: 88vh;
       width: auto;
-      mix-blend-mode: screen;
+      object-fit: contain;
+      object-position: bottom;
       opacity: 0;
+      z-index: 1;
       pointer-events: none;
       will-change: opacity, transform;
     }
-    .athlete-glitch-r {
-      filter: brightness(1.1) saturate(3) hue-rotate(0deg);
-    }
-    .athlete-glitch-b {
-      filter: brightness(1.1) saturate(3) hue-rotate(180deg);
-    }
+    .athlete-glitch-r { filter: brightness(1.1) saturate(4) hue-rotate(0deg);   mix-blend-mode: screen; }
+    .athlete-glitch-b { filter: brightness(1.1) saturate(4) hue-rotate(190deg); mix-blend-mode: screen; }
 
-    /* Glow overlay — pulsa por cima do atleta */
-    #athlete-glow {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      background:
-        radial-gradient(ellipse 25% 60% at 68% 50%, rgba(232,33,58,0.10) 0%, transparent 100%),
-        radial-gradient(ellipse 25% 60% at 32% 50%, rgba(30,60,255,0.06) 0%, transparent 100%);
-      animation: glowPulse 3.5s ease-in-out infinite;
-    }
-    @keyframes glowPulse {
-      0%,100% { opacity: 0.5; }
-      50%      { opacity: 1.0; }
-    }
-
-    /* Energy sweep line (varre o corpo ao trocar de fase) */
+    /* Energy sweep line */
     #energy-sweep {
       position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 1px;
-      bottom: -5%;
-      height: 0%;
+      left: 50%; transform: translateX(-50%);
+      width: 1px; bottom: -5%; height: 0%;
       background: linear-gradient(to top, transparent, rgba(232,33,58,0.9), transparent);
-      box-shadow: 0 0 16px rgba(232,33,58,0.7), 0 0 40px rgba(232,33,58,0.3);
-      z-index: 2;
-      pointer-events: none;
-      opacity: 0;
+      box-shadow: 0 0 14px rgba(232,33,58,0.7);
+      z-index: 3; pointer-events: none; opacity: 0;
     }
 
-    /* Phase indicator dots */
+    /* Linha lateral esquerda decorativa */
+    #hero-side-line {
+      position: absolute;
+      left: 72px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1px;
+      height: 0;
+      background: linear-gradient(to bottom, transparent, rgba(232,33,58,0.4), transparent);
+      z-index: 5;
+      pointer-events: none;
+      transition: height 1.2s ease 0.8s;
+    }
+    #hero-side-line.visible { height: 200px; }
+
+    /* Phase dots */
     #phase-dots {
       position: absolute;
-      bottom: 44px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      z-index: 15;
-      pointer-events: none;
+      bottom: 40px; left: 72px;
+      display: flex; gap: 8px;
+      z-index: 15; pointer-events: none;
     }
     .phase-dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
+      width: 4px; height: 4px; border-radius: 50%;
       background: rgba(255,255,255,0.18);
       transition: background 0.4s, transform 0.4s, box-shadow 0.4s;
     }
     .phase-dot.active {
-      background: #E8213A;
-      transform: scale(1.5);
-      box-shadow: 0 0 8px #E8213A;
+      background: #E8213A; transform: scale(1.5);
+      box-shadow: 0 0 6px #E8213A;
     }
 
-    /* Phase label — canto inferior direito */
+    /* Phase label */
     #phase-label {
       position: absolute;
-      bottom: 44px;
-      right: 56px;
-      z-index: 15;
-      pointer-events: none;
+      bottom: 36px; right: 56px;
+      z-index: 15; pointer-events: none;
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 10px;
-      letter-spacing: 6px;
-      color: rgba(232,33,58,0.6);
+      font-size: 10px; letter-spacing: 6px;
+      color: rgba(232,33,58,0.55);
       text-transform: uppercase;
-      opacity: 0;
-      transition: opacity 0.5s;
+      opacity: 0; transition: opacity 0.5s;
     }
 
-    /* Hero text overlay — ACIMA do atleta (z:2) */
-    .hero-overlay { z-index: 2; }
-    #hero-phase-1 { z-index: 2; }
-    #hero-phase-2 { z-index: 2; }
-    #hero-phase-3 { z-index: 2; }
-    .hero-vignette { z-index: 1; }
-    .scan-line     { z-index: 3; }
-    .hero-scroll-hint { z-index: 15; }
+    /* Ajuste: vignette lateral direita suave */
+    .hero-vignette {
+      background: radial-gradient(
+        ellipse 80% 100% at 30% 50%,
+        transparent 40%,
+        rgba(6,6,8,0.75) 100%
+      ) !important;
+    }
+
+    /* Texto da fase 2 alinhado */
+    #hero-phase-2 {
+      padding: 0 80px !important;
+      justify-content: space-between !important;
+    }
+
+    /* Fase 3 centralizada */
+    #hero-phase-3 {
+      justify-content: flex-start !important;
+      padding-left: 72px !important;
+      align-items: center !important;
+    }
+    .phase3-title { text-align: left !important; }
+    .phase3-sub   { text-align: left !important; }
+    #phase3-line  { margin: 0 0 28px 0 !important; }
   `;
   document.head.appendChild(style);
 
-  // ── DOM SETUP ────────────────────────────────────────────────────
+  // ── RESTRUCTURE #hero-phase-1 DOM ───────────────────────────────
+  const phase1 = document.getElementById('hero-phase-1');
   const heroSticky = document.getElementById('hero-sticky');
 
-  // Athlete layer (z-index: 1, between canvas and text)
-  const layer = document.createElement('div');
-  layer.id = 'athlete-layer';
-  // Insert BEFORE the first hero-overlay so it's below text
-  const firstOverlay = heroSticky.querySelector('.hero-overlay, .hero-vignette');
-  heroSticky.insertBefore(layer, firstOverlay);
+  // Pega o conteúdo atual do phase-1
+  const existingContent = phase1.querySelector('div');
 
-  // Glow
-  const glow = document.createElement('div');
-  glow.id = 'athlete-glow';
-  layer.appendChild(glow);
+  // Cria bloco de texto esquerdo
+  const textBlock = document.createElement('div');
+  textBlock.id = 'hero-text-block';
+
+  // Red line decorativa
+  const redLine = document.createElement('div');
+  redLine.className = 'hero-red-line';
+  textBlock.appendChild(redLine);
+
+  // Move o conteúdo existente (label + título + sub) para textBlock
+  if (existingContent) {
+    while (existingContent.firstChild) {
+      textBlock.appendChild(existingContent.firstChild);
+    }
+    existingContent.remove();
+  }
+
+  // Botão CTA direto no hero
+  const ctaBtn = document.createElement('a');
+  ctaBtn.href = '#contato';
+  ctaBtn.className = 'hero-cta-btn';
+  ctaBtn.innerHTML = '<span>Quero Transformar</span>';
+  textBlock.appendChild(ctaBtn);
+
+  // Container do atleta (lado direito)
+  const athleteContainer = document.createElement('div');
+  athleteContainer.id = 'athlete-container';
+
+  // Glow bg
+  const glowBg = document.createElement('div');
+  glowBg.id = 'athlete-glow-bg';
+  athleteContainer.appendChild(glowBg);
 
   // Energy sweep
   const sweep = document.createElement('div');
   sweep.id = 'energy-sweep';
-  layer.appendChild(sweep);
+  athleteContainer.appendChild(sweep);
 
-  // Phase dots
+  // Monta o grid
+  phase1.appendChild(textBlock);
+  phase1.appendChild(athleteContainer);
+
+  // Side line
+  const sideLine = document.createElement('div');
+  sideLine.id = 'hero-side-line';
+  heroSticky.appendChild(sideLine);
+  setTimeout(() => sideLine.classList.add('visible'), 1000);
+
+  // Phase dots e label
   const dotsWrap = document.createElement('div');
   dotsWrap.id = 'phase-dots';
   dotsWrap.innerHTML = '<div class="phase-dot active"></div><div class="phase-dot"></div><div class="phase-dot"></div>';
   heroSticky.appendChild(dotsWrap);
 
-  // Phase label
   const label = document.createElement('div');
   label.id = 'phase-label';
   heroSticky.appendChild(label);
 
-  // ── IMAGE SOURCES ────────────────────────────────────────────────
-  // athlete-2 = arms crossed (autoridade) → fase 0
-  // athlete-1 = deadlift ready (força)    → fase 1
-  // athlete-3 = victory jump (resultado)  → fase 2
-  const SRCS   = ['images/hero/athlete-2.png', 'images/hero/athlete-1.png', 'images/hero/athlete-3.png'];
-  const LABELS = ['AUTORIDADE', 'FORÇA', 'RESULTADO'];
+  // ── IMAGENS ───────────────────────────────────────────────────────
+  // athlete-2 = arms crossed  (autoridade) → fase 0
+  // athlete-1 = deadlift      (força)      → fase 1
+  // athlete-3 = victory jump  (resultado)  → fase 2
+  const SRCS   = ['images/hero/athlete-2.png','images/hero/athlete-1.png','images/hero/athlete-3.png'];
+  const LABELS = ['AUTORIDADE','FORÇA','RESULTADO'];
 
-  // ── CREATE IMAGE ELEMENTS ────────────────────────────────────────
-  const imgs = SRCS.map((src, i) => {
+  const imgs = SRCS.map((src,i) => {
     const img = document.createElement('img');
-    img.src = src;
-    img.className = 'athlete-img';
-    img.alt = '';
-    img.draggable = false;
-    layer.appendChild(img);
+    img.src = src; img.className = 'athlete-img';
+    img.alt = ''; img.draggable = false;
+    athleteContainer.appendChild(img);
     return img;
   });
 
-  // Glitch copies (canal R e B separados)
   const glitchR = document.createElement('img');
   glitchR.className = 'athlete-glitch athlete-glitch-r';
-  glitchR.alt = ''; glitchR.draggable = false;
-  layer.appendChild(glitchR);
+  glitchR.alt=''; glitchR.draggable=false;
+  athleteContainer.appendChild(glitchR);
 
   const glitchB = document.createElement('img');
   glitchB.className = 'athlete-glitch athlete-glitch-b';
-  glitchB.alt = ''; glitchB.draggable = false;
-  layer.appendChild(glitchB);
+  glitchB.alt=''; glitchB.draggable=false;
+  athleteContainer.appendChild(glitchB);
 
-  // ── STATE ────────────────────────────────────────────────────────
-  let curPhase  = 0;
-  let prevPhase = -1;
-  let glitching = false;
-  const dots    = dotsWrap.querySelectorAll('.phase-dot');
+  // ── STATE ─────────────────────────────────────────────────────────
+  let curPhase = 0;
+  const dots   = dotsWrap.querySelectorAll('.phase-dot');
 
-  window.setAthletePhase = function (progress) {
-    const newPhase = progress < 0.33 ? 0 : progress < 0.66 ? 1 : 2;
+  window.setAthletePhase = function(progress) {
+    const p = progress < 0.33 ? 0 : progress < 0.66 ? 1 : 2;
     label.style.opacity = progress > 0.06 && progress < 0.94 ? '1' : '0';
-
-    if (newPhase === curPhase) return;
-    curPhase = newPhase;
-    dots.forEach((d, i) => d.classList.toggle('active', i === newPhase));
-    label.textContent = LABELS[newPhase];
-    crossfade(newPhase);
+    if (p === curPhase) return;
+    curPhase = p;
+    dots.forEach((d,i) => d.classList.toggle('active', i===p));
+    label.textContent = LABELS[p];
+    crossfade(p);
   };
 
-  // ── CROSSFADE ────────────────────────────────────────────────────
-  function crossfade(toIdx) {
-    // Fade all out
-    imgs.forEach((img, i) => {
-      img.style.transition = i === toIdx
-        ? 'opacity 0.85s cubic-bezier(0.4,0,0.2,1)'
-        : 'opacity 0.5s cubic-bezier(0.4,0,0.2,1)';
-      img.style.opacity = i === toIdx ? '1' : '0';
+  // ── CROSSFADE ─────────────────────────────────────────────────────
+  function crossfade(to) {
+    imgs.forEach((img,i) => {
+      img.style.transition = i===to ? 'opacity 0.85s cubic-bezier(0.4,0,0.2,1)' : 'opacity 0.45s ease';
+      img.style.opacity    = i===to ? '1' : '0';
     });
-
-    // Glitch on new image
-    if (!glitching) runGlitch(SRCS[toIdx]);
-
-    // Energy sweep up
-    sweep.style.transition = 'none';
-    sweep.style.opacity    = '1';
-    sweep.style.bottom     = '-5%';
-    sweep.style.height     = '0%';
-    requestAnimationFrame(() => {
-      sweep.style.transition = 'height 0.55s ease-out, bottom 0.55s ease-out';
-      sweep.style.height     = '105%';
-      sweep.style.bottom     = '100%';
-      setTimeout(() => {
-        sweep.style.transition = 'opacity 0.3s';
-        sweep.style.opacity    = '0';
-      }, 480);
-    });
+    glitch(SRCS[to]);
+    sweepLine();
   }
 
-  // ── GLITCH ───────────────────────────────────────────────────────
-  function runGlitch(src) {
-    glitching = true;
-    glitchR.src = src;
-    glitchB.src = src;
-
+  function glitch(src) {
+    glitchR.src = src; glitchB.src = src;
     const steps = [
-      [  0, glitchR, '0.5', '6px',  '0px' ],
-      [ 60, glitchB, '0.4', '-5px', '-2px'],
+      [0,   glitchR, '0.5', '7px',  '0'  ],
+      [60,  glitchB, '0.4', '-6px', '-2px'],
       [120, glitchR, '0.3', '-4px', '1px' ],
-      [180, glitchB, '0.25','4px',  '0px' ],
-      [240, glitchR, '0',   '0',    '0'   ],
-      [280, glitchB, '0',   '0',    '0'   ],
+      [190, glitchB, '0.2', '5px',  '0'  ],
+      [250, glitchR, '0',   '0',    '0'  ],
+      [290, glitchB, '0',   '0',    '0'  ],
     ];
-
-    steps.forEach(([delay, el, op, dx, dy]) => {
-      setTimeout(() => {
-        el.style.opacity   = op;
-        el.style.transform = `translateX(calc(-50% + ${dx})) translateY(${dy})`;
-      }, delay);
+    steps.forEach(([d,el,op,dx,dy]) => {
+      setTimeout(()=>{ el.style.opacity=op; el.style.transform=`translateX(calc(-50% + ${dx})) translateY(${dy})`; }, d);
     });
-
-    setTimeout(() => { glitching = false; }, 400);
   }
 
-  // ── PARALLAX ─────────────────────────────────────────────────────
-  let pX = 0, pY = 0, rX = 0, rY = 0;
-  document.addEventListener('mousemove', e => {
-    pX = (e.clientX / innerWidth  - 0.5) * 22;
-    pY = (e.clientY / innerHeight - 0.5) * 12;
-  });
-
-  let scrollOffset = 0;
-  window.addEventListener('scroll', () => {
-    // Atleta sobe levemente ao rolar dentro do hero pinado
-    // (o progresso real vem do setAthletePhase mas aqui capturamos scroll global)
-  });
-
-  (function parallaxLoop() {
-    rX += (pX - rX) * 0.06;
-    rY += (pY - rY) * 0.06;
-
-    const tx = rX * 0.35;
-    const ty = rY * 0.25;
-
-    imgs.forEach(img => {
-      img.style.transform = `translateX(calc(-50% + ${tx}px)) translateY(${ty}px)`;
+  function sweepLine() {
+    sweep.style.transition='none'; sweep.style.opacity='1'; sweep.style.bottom='-5%'; sweep.style.height='0%';
+    requestAnimationFrame(()=>{
+      sweep.style.transition='height 0.5s ease-out, bottom 0.5s ease-out';
+      sweep.style.height='105%'; sweep.style.bottom='100%';
+      setTimeout(()=>{ sweep.style.transition='opacity 0.25s'; sweep.style.opacity='0'; }, 450);
     });
-    glitchR.style.transform = `translateX(calc(-50% + ${tx}px)) translateY(${ty}px)`;
-    glitchB.style.transform = `translateX(calc(-50% + ${tx}px)) translateY(${ty}px)`;
+  }
 
-    requestAnimationFrame(parallaxLoop);
+  // ── PARALLAX MOUSE ───────────────────────────────────────────────
+  let pX=0,pY=0,rX=0,rY=0;
+  document.addEventListener('mousemove', e=>{
+    pX=(e.clientX/innerWidth -0.5)*16;
+    pY=(e.clientY/innerHeight-0.5)*8;
+  });
+  (function loop(){
+    rX+=(pX-rX)*0.07; rY+=(pY-rY)*0.07;
+    const tx=rX*0.3, ty=rY*0.2;
+    imgs.forEach(img=>{ img.style.transform=`translateX(calc(-50% + ${tx}px)) translateY(${ty}px)`; });
+    glitchR.style.transform=`translateX(calc(-50% + ${tx}px)) translateY(${ty}px)`;
+    glitchB.style.transform=`translateX(calc(-50% + ${tx}px)) translateY(${ty}px)`;
+    requestAnimationFrame(loop);
   })();
 
-  // ── ENTRANCE GLITCH ──────────────────────────────────────────────
+  // ── RED LINE ANIMATE ─────────────────────────────────────────────
+  setTimeout(()=>{
+    redLine.style.transition='transform 0.8s ease 0.6s';
+    redLine.style.transform='scaleX(1)';
+  }, 200);
+
+  // ── ENTRANCE ─────────────────────────────────────────────────────
   function entrance() {
-    // Pre-load all
-    SRCS.forEach((src, i) => { imgs[i].src = src; });
-    glitchR.src = SRCS[0];
-    glitchB.src = SRCS[0];
-
-    // Sequence: materialize from nothing
-    const seq = [
-      {delay:  80, op:'0.2', dx:'-8px'},
-      {delay: 160, op:'0.4', dx: '6px'},
-      {delay: 240, op:'0.6', dx:'-4px'},
-      {delay: 340, op:'0.8', dx: '3px'},
-      {delay: 480, op:'1.0', dx: '0px'},
+    SRCS.forEach((s,i)=>imgs[i].src=s);
+    glitchR.src=SRCS[0]; glitchB.src=SRCS[0];
+    const seq=[
+      {d:100,op:'0.25',dx:'-7px'},{d:190,op:'0.5',dx:'5px'},
+      {d:280,op:'0.75',dx:'-3px'},{d:390,op:'0.9',dx:'2px'},
+      {d:520,op:'1.0', dx:'0px'},
     ];
-
-    seq.forEach(({delay, op, dx}) => {
-      setTimeout(() => {
-        imgs[0].style.transition = 'opacity 0.12s ease';
-        imgs[0].style.opacity    = op;
-        glitchR.style.opacity    = (parseFloat(op) * 0.5).toFixed(2);
-        glitchB.style.opacity    = (parseFloat(op) * 0.4).toFixed(2);
-        glitchR.style.transform  = `translateX(calc(-50% + ${dx}))`;
-        glitchB.style.transform  = `translateX(calc(-50% + ${parseFloat(dx) === 0 ? '0' : (-parseFloat(dx) * 1.2) + 'px'}))`;
-      }, delay);
+    seq.forEach(({d,op,dx})=>{
+      setTimeout(()=>{
+        imgs[0].style.transition='opacity 0.12s ease';
+        imgs[0].style.opacity=op;
+        glitchR.style.opacity=(parseFloat(op)*0.45).toFixed(2);
+        glitchB.style.opacity=(parseFloat(op)*0.35).toFixed(2);
+        glitchR.style.transform=`translateX(calc(-50% + ${dx}))`;
+        glitchB.style.transform=`translateX(calc(-50% + ${dx==='0px'?'0px':(-parseFloat(dx)*1.3)+'px'}))`;
+      }, d);
     });
-
-    setTimeout(() => {
-      imgs[0].style.transition = '';
-      glitchR.style.opacity    = '0';
-      glitchB.style.opacity    = '0';
-    }, 700);
+    setTimeout(()=>{ imgs[0].style.transition=''; glitchR.style.opacity='0'; glitchB.style.opacity='0'; }, 750);
   }
 
-  if (document.readyState === 'complete') {
-    setTimeout(entrance, 350);
-  } else {
-    window.addEventListener('load', () => setTimeout(entrance, 350));
-  }
+  document.readyState==='complete' ? setTimeout(entrance,380) : window.addEventListener('load',()=>setTimeout(entrance,380));
 
 })();
 /* main.js — GSAP + ScrollTrigger
@@ -1695,6 +1747,4 @@ footer {
   window.addEventListener('resize',()=>ScrollTrigger.refresh());
 
 })();
-</script>
-</body>
-</html>
+</script></body></html>
