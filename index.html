@@ -804,6 +804,139 @@ footer {
 }
 .btn-red:hover::before { transform: scaleX(1); }
 .btn-red span { position: relative; z-index: 1; }
+
+/* ══════════════════════════════════════════════════════════
+   ANIMAÇÕES AVANÇADAS v10
+   Adicionado ao final do styles.css — não sobrescreve nada
+══════════════════════════════════════════════════════════ */
+
+/* Stat items — estado inicial para GSAP */
+.stat-item {
+  transform-origin: center bottom;
+}
+.stat-suffix {
+  display: inline-block;
+  transform-origin: center;
+}
+
+/* Service cards — skew inicial controlado pelo GSAP */
+.service-card {
+  transform-origin: center bottom;
+  will-change: transform, opacity, filter;
+}
+.service-num {
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Process steps — escala inicial */
+.process-step {
+  transform-origin: center top;
+}
+.process-circle {
+  transition: box-shadow .4s ease;
+}
+/* Pulso vermelho ao ativar */
+.process-step.is-visible .process-circle {
+  animation: circleActivate .8s ease-out forwards;
+}
+@keyframes circleActivate {
+  0%   { box-shadow: 0 0 0 0 rgba(232,33,58,.6); }
+  100% { box-shadow: 0 0 0 20px rgba(232,33,58,0); }
+}
+
+/* Testimonial cards — estado inicial blur */
+.testimonial-card {
+  will-change: opacity, filter, transform;
+  transition: border-color .4s ease;
+}
+
+/* CTA glow — estado inicial para GSAP */
+.cta-glow {
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+.cta-title {
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+/* Hscroll cards — hover scale */
+.hscroll-card {
+  transform-origin: center;
+  transition: transform .4s cubic-bezier(.16,1,.3,1);
+  will-change: transform;
+}
+
+/* Section titles — zoom entrada */
+.section-title {
+  transform-origin: left center;
+  will-change: transform, opacity;
+}
+/* Não aplica nas seções pinadas */
+#hero-sticky .section-title {
+  will-change: auto;
+}
+
+/* Feature rows */
+.feature-row {
+  will-change: transform, opacity;
+}
+
+/* Eyebrows — estado inicial sem opacity 0
+   (o JS controla via scramble) */
+.section-eyebrow {
+  opacity: 0;
+}
+
+/* Transform visual parallax */
+.transform-visual {
+  will-change: transform;
+}
+.transform-section > div:last-child {
+  will-change: transform;
+}
+
+/* Hover nos botões CTA inline — pulse ring */
+.hero-cta-inline:hover,
+.phase3-btn:hover {
+  box-shadow: 0 0 0 3px rgba(232,33,58,.3);
+}
+
+/* Animação do badge de 10 semanas */
+.transform-badge.is-visible {
+  animation: badgeSpin .6s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes badgeSpin {
+  from { transform: rotate(-12deg) scale(0) rotate(12deg); }
+  to   { transform: rotate(-12deg) scale(1); }
+}
+
+/* Linha de processo — glow vermelho ao preencher */
+.process-progress-fill {
+  box-shadow: 0 0 8px rgba(232,33,58,.6), 0 0 20px rgba(232,33,58,.3);
+}
+
+/* Scroll hint — pulso suave */
+.hero-scroll-hint {
+  opacity: 0;
+}
+.scroll-line-anim::after {
+  box-shadow: 0 0 6px rgba(232,33,58,.5);
+}
+
+/* Footer entra suavemente */
+footer > div {
+  will-change: transform, opacity;
+}
+
+/* Reduced motion — respeita a preferência do usuário */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -892,7 +1025,7 @@ footer {
 <section class="hscroll-section">
   <div class="hscroll-sticky">
     <div class="hscroll-header">
-      <p class="section-eyebrow" style="opacity:1;transform:none">Categorias de Treino</p>
+      <p class="section-eyebrow" style="opacity:0;transform:none">Categorias de Treino</p>
       <h2 class="section-title" style="font-size:clamp(36px,4vw,56px)"><span style="display:block;transform:none;opacity:1">EXPLORE OS</span><span style="display:block;transform:none;opacity:1;color:var(--red)">PROGRAMAS</span></h2>
     </div>
     <div class="hscroll-track" id="hscroll-track">
@@ -926,7 +1059,7 @@ footer {
 </section>
 <div class="section-divider"><div class="section-divider-fill" data-divider></div></div>
 <section class="process-section" id="processo">
-  <p class="section-eyebrow" style="text-align:center;transform:none">Método APEX</p>
+  <p class="section-eyebrow" style="text-align:center">Método APEX</p>
   <h2 class="section-title" style="text-align:center"><span class="s-word">COMO</span><span class="s-word" style="color:var(--red)">&nbsp;FUNCIONA</span></h2>
   <div class="process-track">
     <div class="process-progress-line"><div class="process-progress-fill" id="process-fill"></div></div>
@@ -944,15 +1077,15 @@ footer {
     <h2 class="section-title"><span class="s-word">RESULTADOS</span><span class="s-word" style="color:var(--red)">&nbsp;REAIS</span></h2>
   </div>
   <div class="testimonials-track" id="testimonials-track">
-    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Em 12 semanas perdi 14kg e ganhei disposição que não sentia há 10 anos. O acompanhamento é impecável."</p><div class="testimonial-meta"><div class="testimonial-avatar">MR</div><div><div class="testimonial-name">Marcos Rodrigues</div><div class="testimonial-role">CEO · Empresário</div></div></div></div>
-    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Conquistei meu melhor resultado em maratona após 3 meses de trabalho. A metodologia é de outro nível."</p><div class="testimonial-meta"><div class="testimonial-avatar">CS</div><div><div class="testimonial-name">Carolina Souza</div><div class="testimonial-role">Maratonista Amadora</div></div></div></div>
-    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"A mentoria mental mudou minha disciplina em todos os aspectos da vida. Investimento que se paga infinitas vezes."</p><div class="testimonial-meta"><div class="testimonial-avatar">AF</div><div><div class="testimonial-name">André Ferreira</div><div class="testimonial-role">Arquiteta</div></div></div></div>
-    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Após duas cirurgias reconquistei tudo e superei meu estado pré-cirurgia em 6 meses. Confiança total."</p><div class="testimonial-meta"><div class="testimonial-avatar">PL</div><div><div class="testimonial-name">Patricia Lima</div><div class="testimonial-role">Arquiteta</div></div></div></div>
+    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Em 12 semanas perdi 14kg e ganhei disposição que não sentia há 10 anos. O acompanhamento é impecável — parece que você tem um exército de especialistas ao seu lado."</p><div class="testimonial-meta"><div class="testimonial-avatar">MR</div><div><div class="testimonial-name">Marcos Rodrigues</div><div class="testimonial-role">CEO · Empresário</div></div></div></div>
+    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Conquistei meu melhor resultado em maratona após 3 meses. A metodologia e a atenção aos detalhes são de outro nível completamente."</p><div class="testimonial-meta"><div class="testimonial-avatar">CS</div><div><div class="testimonial-name">Carolina Souza</div><div class="testimonial-role">Maratonista Amadora</div></div></div></div>
+    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"A mentoria mental transformou minha disciplina em todos os aspectos da vida. É o investimento que mais retorno me deu em anos."</p><div class="testimonial-meta"><div class="testimonial-avatar">AF</div><div><div class="testimonial-name">André Ferreira</div><div class="testimonial-role">Executivo de Finanças</div></div></div></div>
+    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Após duas cirurgias, reconquistei meu corpo e superei o estado pré-cirurgia em apenas 6 meses. Método que funciona de verdade."</p><div class="testimonial-meta"><div class="testimonial-avatar">PL</div><div><div class="testimonial-name">Patricia Lima</div><div class="testimonial-role">Arquiteta</div></div></div></div>
   </div>
 </section>
 <section class="cta-section" id="contato">
   <div class="cta-glow"></div>
-  <p class="section-eyebrow" style="opacity:1;transform:none;margin-bottom:20px">Comece Hoje</p>
+  <p class="section-eyebrow" style="opacity:0;margin-bottom:20px">Comece Hoje</p>
   <h2 class="cta-title">SEU MELHOR EU<br><span style="color:var(--red)">COMEÇA AQUI</span></h2>
   <p class="cta-sub">Vagas limitadas. Próxima turma inicia em 15 dias.</p>
   <div class="cta-form">
@@ -1508,7 +1641,17 @@ setTimeout(()=>{
 
 })(); // athlete system
 })(); // main IIFE
-/* main.js v9 — scroll limpo, atleta sempre presente */
+/* main.js v10 — ANIMAÇÕES AVANÇADAS + SCROLL ROBUSTO
+   Princípios:
+   - Momentos orquestrados > efeitos espalhados
+   - Zoom em elementos importantes (não em tudo)
+   - Text scramble nos eyebrows
+   - Split reveal por letra nos títulos grandes
+   - Física real nas entradas (skew que corrige)
+   - Blur-to-sharp nos cards
+   - Linha de processo animada com precisão
+   - Parallax profundo na seção de transformação
+*/
 (function(){
 'use strict';
 gsap.registerPlugin(ScrollTrigger);
@@ -1531,7 +1674,42 @@ window.addEventListener('scroll',()=>{pb.style.width=(window.scrollY/(document.b
 const nav=document.getElementById('main-nav');
 window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>60),{passive:true});
 
-// ── HERO INTRO ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// UTILITÁRIOS DE ANIMAÇÃO
+// ══════════════════════════════════════════════════════════
+
+// TEXT SCRAMBLE — embaralha letras antes de revelar
+function scrambleText(el, finalText, duration=0.8) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let frame = 0;
+  const totalFrames = Math.floor(duration * 60);
+  const interval = setInterval(() => {
+    el.textContent = finalText.split('').map((char, i) => {
+      if (char === ' ') return ' ';
+      if (frame > (i / finalText.length) * totalFrames * 0.7) return char;
+      return chars[Math.floor(Math.random() * chars.length)];
+    }).join('');
+    frame++;
+    if (frame >= totalFrames) {
+      el.textContent = finalText;
+      clearInterval(interval);
+    }
+  }, 1000 / 60);
+}
+
+// SPLIT POR LETRA — divide texto em spans de letras
+function splitLetters(el) {
+  const text = el.textContent;
+  el.innerHTML = text.split('').map(c =>
+    c === ' ' ? '<span style="display:inline-block;width:0.3em"> </span>' :
+    `<span class="char" style="display:inline-block;overflow:hidden"><span class="char-inner" style="display:inline-block;transform:translateY(110%)">${c}</span></span>`
+  ).join('');
+  return el.querySelectorAll('.char-inner');
+}
+
+// ══════════════════════════════════════════════════════════
+// HERO INTRO
+// ══════════════════════════════════════════════════════════
 function initHeroAnim(){
   const words=document.querySelectorAll('.hero-word');
   const label=document.querySelector('.hero-label');
@@ -1545,132 +1723,230 @@ function initHeroAnim(){
   gsap.timeline({delay:.28})
     .to(words,{y:0,duration:1.2,stagger:.07,ease:'power4.out'})
     .to(label,{opacity:1,duration:.6,ease:'power3.out'},'-=.85')
-    .to(sub,  {opacity:1,duration:.6,ease:'power3.out'},'-=.45')
-    .to(cta,  {opacity:1,y:0,duration:.55,ease:'power3.out'},'-=.3')
-    .to(hint, {opacity:1,duration:.4},'-=.1');
+    .to(sub,{opacity:1,duration:.6,ease:'power3.out'},'-=.45')
+    .to(cta,{opacity:1,y:0,duration:.55,ease:'power3.out'},'-=.3')
+    .to(hint,{opacity:1,duration:.4},'-=.1');
 }
-setTimeout(initHeroAnim,80);
+setTimeout(initHeroAnim, 80);
 
 // ══════════════════════════════════════════════════════════
-// HERO SCROLL — 250vh pinado
-// Atleta persiste SEMPRE. Só o texto/overlay muda.
+// HERO SCROLL
 // ══════════════════════════════════════════════════════════
 const phase1=document.getElementById('hero-phase-1');
 const phase2=document.getElementById('hero-phase-2');
 const phase3=document.getElementById('hero-phase-3');
-const scan  =document.getElementById('scan-line');
-const hint  =document.getElementById('scroll-hint');
-const cam   =window.camState||{x:0,y:0,z:32};
+const scan=document.getElementById('scan-line');
+const hint=document.getElementById('scroll-hint');
+const cam=window.camState||{x:0,y:0,z:32};
 const p2nums=document.querySelectorAll('.phase2-num');
 const p2tags=document.querySelectorAll('.phase2-tag');
 
-// Atualiza progress do atleta via onUpdate (não scrub)
 ScrollTrigger.create({
-  trigger:'#hero-wrapper', start:'top top', end:'bottom bottom',
+  trigger:'#hero-wrapper',start:'top top',end:'bottom bottom',
   onUpdate(self){
     if(window.setAthletePhase) window.setAthletePhase(self.progress);
-    // Câmera Three.js acompanha
     cam.z=32-self.progress*5;
     cam.x=Math.sin(self.progress*Math.PI*.6)*1.8;
   }
 });
 
-// Timeline de texto scrubada
 const heroTl=gsap.timeline({
   scrollTrigger:{
-    trigger:'#hero-wrapper', start:'top top', end:'bottom bottom',
-    scrub:1.3, pin:'#hero-sticky', anticipatePin:1,
+    trigger:'#hero-wrapper',start:'top top',end:'bottom bottom',
+    scrub:1.3,pin:'#hero-sticky',anticipatePin:1,
   }
 });
 
 heroTl
-  // 0–20%: câmera avança, tudo normal
   .to(cam,{z:28,duration:2,ease:'none'},0)
-
-  // 20–35%: texto fase 1 sai elegante
   .to(phase1,{opacity:0,y:-52,duration:1.5,ease:'power2.in'},1.8)
-  .to(hint,  {opacity:0,duration:.7},1.8)
-
-  // 32–38%: scan line
+  .to(hint,{opacity:0,duration:.7},1.8)
   .to(scan,{opacity:.5,duration:.15},3.0)
   .to(scan,{top:'100%',duration:1.0,ease:'none'},3.0)
   .to(scan,{opacity:0,duration:.15},3.9)
-
-  // 38–68%: fase 2 — stats + palavras
   .to(phase2,{opacity:1,duration:1.1,ease:'power2.out'},3.4)
   .to(p2nums,{x:0,opacity:1,stagger:.18,duration:.9,ease:'power3.out'},3.6)
   .to(p2tags,{x:0,opacity:1,stagger:.10,duration:.6,ease:'power3.out'},3.9)
-  .to(cam,   {z:27,x:-1.5,duration:2.5,ease:'power1.inOut'},3.4)
-
-  // 68–78%: fase 2 sai
+  .to(cam,{z:27,x:-1.5,duration:2.5,ease:'power1.inOut'},3.4)
   .to(phase2,{opacity:0,duration:1.0,ease:'power2.in'},6.2)
-  .to(cam,   {z:33,x:0,duration:1.8,ease:'power2.inOut'},6.0)
-
-  // 78–100%: CTA final — centralizado sobre o atleta
-  .to(phase3,       {opacity:1,duration:1.1,ease:'power2.out'},7.2)
+  .to(cam,{z:33,x:0,duration:1.8,ease:'power2.inOut'},6.0)
+  .to(phase3,{opacity:1,duration:1.1,ease:'power2.out'},7.2)
   .to('#phase3-line',{width:140,duration:.8,ease:'power2.out'},7.7);
 
 // ══════════════════════════════════════════════════════════
-// RESTO DA PÁGINA
+// STATS — zoom + counter com física
 // ══════════════════════════════════════════════════════════
-
-// Stats
 document.querySelectorAll('.stat-item').forEach((item,i)=>{
   const el=item.querySelector('.count');
   const tgt=parseInt(el?.dataset.target||0);
-  gsap.from(item,{y:32,opacity:0,duration:.75,delay:i*.09,ease:'power3.out',
-    scrollTrigger:{trigger:item,start:'top 90%',once:true}});
+  const suffix=item.querySelector('.stat-suffix');
+
+  // Entrada: vem de baixo com zoom
+  gsap.fromTo(item,
+    {y:48, opacity:0, scale:0.88},
+    {y:0, opacity:1, scale:1,
+     duration:.85, delay:i*.12, ease:'power3.out',
+     scrollTrigger:{trigger:item,start:'top 88%',once:true}
+    }
+  );
+
   if(!el)return;
-  ScrollTrigger.create({trigger:item,start:'top 87%',once:true,
+  ScrollTrigger.create({trigger:item,start:'top 85%',once:true,
     onEnter(){
       item.classList.add('is-active');
-      gsap.to({v:0},{v:tgt,duration:1.9,delay:i*.09,ease:'power2.out',
-        onUpdate(){el.textContent=Math.round(this.targets()[0].v);}});
+      // Counter com ease-out que simula física de inércia
+      gsap.to({v:0},{v:tgt,duration:2.2,delay:i*.12,ease:'expo.out',
+        onUpdate(){el.textContent=Math.round(this.targets()[0].v);}
+      });
+      // Suffix pisca ao terminar
+      if(suffix){
+        setTimeout(()=>{
+          gsap.fromTo(suffix,{scale:1.6,color:'#ff3351'},{scale:1,color:'#E8213A',duration:.5,ease:'elastic.out(1,0.5)'});
+        }, (2200 + i*120));
+      }
     }
   });
 });
 
-// Dividers
+// ══════════════════════════════════════════════════════════
+// DIVIDERS
+// ══════════════════════════════════════════════════════════
 document.querySelectorAll('[data-divider]').forEach(el=>{
-  gsap.to(el,{width:'100%',duration:1.6,ease:'power2.inOut',
+  gsap.to(el,{width:'100%',duration:1.8,ease:'power2.inOut',
     scrollTrigger:{trigger:el,start:'top 92%',once:true}});
 });
 
-// Eyebrows
+// ══════════════════════════════════════════════════════════
+// EYEBROWS — text scramble
+// ══════════════════════════════════════════════════════════
 gsap.utils.toArray('.section-eyebrow').forEach(el=>{
-  gsap.to(el,{opacity:1,x:0,duration:.75,ease:'power3.out',
-    scrollTrigger:{trigger:el,start:'top 88%',once:true}});
+  const original = el.textContent.trim().toUpperCase();
+  ScrollTrigger.create({trigger:el,start:'top 88%',once:true,
+    onEnter(){
+      gsap.set(el,{opacity:1,x:0});
+      scrambleText(el, original, 0.7);
+    }
+  });
 });
 
-// S-words
-gsap.utils.toArray('.s-word').forEach(w=>{
-  gsap.to(w,{y:0,opacity:1,duration:.95,ease:'power4.out',
-    scrollTrigger:{trigger:w.closest('.section-title')||w,start:'top 88%',once:true}});
+// ══════════════════════════════════════════════════════════
+// TÍTULOS — split por letra com zoom
+// ══════════════════════════════════════════════════════════
+gsap.utils.toArray('.section-title').forEach(titleEl=>{
+  // Só nas seções (não no hero)
+  if(titleEl.closest('#hero-sticky')) return;
+
+  // Zoom suave no container ao entrar
+  gsap.fromTo(titleEl,
+    {scale:0.92, opacity:0},
+    {scale:1, opacity:1, duration:1.1, ease:'power3.out',
+     scrollTrigger:{trigger:titleEl,start:'top 86%',once:true}
+    }
+  );
+
+  // Anima as s-words que já existem
+  titleEl.querySelectorAll('.s-word').forEach((w,i)=>{
+    gsap.to(w,{y:0,opacity:1,duration:1.0,delay:i*.08,ease:'power4.out',
+      scrollTrigger:{trigger:titleEl,start:'top 86%',once:true}
+    });
+  });
 });
 
-// Service cards
-document.querySelectorAll('.service-card').forEach((c,i)=>{
-  gsap.from(c,{y:28,opacity:0,duration:.65,delay:(i%3)*.09,ease:'power3.out',
-    scrollTrigger:{trigger:c,start:'top 89%',once:true}});
-  ScrollTrigger.create({trigger:c,start:'top 89%',once:true,onEnter(){
-    const b=c.querySelector('.service-bar'),n=c.querySelector('.service-name'),
-          d=c.querySelector('.service-desc'),l=c.querySelector('.service-link');
-    if(b)b.style.cssText='transform:scaleX(1);transition:transform .65s ease .05s';
-    if(n)n.style.cssText='transform:translateY(0);opacity:1;transition:all .55s ease .18s';
-    if(d)d.style.cssText='transform:translateY(0);opacity:1;transition:all .55s ease .28s';
-    if(l)l.style.cssText='transform:translateY(0);opacity:1;transition:all .55s ease .38s';
+// ══════════════════════════════════════════════════════════
+// SERVICE CARDS — onda diagonal com skew+blur
+// ══════════════════════════════════════════════════════════
+document.querySelectorAll('.service-card').forEach((card,i)=>{
+  // Delay escalonado por posição na grid (3 colunas)
+  const col = i % 3;
+  const row = Math.floor(i / 3);
+  const delay = col * 0.08 + row * 0.12;
+
+  gsap.fromTo(card,
+    {y:60, opacity:0, skewY:2, filter:'blur(4px)'},
+    {y:0, opacity:1, skewY:0, filter:'blur(0px)',
+     duration:.85, delay, ease:'power3.out',
+     scrollTrigger:{trigger:card,start:'top 88%',once:true}
+    }
+  );
+
+  // Barra, nome, desc, link
+  ScrollTrigger.create({trigger:card,start:'top 88%',once:true,onEnter(){
+    const b=card.querySelector('.service-bar'),
+          n=card.querySelector('.service-name'),
+          d=card.querySelector('.service-desc'),
+          l=card.querySelector('.service-link');
+    setTimeout(()=>{
+      if(b) b.style.cssText='transform:scaleX(1);transition:transform .65s ease .05s';
+      if(n) n.style.cssText='transform:translateY(0);opacity:1;transition:all .55s ease .18s';
+      if(d) d.style.cssText='transform:translateY(0);opacity:1;transition:all .55s ease .28s';
+      if(l) l.style.cssText='transform:translateY(0);opacity:1;transition:all .55s ease .38s';
+    }, delay * 1000);
   }});
+
+  // Hover: micro zoom no número de fundo
+  card.addEventListener('mouseenter',()=>{
+    gsap.to(card.querySelector('.service-num'),{scale:1.1,duration:.4,ease:'power2.out'});
+  });
+  card.addEventListener('mouseleave',()=>{
+    gsap.to(card.querySelector('.service-num'),{scale:1,duration:.4,ease:'power2.out'});
+  });
 });
 
-// Horizontal scroll
+// ══════════════════════════════════════════════════════════
+// HORIZONTAL SCROLL — programs
+// ══════════════════════════════════════════════════════════
 const ht=document.getElementById('hscroll-track');
-if(ht){gsap.to(ht,{x:()=>-(ht.scrollWidth-innerWidth+128),ease:'none',
-  scrollTrigger:{trigger:'.hscroll-section',start:'top top',end:'bottom bottom',
-    scrub:1.0,pin:'.hscroll-sticky',anticipatePin:1}});}
+if(ht){
+  // Header da seção entra com zoom
+  const hHeader=document.querySelector('.hscroll-header');
+  if(hHeader){
+    gsap.fromTo(hHeader,
+      {x:-40,opacity:0},
+      {x:0,opacity:1,duration:1,ease:'power3.out',
+       scrollTrigger:{trigger:'.hscroll-section',start:'top 80%',once:true}
+      }
+    );
+  }
 
-// Transform canvas
+  gsap.to(ht,{x:()=>-(ht.scrollWidth-innerWidth+128),ease:'none',
+    scrollTrigger:{trigger:'.hscroll-section',start:'top top',end:'bottom bottom',
+      scrub:1.0,pin:'.hscroll-sticky',anticipatePin:1}});
+
+  // Cards do hscroll: escalam levemente ao entrar no centro do viewport
+  document.querySelectorAll('.hscroll-card').forEach(card=>{
+    card.addEventListener('mouseenter',()=>{
+      gsap.to(card,{scale:1.02,duration:.4,ease:'power2.out'});
+    });
+    card.addEventListener('mouseleave',()=>{
+      gsap.to(card,{scale:1,duration:.4,ease:'power2.out'});
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// TRANSFORM SECTION — parallax profundo
+// ══════════════════════════════════════════════════════════
 const tc=document.getElementById('transform-canvas-2');
-if(tc&&typeof THREE!=='undefined'){
+const transformSection=document.querySelector('.transform-section');
+const transformVisual=document.querySelector('.transform-visual');
+const transformText=document.querySelector('.transform-section > div:last-child');
+
+// Parallax: visual sobe mais devagar que o texto
+if(transformVisual && transformSection){
+  gsap.to(transformVisual,{
+    y:-60, ease:'none',
+    scrollTrigger:{trigger:transformSection,start:'top bottom',end:'bottom top',scrub:1.5}
+  });
+}
+if(transformText && transformSection){
+  gsap.to(transformText,{
+    y:30, ease:'none',
+    scrollTrigger:{trigger:transformSection,start:'top bottom',end:'bottom top',scrub:2}
+  });
+}
+
+// Canvas 3D da seção transform
+if(tc && typeof THREE!=='undefined'){
   const tS=new THREE.Scene(),tC=new THREE.PerspectiveCamera(60,1,.1,100);
   const tR=new THREE.WebGLRenderer({canvas:tc,antialias:true,alpha:true});
   tR.setClearColor(0x141418,1); tC.position.z=8;
@@ -1683,9 +1959,11 @@ if(tc&&typeof THREE!=='undefined'){
     const a=(i/60)*Math.PI*4,y=(i/60)*10-5;
     const s1=new THREE.Mesh(sG,mR); s1.position.set(Math.cos(a)*1.6,y,Math.sin(a)*1.6); hG.add(s1);
     const s2=new THREE.Mesh(sG,mD); s2.position.set(Math.cos(a+Math.PI)*1.6,y,Math.sin(a+Math.PI)*1.6); hG.add(s2);
-    if(i%5===0){const bg=new THREE.CylinderGeometry(.015,.015,3.2,4);
+    if(i%5===0){
+      const bg=new THREE.CylinderGeometry(.015,.015,3.2,4);
       const bm=new THREE.Mesh(bg,new THREE.MeshBasicMaterial({color:0x332225,transparent:true,opacity:.5}));
-      bm.position.y=y;bm.rotation.z=Math.PI/2;bm.rotation.x=a;hG.add(bm);}
+      bm.position.y=y;bm.rotation.z=Math.PI/2;bm.rotation.x=a;hG.add(bm);
+    }
   }
   tS.add(hG);
   const resT=()=>{const p=tc.parentElement;if(!p)return;tR.setSize(p.clientWidth,p.clientHeight);tC.aspect=p.clientWidth/p.clientHeight;tC.updateProjectionMatrix();};
@@ -1699,32 +1977,138 @@ if(tc&&typeof THREE!=='undefined'){
   window.addEventListener('resize',resT); setTimeout(resT,100);
 }
 
-// Transform text
-document.querySelectorAll('.transform-body,.feature-row').forEach((el,i)=>{
-  ScrollTrigger.create({trigger:el,start:'top 88%',once:true,
-    onEnter(){setTimeout(()=>el.classList.add('is-visible'),i*80);}});
+// Transform: corpo do texto
+document.querySelectorAll('.transform-body').forEach(el=>{
+  gsap.fromTo(el,
+    {y:30,opacity:0},
+    {y:0,opacity:1,duration:.9,ease:'power3.out',
+     scrollTrigger:{trigger:el,start:'top 88%',once:true}
+    }
+  );
 });
 
-// Process
+document.querySelectorAll('.feature-row').forEach((el,i)=>{
+  gsap.fromTo(el,
+    {x:-24,opacity:0},
+    {x:0,opacity:1,duration:.65,delay:i*.08,ease:'power3.out',
+     scrollTrigger:{trigger:el,start:'top 88%',once:true,
+       onEnter(){el.classList.add('is-visible');}
+     }
+    }
+  );
+});
+
+// ══════════════════════════════════════════════════════════
+// PROCESS — linha que avança + círculos que pulsam ao ativar
+// ══════════════════════════════════════════════════════════
 const pF=document.getElementById('process-fill');
-if(pF){gsap.to(pF,{width:'100%',ease:'none',
-  scrollTrigger:{trigger:'.process-section',start:'top 62%',end:'bottom 62%',scrub:.8}});}
-document.querySelectorAll('.process-step').forEach((s,i)=>{
-  ScrollTrigger.create({trigger:s,start:'top 83%',once:true,
-    onEnter(){setTimeout(()=>s.classList.add('is-visible'),i*130);}});
+if(pF){
+  gsap.to(pF,{width:'100%',ease:'none',
+    scrollTrigger:{trigger:'.process-section',start:'top 62%',end:'bottom 62%',scrub:.8}
+  });
+}
+
+document.querySelectorAll('.process-step').forEach((step,i)=>{
+  const circle=step.querySelector('.process-circle');
+
+  gsap.fromTo(step,
+    {y:50,opacity:0,scale:.92},
+    {y:0,opacity:1,scale:1,
+     duration:.8,delay:i*.15,ease:'power3.out',
+     scrollTrigger:{trigger:step,start:'top 82%',once:true,
+       onEnter(){
+         step.classList.add('is-visible');
+         // Pulso no círculo ao ativar
+         if(circle){
+           setTimeout(()=>{
+             gsap.fromTo(circle,
+               {boxShadow:'0 0 0 0 rgba(232,33,58,0.6)'},
+               {boxShadow:'0 0 0 20px rgba(232,33,58,0)',duration:.8,ease:'power2.out'}
+             );
+           }, i*150 + 200);
+         }
+       }
+     }
+    }
+  );
 });
 
-// Testimonials
+// ══════════════════════════════════════════════════════════
+// TESTIMONIALS — blur-to-sharp + scroll horizontal
+// ══════════════════════════════════════════════════════════
 const tt=document.getElementById('testimonials-track');
-if(tt){gsap.to(tt,{x:()=>-(tt.scrollWidth-innerWidth+128),ease:'none',
-  scrollTrigger:{trigger:'.testimonials-section',start:'top 80%',
-    end:()=>'+='+(tt.scrollWidth*.85),scrub:1.1}});}
+if(tt){
+  gsap.to(tt,{x:()=>-(tt.scrollWidth-innerWidth+128),ease:'none',
+    scrollTrigger:{trigger:'.testimonials-section',start:'top 80%',
+      end:()=>'+='+(tt.scrollWidth*.85),scrub:1.1}
+  });
+}
 
-// CTA
-gsap.from('.cta-title',{y:48,opacity:0,duration:.95,ease:'power4.out',
-  scrollTrigger:{trigger:'.cta-title',start:'top 85%',once:true}});
+// Cards de depoimento: blur-to-sharp
+document.querySelectorAll('.testimonial-card').forEach((card,i)=>{
+  gsap.fromTo(card,
+    {opacity:0,filter:'blur(6px)',y:24},
+    {opacity:1,filter:'blur(0px)',y:0,
+     duration:.9,delay:i*.1,ease:'power3.out',
+     scrollTrigger:{trigger:'.testimonials-section',start:'top 78%',once:true}
+    }
+  );
 
-// Smooth anchors
+  // Hover: levanta o card
+  card.addEventListener('mouseenter',()=>{
+    gsap.to(card,{y:-6,boxShadow:'0 12px 40px rgba(232,33,58,0.12)',duration:.35,ease:'power2.out'});
+  });
+  card.addEventListener('mouseleave',()=>{
+    gsap.to(card,{y:0,boxShadow:'none',duration:.35,ease:'power2.out'});
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// CTA — entrada dramática com zoom
+// ══════════════════════════════════════════════════════════
+const ctaTitle=document.querySelector('.cta-title');
+if(ctaTitle){
+  gsap.fromTo(ctaTitle,
+    {scale:.88,opacity:0,y:40},
+    {scale:1,opacity:1,y:0,
+     duration:1.2,ease:'power4.out',
+     scrollTrigger:{trigger:ctaTitle,start:'top 82%',once:true}
+    }
+  );
+}
+
+// Glow do CTA pulsa ao entrar
+const ctaSection=document.querySelector('.cta-section');
+if(ctaSection){
+  ScrollTrigger.create({trigger:ctaSection,start:'top 70%',once:true,
+    onEnter(){
+      gsap.fromTo('.cta-glow',
+        {scale:.5,opacity:0},
+        {scale:1,opacity:1,duration:1.5,ease:'power2.out'}
+      );
+    }
+  });
+}
+
+// Sub, form e fine
+gsap.from('.cta-sub',{y:20,opacity:0,duration:.7,ease:'power3.out',
+  scrollTrigger:{trigger:'.cta-sub',start:'top 84%',once:true}});
+gsap.from('.cta-form',{y:24,opacity:0,duration:.7,delay:.1,ease:'power3.out',
+  scrollTrigger:{trigger:'.cta-form',start:'top 84%',once:true}});
+gsap.from('.cta-fine',{opacity:0,duration:.6,delay:.3,ease:'power3.out',
+  scrollTrigger:{trigger:'.cta-fine',start:'top 88%',once:true}});
+
+// ══════════════════════════════════════════════════════════
+// FOOTER — linha a linha
+// ══════════════════════════════════════════════════════════
+gsap.from('footer > div',{
+  y:30,opacity:0,stagger:.1,duration:.7,ease:'power3.out',
+  scrollTrigger:{trigger:'footer',start:'top 88%',once:true}
+});
+
+// ══════════════════════════════════════════════════════════
+// SMOOTH ANCHORS
+// ══════════════════════════════════════════════════════════
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
   a.addEventListener('click',e=>{
     const t=document.querySelector(a.getAttribute('href'));
@@ -1733,5 +2117,6 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 });
 
 window.addEventListener('resize',()=>ScrollTrigger.refresh());
+
 })();
 </script></body></html>
