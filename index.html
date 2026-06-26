@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APEX Training — Elite Personal Trainer · São Paulo</title>
+<title>APEX Training — Elite Personal Trainer · São Paulo · v12 Living Motion</title>
 <meta name="description" content="Metodologia de alta performance para quem exige o máximo. Personal trainer elite em São Paulo.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -1020,6 +1020,344 @@ footer {
   .stats-section { grid-template-columns: 1fr 1fr; }
   .process-steps { grid-template-columns: 1fr; gap: 12px; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   APEX v12 — LIVING MOTION / PREMIUM HOVER SYSTEM
+   Camada adicionada: não desmonta a v11, apenas dá vida e sofisticação.
+═══════════════════════════════════════════════════════════════════ */
+:root {
+  --spring: cubic-bezier(.2,1.4,.24,1);
+  --slow-premium: cubic-bezier(.16,1,.3,1);
+  --gold: #D7B46A;
+  --gold-soft: rgba(215,180,106,.14);
+}
+
+/* Profissionaliza símbolos — substitui emojis por glyphs SVG premium */
+.service-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 18px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.012)),
+    radial-gradient(circle at 25% 20%, rgba(232,33,58,.20), transparent 48%);
+  border: 1px solid rgba(232,33,58,.24);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 40px rgba(0,0,0,.22);
+  transform-style: preserve-3d;
+  will-change: transform, filter, box-shadow;
+  transition: transform 1.05s var(--spring), border-color .65s var(--slow-premium), box-shadow .75s var(--slow-premium), background .75s var(--slow-premium);
+}
+.service-icon::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(145deg, rgba(232,33,58,.55), transparent 42%, rgba(215,180,106,.26));
+  opacity: 0;
+  transition: opacity .75s var(--slow-premium);
+  pointer-events: none;
+}
+.service-icon::after {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  right: 11px;
+  top: 11px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 12px var(--red), 0 0 28px rgba(232,33,58,.45);
+  opacity: .72;
+  transform: scale(.75);
+  transition: transform .75s var(--spring), opacity .75s var(--slow-premium);
+}
+.service-icon svg {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  z-index: 1;
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 10px rgba(232,33,58,.28));
+  transition: transform .9s var(--spring), stroke .5s ease, filter .7s ease;
+}
+
+/* Cards saltantes, mas com leitura premium */
+.service-card,
+.hscroll-card,
+.ba-card,
+.process-step,
+.testimonial-card,
+.stat-item {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+.service-card {
+  min-height: 360px;
+  isolation: isolate;
+  transition:
+    transform 1.05s var(--spring),
+    box-shadow .9s var(--slow-premium),
+    border-color .75s var(--slow-premium),
+    background .8s var(--slow-premium),
+    filter .8s var(--slow-premium);
+}
+.service-card::before {
+  background:
+    radial-gradient(circle at var(--mx,50%) var(--my,30%), rgba(232,33,58,.18), transparent 34%),
+    linear-gradient(135deg, rgba(232,33,58,.07) 0%, transparent 58%);
+}
+.service-card .service-name,
+.service-card .service-desc,
+.service-card .service-link,
+.service-card .service-bar,
+.service-card .service-num { transition-duration: .9s !important; }
+.service-card:hover {
+  transform: translateY(-18px) scale(1.028) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));
+  box-shadow: 0 34px 90px rgba(0,0,0,.48), 0 0 0 1px rgba(232,33,58,.23), 0 0 70px rgba(232,33,58,.10);
+  z-index: 6;
+  filter: saturate(1.08);
+}
+.service-card:hover .service-icon {
+  transform: translateY(-12px) translateZ(42px) scale(1.11) rotate(-3deg);
+  border-color: rgba(232,33,58,.62);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 22px 50px rgba(232,33,58,.20), 0 0 70px rgba(232,33,58,.11);
+}
+.service-card:hover .service-icon::before { opacity: .65; }
+.service-card:hover .service-icon::after { opacity: 1; transform: scale(1.15); }
+.service-card:hover .service-icon svg {
+  transform: scale(1.08) rotate(4deg);
+  stroke: #ff4d63;
+  filter: drop-shadow(0 0 16px rgba(232,33,58,.52));
+}
+.service-card:hover .service-num {
+  transform: translateY(-8px) translateZ(34px) scale(1.13) rotate(-2deg) !important;
+}
+.service-card:hover .service-name { transform: translateY(-4px) translateZ(26px) !important; }
+.service-card:hover .service-desc { transform: translateY(-2px) translateZ(18px) !important; }
+.service-card:hover .service-link { transform: translateY(2px) translateZ(30px) !important; }
+.service-card.is-primed .service-icon { animation: apexIconEntrance 1.45s var(--spring) both; }
+
+@keyframes apexIconEntrance {
+  0% { opacity: 0; transform: translateY(30px) scale(.72) rotate(-12deg); }
+  48% { opacity: 1; transform: translateY(-14px) scale(1.13) rotate(4deg); }
+  70% { transform: translateY(4px) scale(.96) rotate(-2deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+/* Shimmer sofisticado — aplicado por JS nos cards premium */
+.apex-live-card { position: relative; overflow: hidden; }
+.apex-live-card .apex-shine {
+  position: absolute;
+  inset: -2px;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.16), transparent 23%),
+    linear-gradient(110deg, transparent 0%, rgba(255,255,255,.10) 45%, rgba(232,33,58,.18) 50%, transparent 58%);
+  transform: translateX(-130%) skewX(-18deg);
+  mix-blend-mode: screen;
+  transition: opacity .55s var(--slow-premium), transform 1.35s var(--slow-premium);
+}
+.apex-live-card:hover .apex-shine { opacity: 1; transform: translateX(130%) skewX(-18deg); }
+
+/* Horizontal/program cards: salto de editorial caro */
+.hscroll-card {
+  transition: transform 1s var(--spring), box-shadow .9s var(--slow-premium), border-color .75s var(--slow-premium), filter .75s ease;
+}
+.hscroll-card:hover {
+  transform: translateY(-16px) scale(1.035) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)) !important;
+  box-shadow: 0 32px 95px rgba(0,0,0,.48), 0 0 70px rgba(232,33,58,.12);
+  filter: saturate(1.08) contrast(1.03);
+  z-index: 5;
+}
+.hscroll-card:hover .hscroll-title { transform: translateY(-6px); transition: transform .95s var(--spring); }
+.hscroll-card:hover .hscroll-desc { transform: translateY(-3px); transition: transform .95s var(--spring); }
+.hscroll-card:hover .hscroll-athlete-img { transform: translateY(-18px) scale(1.07) !important; transition-duration: 1.05s !important; }
+.hscroll-card:hover .hscroll-card-num { color: rgba(232,33,58,.72); transition: color .65s ease; }
+
+/* Antes/depois com punch visual mais longo */
+.ba-card {
+  transition: transform 1.05s var(--spring), box-shadow .9s var(--slow-premium), filter .75s ease;
+}
+.ba-card:hover {
+  transform: translateY(-14px) scale(1.025) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));
+  box-shadow: 0 30px 90px rgba(0,0,0,.46), 0 0 64px rgba(232,33,58,.10);
+  z-index: 4;
+}
+.ba-card:hover .ba-after { transition-duration: 1.05s; }
+.ba-card:hover .ba-label-after { animation: apexBadgeBounce 1.2s var(--spring) both; }
+
+@keyframes apexBadgeBounce {
+  0% { transform: translateY(-8px) scale(.9); }
+  48% { transform: translateY(4px) scale(1.08); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Processo e depoimentos mais vivos */
+.process-step:hover,
+.testimonial-card:hover,
+.stat-item:hover {
+  transform: translateY(-10px) scale(1.018) !important;
+  box-shadow: 0 24px 70px rgba(0,0,0,.34), 0 0 44px rgba(232,33,58,.08);
+  z-index: 3;
+}
+.process-step:hover .process-circle { animation: apexCirclePulse 1.35s ease-out both; }
+@keyframes apexCirclePulse {
+  0% { box-shadow: 0 0 0 0 rgba(232,33,58,.45), 0 0 20px rgba(232,33,58,.12); }
+  70% { box-shadow: 0 0 0 22px rgba(232,33,58,0), 0 0 32px rgba(232,33,58,.22); }
+  100% { box-shadow: 0 0 0 0 rgba(232,33,58,0), 0 0 24px rgba(232,33,58,.14); }
+}
+.testimonial-card:hover .testimonial-avatar { animation: apexAvatarPop 1.1s var(--spring) both; }
+@keyframes apexAvatarPop {
+  0% { transform: scale(.96); }
+  48% { transform: scale(1.14) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* Botões mais longos e com pressão tátil */
+.nav-cta,
+.phase3-btn,
+.btn-red,
+.cta-btn,
+.hero-cta-inline,
+.countdown-cta {
+  transition: transform .9s var(--spring), box-shadow .85s var(--slow-premium), filter .65s ease, color .35s ease, background .35s ease !important;
+}
+.nav-cta:hover,
+.phase3-btn:hover,
+.btn-red:hover,
+.cta-btn:hover,
+.hero-cta-inline:hover,
+.countdown-cta:hover {
+  transform: translateY(-4px) scale(1.035) !important;
+  filter: saturate(1.12);
+}
+.nav-cta:active,
+.phase3-btn:active,
+.btn-red:active,
+.cta-btn:active,
+.hero-cta-inline:active,
+.countdown-cta:active,
+.service-card:active,
+.hscroll-card:active,
+.ba-card:active {
+  transform: translateY(-1px) scale(.985) !important;
+}
+
+/* Ticker premium: separadores viram marcas de luxo, não emoji */
+.ticker-item.accent {
+  font-size: 0;
+  width: 46px;
+  padding: 0 22px;
+  position: relative;
+}
+.ticker-item.accent::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 7px; height: 7px;
+  border: 1px solid var(--red);
+  transform: translate(-50%,-50%) rotate(45deg);
+  box-shadow: 0 0 10px rgba(232,33,58,.48);
+}
+
+/* Nova camada atmosférica global criada por JS */
+#apex-energy-field {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8;
+  opacity: .72;
+  background:
+    radial-gradient(540px circle at var(--spot-x,50%) var(--spot-y,50%), rgba(232,33,58,.085), transparent 42%),
+    radial-gradient(360px circle at calc(100% - var(--spot-x,50%)) calc(100% - var(--spot-y,50%)), rgba(215,180,106,.045), transparent 48%);
+  mix-blend-mode: screen;
+  transition: opacity .6s ease;
+}
+#apex-scroll-orbit {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  z-index: 520;
+  pointer-events: none;
+  opacity: .78;
+  background: conic-gradient(var(--red) calc(var(--apex-progress,0) * 1turn), rgba(255,255,255,.075) 0);
+  mask: radial-gradient(circle, transparent 55%, #000 57%);
+  -webkit-mask: radial-gradient(circle, transparent 55%, #000 57%);
+  filter: drop-shadow(0 0 12px rgba(232,33,58,.35));
+}
+#apex-scroll-orbit::after {
+  content: 'APEX';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 8px;
+  letter-spacing: 1.8px;
+  color: rgba(245,245,240,.34);
+  transform: translateX(-1px);
+}
+
+/* Scroll reveals mais cinematográficos */
+.apex-reveal {
+  clip-path: inset(0 0 100% 0);
+  transform: translateY(42px) scale(.985);
+  opacity: 0;
+  will-change: transform, opacity, clip-path;
+}
+.apex-reveal.apex-revealed {
+  clip-path: inset(0 0 0% 0);
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  transition: clip-path 1.25s var(--slow-premium), transform 1.25s var(--slow-premium), opacity .85s ease;
+}
+
+/* Mobile mantém visual vivo, mas evita hover pesado */
+@media (hover: none), (pointer: coarse) {
+  .service-card:hover,
+  .hscroll-card:hover,
+  .ba-card:hover,
+  .process-step:hover,
+  .testimonial-card:hover,
+  .stat-item:hover {
+    transform: none !important;
+    box-shadow: none;
+  }
+  .service-card:active,
+  .hscroll-card:active,
+  .ba-card:active,
+  .process-step:active,
+  .testimonial-card:active {
+    transform: scale(.985) !important;
+  }
+  #apex-energy-field { opacity: .38; }
+  #apex-scroll-orbit { right: 16px; width: 36px; height: 36px; opacity: .56; }
+  .service-icon { width: 52px; height: 52px; }
+}
+@media (max-width: 768px) {
+  .service-card { min-height: auto; padding-top: 46px; padding-bottom: 46px; }
+  #apex-scroll-orbit { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #apex-energy-field, #apex-scroll-orbit { display:none; }
+  .apex-reveal { clip-path: none; transform:none; opacity:1; }
+}
+
 </style>
 </head>
 <body>
@@ -1161,12 +1499,12 @@ footer {
   <p class="section-eyebrow">O Que Oferecemos</p>
   <h2 class="section-title"><span class="s-word">PROGRAMAS</span> <span class="s-word" style="color:var(--red)">ELITE</span></h2>
   <div class="services-grid">
-    <div class="service-card"><div class="service-num">01</div><span class="service-icon">⚡</span><div class="service-bar"></div><h3 class="service-name">Treino Personalizado</h3><p class="service-desc">Protocolo exclusivo desenhado para sua biometria, objetivos e estilo de vida. Cada sessão é uma experiência única de alto rendimento.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">02</div><span class="service-icon">🥗</span><div class="service-bar"></div><h3 class="service-name">Nutrição Estratégica</h3><p class="service-desc">Plano alimentar baseado em dados reais do seu organismo. Ciência aplicada para máxima performance e recuperação acelerada.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">03</div><span class="service-icon">🧠</span><div class="service-bar"></div><h3 class="service-name">Mentoria Mental</h3><p class="service-desc">O corpo segue a mente. Técnicas de foco, disciplina e mentalidade vencedora para ir além de qualquer limite.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">04</div><span class="service-icon">🏋️</span><div class="service-bar"></div><h3 class="service-name">High Performance</h3><p class="service-desc">Para atletas e executivos de alta demanda. Força, HIIT e recuperação ativa em protocolo intensivo e científico.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">05</div><span class="service-icon">🔥</span><div class="service-bar"></div><h3 class="service-name">Recomposição Corporal</h3><p class="service-desc">Redução de gordura e hipertrofia simultâneos. Metodologia exclusiva com reavaliação semanal e ajuste contínuo.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">06</div><span class="service-icon">📱</span><div class="service-bar"></div><h3 class="service-name">Online Premium</h3><p class="service-desc">App exclusivo com treinos em vídeo, check-ins diários, análise de desempenho e suporte 24h onde você estiver.</p><div class="service-link">Explorar →</div></div>
+    <div class="service-card"><div class="service-num">01</div><span class="service-icon service-icon--performance" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M27 4 10 27h13l-2 17 17-24H25l2-16Z"/></svg></span><div class="service-bar"></div><h3 class="service-name">Treino Personalizado</h3><p class="service-desc">Protocolo exclusivo desenhado para sua biometria, objetivos e estilo de vida. Cada sessão é uma experiência única de alto rendimento.</p><div class="service-link">Explorar →</div></div>
+    <div class="service-card"><div class="service-num">02</div><span class="service-icon service-icon--nutrition" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M10 29c8-1 18-7 22-18 6 8 4 24-7 29-7 3-14 0-15-11Z"/><path d="M14 34c6-7 12-10 18-13"/><path d="M32 12c3 2 5 5 6 9"/></svg></span><div class="service-bar"></div><h3 class="service-name">Nutrição Estratégica</h3><p class="service-desc">Plano alimentar baseado em dados reais do seu organismo. Ciência aplicada para máxima performance e recuperação acelerada.</p><div class="service-link">Explorar →</div></div>
+    <div class="service-card"><div class="service-num">03</div><span class="service-icon service-icon--mind" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="14" cy="18" r="4"/><circle cx="31" cy="13" r="4"/><circle cx="34" cy="31" r="4"/><circle cx="17" cy="34" r="4"/><path d="M18 17 27 14M32 17l1 10M30 31l-9 3M18 31l12-15"/></svg></span><div class="service-bar"></div><h3 class="service-name">Mentoria Mental</h3><p class="service-desc">O corpo segue a mente. Técnicas de foco, disciplina e mentalidade vencedora para ir além de qualquer limite.</p><div class="service-link">Explorar →</div></div>
+    <div class="service-card"><div class="service-num">04</div><span class="service-icon service-icon--strength" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M7 24h34"/><path d="M14 16v16M19 18v12M29 18v12M34 16v16"/><path d="M7 19v10M41 19v10"/></svg></span><div class="service-bar"></div><h3 class="service-name">High Performance</h3><p class="service-desc">Para atletas e executivos de alta demanda. Força, HIIT e recuperação ativa em protocolo intensivo e científico.</p><div class="service-link">Explorar →</div></div>
+    <div class="service-card"><div class="service-num">05</div><span class="service-icon service-icon--bodycomp" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 42c8-3 13-9 12-17-.8-7-6-11-10-18-1 7-7 10-10 15-5 8-1 17 8 20Z"/><path d="M24 42c4-3 6-7 5-11-.5-4-3-6-5-10-1 4-5 6-6 10-2 5 1 9 6 11Z"/></svg></span><div class="service-bar"></div><h3 class="service-name">Recomposição Corporal</h3><p class="service-desc">Redução de gordura e hipertrofia simultâneos. Metodologia exclusiva com reavaliação semanal e ajuste contínuo.</p><div class="service-link">Explorar →</div></div>
+    <div class="service-card"><div class="service-num">06</div><span class="service-icon service-icon--digital" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="15" y="5" width="18" height="38" rx="4"/><path d="M21 10h6M22 37h4"/><path d="M19 17h10M19 23h7M19 29h10"/></svg></span><div class="service-bar"></div><h3 class="service-name">Online Premium</h3><p class="service-desc">App exclusivo com treinos em vídeo, check-ins diários, análise de desempenho e suporte 24h onde você estiver.</p><div class="service-link">Explorar →</div></div>
   </div>
 </section>
 
@@ -2119,5 +2457,193 @@ window.addEventListener('resize',()=>{
 
 })();
 </script>
+
+
+<script>
+/* ════════════════════════════════════════════════════════════════════
+   APEX v12 — LIVING INTERACTION LAYER
+   Complementa a v11: hover saltante, tilt, shine, scroll vivo e microfeedback.
+════════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+if(window.__APEX_V12_LIVING__) return;
+window.__APEX_V12_LIVING__ = true;
+
+const hasGSAP = typeof gsap !== 'undefined';
+const hasST = typeof ScrollTrigger !== 'undefined';
+const canHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Atmosfera interativa global */
+const field = document.createElement('div');
+field.id = 'apex-energy-field';
+document.body.appendChild(field);
+const orbit = document.createElement('div');
+orbit.id = 'apex-scroll-orbit';
+document.body.appendChild(orbit);
+
+let sx = innerWidth * .5, sy = innerHeight * .5;
+let tx = sx, ty = sy;
+function updateField(){
+  sx += (tx - sx) * .08;
+  sy += (ty - sy) * .08;
+  document.documentElement.style.setProperty('--spot-x', sx + 'px');
+  document.documentElement.style.setProperty('--spot-y', sy + 'px');
+  requestAnimationFrame(updateField);
+}
+if(!reduceMotion) updateField();
+window.addEventListener('pointermove', function(e){ tx = e.clientX; ty = e.clientY; }, {passive:true});
+
+function updateProgress(){
+  const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  const p = Math.max(0, Math.min(1, scrollY / max));
+  document.documentElement.style.setProperty('--apex-progress', p.toFixed(4));
+}
+updateProgress();
+window.addEventListener('scroll', updateProgress, {passive:true});
+window.addEventListener('resize', updateProgress, {passive:true});
+
+/* Shine + tilt 3D nos cards principais */
+function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+function enhanceCard(card, opts){
+  opts = opts || {};
+  if(!card || card.dataset.apexEnhanced) return;
+  card.dataset.apexEnhanced = '1';
+  card.classList.add('apex-live-card');
+  if(!card.querySelector('.apex-shine')){
+    const shine = document.createElement('span');
+    shine.className = 'apex-shine';
+    shine.setAttribute('aria-hidden','true');
+    card.appendChild(shine);
+  }
+  if(!canHover || reduceMotion) return;
+  const maxRot = opts.rot || 7;
+  const lift = opts.lift || -18;
+  card.addEventListener('pointermove', function(e){
+    const r = card.getBoundingClientRect();
+    const px = clamp((e.clientX - r.left) / r.width, 0, 1);
+    const py = clamp((e.clientY - r.top) / r.height, 0, 1);
+    const rx = (0.5 - py) * maxRot;
+    const ry = (px - 0.5) * maxRot;
+    card.style.setProperty('--mx', (px * 100).toFixed(2) + '%');
+    card.style.setProperty('--my', (py * 100).toFixed(2) + '%');
+    card.style.setProperty('--tilt-x', rx.toFixed(3) + 'deg');
+    card.style.setProperty('--tilt-y', ry.toFixed(3) + 'deg');
+    if(hasGSAP){
+      gsap.to(card, {y: lift, scale: opts.scale || 1.026, rotateX: rx, rotateY: ry, transformPerspective: 1200, duration:.9, ease:'elastic.out(1,.52)', overwrite:'auto'});
+    }
+  }, {passive:true});
+  card.addEventListener('pointerleave', function(){
+    card.style.setProperty('--tilt-x','0deg');
+    card.style.setProperty('--tilt-y','0deg');
+    if(hasGSAP){
+      gsap.to(card, {y:0, scale:1, rotateX:0, rotateY:0, duration:1.25, ease:'elastic.out(1,.42)', overwrite:'auto'});
+    }
+  });
+  card.addEventListener('pointerdown', function(){
+    if(hasGSAP) gsap.to(card, {scale:.985, duration:.16, ease:'power2.out', overwrite:'auto'});
+  });
+  card.addEventListener('pointerup', function(){
+    if(hasGSAP) gsap.to(card, {scale:opts.scale || 1.026, duration:.75, ease:'elastic.out(1,.45)', overwrite:'auto'});
+  });
+}
+
+['.service-card','.hscroll-card','.ba-card','.process-step','.testimonial-card','.stat-item'].forEach(function(sel){
+  document.querySelectorAll(sel).forEach(function(card){
+    enhanceCard(card, sel === '.hscroll-card' ? {rot:5, lift:-16, scale:1.025} : {rot:7, lift:-14, scale:1.022});
+  });
+});
+
+/* Entrada mais longa e orgânica nos blocos que estavam estáticos */
+document.querySelectorAll('.service-card').forEach(function(card, i){
+  card.classList.add('is-primed');
+  if(hasGSAP && hasST && !reduceMotion){
+    const icon = card.querySelector('.service-icon');
+    const num = card.querySelector('.service-num');
+    const parts = card.querySelectorAll('.service-name,.service-desc,.service-link');
+    gsap.fromTo(icon, {y:34, scale:.72, rotate:-16, opacity:0}, {
+      y:0, scale:1, rotate:0, opacity:1, duration:1.35, delay:i*.08, ease:'elastic.out(1,.46)',
+      scrollTrigger:{trigger:card, start:'top 86%', toggleActions:'play none none reverse'}
+    });
+    gsap.fromTo(num, {y:-18, opacity:.25, scale:.9}, {
+      y:0, opacity:1, scale:1, duration:1.2, delay:i*.055, ease:'power4.out',
+      scrollTrigger:{trigger:card, start:'top 86%', toggleActions:'play none none reverse'}
+    });
+    gsap.fromTo(parts, {y:26, opacity:0}, {
+      y:0, opacity:1, duration:1.05, stagger:.13, delay:i*.055+.12, ease:'power3.out',
+      scrollTrigger:{trigger:card, start:'top 86%', toggleActions:'play none none reverse'}
+    });
+  }
+});
+
+/* Revelação cinematográfica em seções completas */
+const revealTargets = document.querySelectorAll('.transform-body,.countdown-inner,.cta-sub,.footer-tagline,.beforeafter-grid,.process-track');
+revealTargets.forEach(function(el){ el.classList.add('apex-reveal'); });
+if(hasST && !reduceMotion){
+  revealTargets.forEach(function(el){
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 88%',
+      end: 'bottom 10%',
+      onEnter: function(){ el.classList.add('apex-revealed'); },
+      onEnterBack: function(){ el.classList.add('apex-revealed'); }
+    });
+  });
+}else{
+  revealTargets.forEach(function(el){ el.classList.add('apex-revealed'); });
+}
+
+/* Ticker com velocidade viva e resposta ao hover */
+const ticker = document.querySelector('.ticker-track');
+if(ticker && hasGSAP && !reduceMotion){
+  const tween = gsap.to(ticker, {filter:'brightness(1.18)', duration:1.2, paused:true, ease:'power2.out'});
+  ticker.addEventListener('mouseenter', function(){ tween.play(); });
+  ticker.addEventListener('mouseleave', function(){ tween.reverse(); });
+  document.querySelectorAll('.ticker-item:not(.accent)').forEach(function(item){
+    item.addEventListener('mouseenter', function(){ gsap.fromTo(item,{y:0},{y:-7, duration:.85, ease:'elastic.out(1,.42)'}); });
+    item.addEventListener('mouseleave', function(){ gsap.to(item,{y:0, duration:.65, ease:'power3.out'}); });
+  });
+}
+
+/* Botões com ripple premium sem biblioteca */
+document.querySelectorAll('.nav-cta,.phase3-btn,.btn-red,.cta-btn,.hero-cta-inline,.countdown-cta,.service-link').forEach(function(btn){
+  btn.style.position = btn.style.position || 'relative';
+  btn.style.overflow = 'hidden';
+  btn.addEventListener('pointerdown', function(e){
+    const r = btn.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.style.cssText = 'position:absolute;left:'+(e.clientX-r.left)+'px;top:'+(e.clientY-r.top)+'px;width:12px;height:12px;border-radius:999px;background:rgba(255,255,255,.34);transform:translate(-50%,-50%) scale(0);pointer-events:none;z-index:6;mix-blend-mode:screen;';
+    btn.appendChild(ripple);
+    if(hasGSAP){
+      gsap.to(ripple,{scale:18, opacity:0, duration:.82, ease:'power3.out', onComplete:function(){ ripple.remove(); }});
+    }else{
+      ripple.remove();
+    }
+  });
+});
+
+/* Antes/depois: em touch, o efeito acontece no toque também */
+document.querySelectorAll('.ba-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    if(canHover) return;
+    card.classList.toggle('touch-open');
+    const after = card.querySelector('.ba-after');
+    if(after) after.style.clipPath = card.classList.contains('touch-open') ? 'inset(0 0% 0 0)' : 'inset(0 100% 0 0)';
+  });
+});
+
+/* Respiração sutil dos blocos de autoridade */
+if(hasGSAP && !reduceMotion){
+  gsap.to('.cta-glow', {scale:1.16, opacity:.9, duration:3.8, yoyo:true, repeat:-1, ease:'sine.inOut'});
+  gsap.to('.transform-badge', {y:-8, rotate:-8, duration:2.8, yoyo:true, repeat:-1, ease:'sine.inOut'});
+}
+
+/* Refresh final para compensar fontes/imagens */
+window.addEventListener('load', function(){
+  if(hasST) setTimeout(function(){ ScrollTrigger.refresh(); }, 220);
+});
+})();
+</script>
+
 </body>
 </html>
