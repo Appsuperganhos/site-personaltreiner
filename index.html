@@ -1358,6 +1358,399 @@ footer {
   .apex-reveal { clip-path: none; transform:none; opacity:1; }
 }
 
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   APEX v13 — MOBILE EXPERIENCE FIRST PATCH
+   Objetivo: mesma linguagem visual do desktop, mas com scroll nativo,
+   zero briga com o toque, menos pin/scrub e performance estável.
+═══════════════════════════════════════════════════════════════════ */
+html { -webkit-text-size-adjust: 100%; }
+body { overscroll-behavior-x: none; }
+button, a, .service-card, .hscroll-card, .ba-card, .process-step, .testimonial-card { -webkit-tap-highlight-color: transparent; }
+img, canvas { -webkit-user-drag: none; }
+
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  :root {
+    --mobile-pad: clamp(18px, 6vw, 28px);
+    --mobile-card-radius: 22px;
+  }
+
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+    touch-action: pan-y;
+    scroll-behavior: auto;
+  }
+
+  body::before { opacity: .018; background-size: 220px; }
+  #apex-energy-field, #apex-scroll-orbit { display: none !important; }
+  #progress-bar { height: 3px; }
+
+  nav {
+    padding: 18px var(--mobile-pad) !important;
+    min-height: 66px;
+    background: linear-gradient(to bottom, rgba(6,6,8,.84), rgba(6,6,8,.34), transparent);
+  }
+  nav.scrolled {
+    padding: 12px var(--mobile-pad) !important;
+  }
+  .nav-logo { font-size: 24px; letter-spacing: 4px; }
+  #mobile-menu { align-items: flex-start; padding: 92px var(--mobile-pad) 40px; justify-content: flex-start; gap: 22px; }
+  #mobile-menu a { font-size: clamp(42px, 14vw, 66px); line-height: .9; }
+
+  /* HERO MOBILE: troca pin pesado por capítulos verticais nativos. */
+  #hero-wrapper {
+    height: auto !important;
+    min-height: 100svh;
+    background: var(--dark);
+    overflow: hidden;
+  }
+  #hero-sticky {
+    position: relative !important;
+    top: auto !important;
+    height: auto !important;
+    min-height: 100svh;
+    overflow: hidden;
+    display: block;
+    isolation: isolate;
+  }
+  #hero-canvas {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: .64;
+    transform: translateZ(0);
+  }
+  .hero-vignette {
+    background: radial-gradient(ellipse 118% 72% at 50% 20%, transparent 0%, rgba(6,6,8,.42) 45%, rgba(6,6,8,.94) 100%);
+  }
+  #athlete-layer {
+    position: absolute !important;
+    inset: 0 !important;
+    height: 100% !important;
+    z-index: 3;
+    opacity: .82;
+  }
+  #athlete-stage {
+    position: sticky !important;
+    top: 0;
+    right: auto !important;
+    width: 100% !important;
+    height: 100svh !important;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: .38 !important;
+    filter: saturate(1.08) contrast(1.02);
+  }
+  #athlete-tilt { height: min(70svh, 620px) !important; }
+  .athlete-img { height: min(70svh, 620px) !important; }
+  #athlete-glow { height: 74%; bottom: -2%; opacity: .86; }
+  #athlete-ground { height: 34%; }
+
+  .hero-overlay {
+    position: relative !important;
+    inset: auto !important;
+    z-index: 6 !important;
+    min-height: 100svh;
+    display: flex !important;
+    pointer-events: auto;
+  }
+  #hero-phase-1 {
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 96px var(--mobile-pad) 76px !important;
+    text-align: left;
+  }
+  #hero-text-block {
+    max-width: 100% !important;
+    width: 100%;
+  }
+  .hero-label { font-size: 9px; letter-spacing: 4.6px; max-width: 82%; }
+  #hero-accent-line { margin-bottom: 18px; }
+  .hero-title-main {
+    font-size: clamp(58px, 18vw, 104px) !important;
+    line-height: .84 !important;
+    letter-spacing: -1.3px !important;
+    max-width: 96vw;
+  }
+  .hero-sub-main {
+    max-width: 280px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(245,245,240,.58);
+  }
+  .hero-cta-inline {
+    display: inline-flex !important;
+    margin-top: 28px;
+    padding: 15px 24px;
+    border-radius: 999px;
+    box-shadow: 0 20px 52px rgba(232,33,58,.22);
+  }
+
+  #hero-phase-2 {
+    opacity: 1 !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+    padding: 88px var(--mobile-pad) !important;
+    gap: 34px;
+    background: linear-gradient(to bottom, rgba(6,6,8,.10), rgba(6,6,8,.70) 28%, rgba(6,6,8,.88));
+  }
+  .phase2-left, .phase2-right { width: 100%; flex: none !important; }
+  .phase2-stat {
+    margin-bottom: 18px !important;
+    padding: 18px 0 18px 18px;
+    border-left: 1px solid rgba(232,33,58,.35);
+    background: linear-gradient(90deg, rgba(232,33,58,.065), transparent 78%);
+  }
+  .phase2-num {
+    opacity: 1 !important;
+    transform: none !important;
+    font-size: clamp(58px, 18vw, 92px) !important;
+    text-shadow: 0 0 24px rgba(232,33,58,.20);
+  }
+  .phase2-label { color: rgba(245,245,240,.58); letter-spacing: 3px; }
+  .phase2-right {
+    align-items: flex-start !important;
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+  }
+  .phase2-tag {
+    opacity: 1 !important;
+    transform: none !important;
+    font-size: 13px !important;
+    letter-spacing: 3px !important;
+    color: rgba(245,245,240,.62) !important;
+    border: 1px solid rgba(255,255,255,.08);
+    padding: 9px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.025);
+    backdrop-filter: blur(10px);
+  }
+
+  #hero-phase-3 {
+    opacity: 1 !important;
+    min-height: 88svh;
+    padding: 84px var(--mobile-pad) 104px !important;
+    background: radial-gradient(ellipse at 50% 42%, rgba(232,33,58,.11), transparent 58%);
+  }
+  .phase3-title { font-size: clamp(50px, 15vw, 90px) !important; }
+  #phase3-line { width: 120px !important; }
+  .phase3-sub { max-width: 260px; line-height: 1.6; margin-left:auto; margin-right:auto; }
+  .phase3-btn {
+    border-radius: 999px;
+    padding: 18px 30px !important;
+    box-shadow: 0 24px 72px rgba(232,33,58,.24);
+  }
+  #hero-vline, #hero-scroll-num, #phase-label, #scroll-hint { display: none !important; }
+  #phase-dots {
+    position: fixed;
+    left: var(--mobile-pad);
+    bottom: 18px;
+    z-index: 80;
+    background: rgba(6,6,8,.54);
+    border: 1px solid rgba(255,255,255,.07);
+    padding: 9px 11px;
+    border-radius: 999px;
+    backdrop-filter: blur(14px);
+  }
+
+  /* Sections: same visual, but cleaner flow and no sideways overflow. */
+  .stats-section { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+  .stat-item {
+    min-width: 0;
+    padding: 36px 22px !important;
+    border-right: 1px solid var(--line-sub);
+    border-bottom: 1px solid var(--line-sub);
+  }
+  .stat-number { font-size: clamp(46px, 14vw, 68px) !important; }
+  .stat-label { line-height: 1.45; }
+  .ticker-wrap { padding: 22px 0; }
+  .ticker-track { animation-duration: 30s; }
+
+  .section-divider { margin: 0 var(--mobile-pad) !important; }
+  .services-section,
+  .beforeafter-section,
+  .process-section,
+  .cta-section { padding-left: var(--mobile-pad) !important; padding-right: var(--mobile-pad) !important; }
+  .services-section { padding-top: 90px !important; }
+  .section-title { font-size: clamp(44px, 14vw, 74px) !important; }
+  .services-grid {
+    display: flex !important;
+    overflow-x: auto;
+    gap: 14px !important;
+    margin-left: calc(var(--mobile-pad) * -1);
+    margin-right: calc(var(--mobile-pad) * -1);
+    padding: 6px var(--mobile-pad) 18px;
+    background: transparent !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .services-grid::-webkit-scrollbar,
+  .hscroll-track::-webkit-scrollbar,
+  .testimonials-track::-webkit-scrollbar { display: none; }
+  .service-card {
+    flex: 0 0 min(84vw, 370px);
+    scroll-snap-align: center;
+    min-height: 390px;
+    border: 1px solid var(--line-sub);
+    border-radius: var(--mobile-card-radius);
+    box-shadow: 0 22px 60px rgba(0,0,0,.28);
+  }
+
+  .hscroll-section {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: hidden;
+    padding: 84px 0 92px;
+  }
+  .hscroll-sticky {
+    position: relative !important;
+    top: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+  .hscroll-header {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    max-width: none !important;
+    padding: 0 var(--mobile-pad) 30px !important;
+  }
+  .hscroll-track {
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    padding: 0 var(--mobile-pad) 12px !important;
+    gap: 14px !important;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--mobile-pad);
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    transform: none !important;
+  }
+  .hscroll-card {
+    flex: 0 0 min(82vw, 390px) !important;
+    width: min(82vw, 390px) !important;
+    height: min(72svh, 620px) !important;
+    min-height: 480px;
+    scroll-snap-align: center;
+    border-radius: var(--mobile-card-radius);
+    box-shadow: 0 24px 70px rgba(0,0,0,.34);
+  }
+
+  .transform-section { min-height: auto; }
+  .transform-visual { min-height: 460px !important; height: 64svh; }
+  .transform-inner { min-height: 460px !important; }
+  .transform-text-side { padding: 72px var(--mobile-pad) !important; }
+
+  .beforeafter-grid {
+    display: flex !important;
+    overflow-x: auto;
+    gap: 14px;
+    margin-left: calc(var(--mobile-pad) * -1);
+    margin-right: calc(var(--mobile-pad) * -1);
+    padding: 0 var(--mobile-pad) 16px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .ba-card {
+    flex: 0 0 min(82vw, 360px);
+    scroll-snap-align: center;
+    border-radius: var(--mobile-card-radius);
+    border: 1px solid var(--line-sub);
+  }
+  .ba-after { clip-path: inset(0 42% 0 0); transition-duration: .55s; }
+  .ba-card.touch-open .ba-after { clip-path: inset(0 0 0 0) !important; }
+  .ba-divider { transform: scaleY(1); left: 58%; opacity: .82; }
+
+  .process-track { margin-top: 46px !important; }
+  .process-progress-line { margin-bottom: 28px !important; }
+  .process-steps { gap: 14px !important; }
+  .process-step {
+    border-radius: var(--mobile-card-radius);
+    box-shadow: 0 20px 58px rgba(0,0,0,.22);
+  }
+
+  .testimonials-track {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    gap: 14px !important;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--mobile-pad);
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  .testimonial-card {
+    width: min(84vw, 390px) !important;
+    border-radius: var(--mobile-card-radius);
+    scroll-snap-align: center;
+  }
+
+  .countdown-inner { gap: 24px !important; }
+  .countdown-units {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px !important;
+  }
+  .countdown-cta { width: 100%; text-align: center; border-radius: 999px; }
+  .cta-section { padding-top: 104px !important; padding-bottom: 116px !important; }
+  .cta-title { font-size: clamp(52px, 17vw, 96px) !important; }
+  .cta-form { gap: 10px; }
+  .cta-input, .cta-btn { border-radius: 999px; border: 1px solid var(--line-sub) !important; }
+  .cta-btn { min-height: 54px; }
+  footer, .footer-bottom { padding-left: var(--mobile-pad) !important; padding-right: var(--mobile-pad) !important; }
+  .footer-bottom { flex-direction: column; gap: 10px; }
+
+  /* No touch: remove sticky hover/tilt that caused cards to jump after tap. */
+  .service-card:hover,
+  .hscroll-card:hover,
+  .ba-card:hover,
+  .process-step:hover,
+  .testimonial-card:hover,
+  .stat-item:hover,
+  .btn-red:hover,
+  .phase3-btn:hover,
+  .cta-btn:hover,
+  .countdown-cta:hover {
+    transform: none !important;
+    filter: none !important;
+  }
+  .service-card:active,
+  .hscroll-card:active,
+  .ba-card:active,
+  .process-step:active,
+  .testimonial-card:active,
+  .stat-item:active,
+  .phase3-btn:active,
+  .btn-red:active,
+  .cta-btn:active,
+  .countdown-cta:active {
+    transform: translateY(-3px) scale(.992) !important;
+    transition-duration: .18s !important;
+  }
+  .apex-live-card .apex-shine { display: none !important; }
+}
+
+@supports not (height: 100svh) {
+  @media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    #hero-wrapper, #hero-sticky, .hero-overlay { min-height: 100vh; }
+    #athlete-stage { height: 100vh !important; }
+    .hscroll-card { height: min(72vh, 620px) !important; }
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2021,11 +2414,19 @@ const PR = Math.min(devicePixelRatio, isMobile ? 1 : 1.8);
 ══════════════════════════════════════════════ */
 gsap.registerPlugin(ScrollTrigger);
 
-const lenis=(typeof Lenis!=='undefined')?new Lenis({
-  duration:1.35,
+const reduceMotionGlobal = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+try {
+  ScrollTrigger.config({ ignoreMobileResize: true });
+} catch(e) {}
+
+// v13 mobile rule: touch devices keep native scroll. Lenis is excellent on desktop,
+// but on mobile it can fight browser momentum/address-bar behavior and create jank.
+const lenis=(!isMobile && !reduceMotionGlobal && typeof Lenis!=='undefined')?new Lenis({
+  duration:1.18,
   easing:t=>Math.min(1,1.001-Math.pow(2,-10*t)),
-  smoothWheel:true, wheelMultiplier:.88, touchMultiplier:1.9,
-  syncTouch:true,
+  smoothWheel:true, wheelMultiplier:.82,
+  touchMultiplier:1,
+  syncTouch:false,
 }):null;
 
 if(lenis){
@@ -2125,6 +2526,31 @@ function scramble(el,text,dur=0.8){
   const p2nums=document.querySelectorAll('.phase2-num');
   const p2tags=document.querySelectorAll('.phase2-tag');
   if(!phase1||!window.camState)return;
+
+  if(isMobile){
+    // Mobile v13: preserve the same hero phases, but remove pin/scrub.
+    // This prevents sticky/pinned scroll jank and keeps the experience natural on touch.
+    gsap.set([phase2, phase3], {opacity:1, pointerEvents:'auto'});
+    gsap.set(p2nums, {x:0, opacity:1});
+    gsap.set(p2tags, {x:0, opacity:1});
+    gsap.set('#phase3-line', {width:120});
+    if(window.camState){ window.camState.z = 26; window.camState.x = 0; }
+    if(window.setAthletePhase) window.setAthletePhase(0);
+    ScrollTrigger.create({
+      trigger:'#hero-wrapper',
+      start:'top top',
+      end:'bottom bottom',
+      onUpdate:self=>{
+        window.heroScrollProgress = self.progress;
+        if(window.camState){
+          window.camState.z = 26 - self.progress * 6;
+          window.camState.x = Math.sin(self.progress * Math.PI) * 1.4;
+        }
+        if(window.setAthletePhase) window.setAthletePhase(self.progress > .54 ? .75 : .25);
+      }
+    });
+    return;
+  }
 
   const heroTl=gsap.timeline({
     scrollTrigger:{
@@ -2240,18 +2666,22 @@ if(ht){
       }
     });
   }else{
-    // Mobile: scroll nativo horizontal
+    // Mobile: scroll nativo horizontal com snap; nada de pin nem transformação por scroll.
+    ht.classList.add('is-mobile-native-scroll');
     ht.style.overflowX='auto';
     ht.style.scrollSnapType='x mandatory';
+    ht.style.webkitOverflowScrolling='touch';
     document.querySelectorAll('.hscroll-card').forEach(c=>{
-      c.style.scrollSnapAlign='start';
+      c.style.scrollSnapAlign='center';
     });
   }
-  // Hover scale
-  document.querySelectorAll('.hscroll-card').forEach(card=>{
-    card.addEventListener('mouseenter',()=>gsap.to(card,{scale:1.02,duration:.4,ease:'power2.out'}));
-    card.addEventListener('mouseleave',()=>gsap.to(card,{scale:1,duration:.4,ease:'power2.out'}));
-  });
+  // Hover scale só existe em desktop com ponteiro preciso.
+  if(!isMobile){
+    document.querySelectorAll('.hscroll-card').forEach(card=>{
+      card.addEventListener('mouseenter',()=>gsap.to(card,{scale:1.02,duration:.4,ease:'power2.out'}));
+      card.addEventListener('mouseleave',()=>gsap.to(card,{scale:1,duration:.4,ease:'power2.out'}));
+    });
+  }
 }
 
 /* ════ TRANSFORM SECTION ════ */
@@ -2260,7 +2690,8 @@ if(ht){
   if(!tc||typeof THREE==='undefined')return;
   const tS=new THREE.Scene();
   const tC=new THREE.PerspectiveCamera(60,1,.1,100);
-  const tR=new THREE.WebGLRenderer({canvas:tc,antialias:true,alpha:true});
+  const tR=new THREE.WebGLRenderer({canvas:tc,antialias:!isMobile,alpha:true});
+  tR.setPixelRatio(Math.min(devicePixelRatio || 1, isMobile ? 1 : 1.5));
   tR.setClearColor(0x141418,1); tC.position.z=8;
   tS.add(new THREE.AmbientLight(0x222230,.6));
   const tL=new THREE.PointLight(0xE8213A,3.5,22); tL.position.set(3,3,5); tS.add(tL);
@@ -2371,8 +2802,11 @@ if(tt){
       scrollTrigger:{trigger:'.testimonials-section',start:'top 80%',
         end:()=>'+='+(tt.scrollWidth*.88),scrub:1.1}});
   }else{
-    tt.style.overflowX='auto'; tt.style.scrollSnapType='x mandatory';
-    document.querySelectorAll('.testimonial-card').forEach(c=>c.style.scrollSnapAlign='start');
+    tt.classList.add('is-mobile-native-scroll');
+    tt.style.overflowX='auto';
+    tt.style.scrollSnapType='x mandatory';
+    tt.style.webkitOverflowScrolling='touch';
+    document.querySelectorAll('.testimonial-card').forEach(c=>c.style.scrollSnapAlign='center');
   }
   document.querySelectorAll('.testimonial-card').forEach((card,i)=>{
     gsap.fromTo(card,
@@ -2424,8 +2858,12 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
   a.addEventListener('click',e=>{
     const t=document.querySelector(a.getAttribute('href'));
     if(!t)return; e.preventDefault();
-    if(lenis) lenis.scrollTo(t,{duration:1.5,easing:x=>Math.min(1,1.001-Math.pow(2,-10*x))});
-    else t.scrollIntoView({behavior:'smooth'});
+    if(lenis) {
+      lenis.scrollTo(t,{duration:1.35,easing:x=>Math.min(1,1.001-Math.pow(2,-10*x))});
+    } else {
+      const top = t.getBoundingClientRect().top + window.pageYOffset - (isMobile ? 72 : 0);
+      window.scrollTo({top, behavior:'smooth'});
+    }
   });
 });
 
@@ -2451,9 +2889,19 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 })();
 
 /* ════ RESIZE REFRESH ════ */
-window.addEventListener('resize',()=>{
-  ScrollTrigger.refresh();
-},{passive:true});
+let apexRefreshTimer=null;
+let apexLastW=innerWidth, apexLastH=innerHeight;
+function apexSafeRefresh(force){
+  const dw=Math.abs(innerWidth-apexLastW);
+  const dh=Math.abs(innerHeight-apexLastH);
+  // Mobile browser bars change innerHeight during scroll. Ignore tiny height-only changes.
+  if(!force && isMobile && dw < 2 && dh < 120) return;
+  apexLastW=innerWidth; apexLastH=innerHeight;
+  clearTimeout(apexRefreshTimer);
+  apexRefreshTimer=setTimeout(()=>ScrollTrigger.refresh(), isMobile ? 260 : 90);
+}
+window.addEventListener('resize',()=>apexSafeRefresh(false),{passive:true});
+window.addEventListener('orientationchange',()=>setTimeout(()=>apexSafeRefresh(true),420),{passive:true});
 
 })();
 </script>
@@ -2473,6 +2921,7 @@ const hasGSAP = typeof gsap !== 'undefined';
 const hasST = typeof ScrollTrigger !== 'undefined';
 const canHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const v13Mobile = matchMedia('(max-width: 768px), (hover: none), (pointer: coarse)').matches;
 
 /* Atmosfera interativa global */
 const field = document.createElement('div');
@@ -2491,8 +2940,8 @@ function updateField(){
   document.documentElement.style.setProperty('--spot-y', sy + 'px');
   requestAnimationFrame(updateField);
 }
-if(!reduceMotion) updateField();
-window.addEventListener('pointermove', function(e){ tx = e.clientX; ty = e.clientY; }, {passive:true});
+if(!reduceMotion && !v13Mobile) updateField();
+if(!v13Mobile) window.addEventListener('pointermove', function(e){ tx = e.clientX; ty = e.clientY; }, {passive:true});
 
 function updateProgress(){
   const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
@@ -2642,6 +3091,111 @@ if(hasGSAP && !reduceMotion){
 window.addEventListener('load', function(){
   if(hasST) setTimeout(function(){ ScrollTrigger.refresh(); }, 220);
 });
+})();
+</script>
+
+
+
+<script>
+/* ════════════════════════════════════════════════════════════════════
+   APEX v13 — MOBILE EXPERIENCE CONTROLLER
+   Scroll nativo no toque, snap correto, resize seguro e microfeedback leve.
+════════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+if(window.__APEX_V13_MOBILE__) return;
+window.__APEX_V13_MOBILE__ = true;
+
+const isTouchMobile = matchMedia('(max-width: 768px), (hover: none), (pointer: coarse)').matches;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!isTouchMobile) return;
+
+document.documentElement.classList.add('apex-mobile-v13');
+document.body.classList.add('apex-mobile-ready');
+
+// Keep mobile layout stable when address bar opens/closes.
+function setVH(){
+  document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+}
+setVH();
+let vhTimer = null;
+window.addEventListener('resize', function(){
+  clearTimeout(vhTimer);
+  vhTimer = setTimeout(setVH, 220);
+}, {passive:true});
+window.addEventListener('orientationchange', function(){ setTimeout(setVH, 420); }, {passive:true});
+
+// Force native scroll on the main document. This avoids Lenis/syncTouch conflicts.
+document.documentElement.style.scrollBehavior = 'auto';
+document.body.style.scrollBehavior = 'auto';
+
+// Prevent GSAP inline transforms from desktop logic affecting native mobile carousels.
+function normalizeNativeRows(){
+  const rows = [document.querySelector('#hscroll-track'), document.querySelector('#testimonials-track')].filter(Boolean);
+  rows.forEach(function(row){
+    row.classList.add('is-mobile-native-scroll');
+    row.style.transform = 'none';
+    row.style.overflowX = 'auto';
+    row.style.overflowY = 'visible';
+    row.style.webkitOverflowScrolling = 'touch';
+    row.style.scrollSnapType = 'x mandatory';
+  });
+  document.querySelectorAll('.hscroll-card,.testimonial-card,.service-card,.ba-card').forEach(function(card){
+    card.style.scrollSnapAlign = 'center';
+  });
+}
+normalizeNativeRows();
+window.addEventListener('load', function(){
+  normalizeNativeRows();
+  if(typeof ScrollTrigger !== 'undefined') setTimeout(function(){ ScrollTrigger.refresh(); }, 260);
+});
+
+// Lightweight reveal on mobile using IntersectionObserver instead of heavy hover/timeline behavior.
+if('IntersectionObserver' in window && !reduce){
+  const targets = document.querySelectorAll('.service-card,.hscroll-card,.ba-card,.process-step,.testimonial-card,.feature-row,.stat-item');
+  targets.forEach(function(el){ el.classList.add('apex-mobile-reveal'); });
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('apex-mobile-in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold:.18, rootMargin:'0px 0px -8% 0px'});
+  targets.forEach(function(el){ io.observe(el); });
+}
+
+// Tap feedback: premium, short, no sticky hover.
+document.querySelectorAll('a,button,.service-card,.hscroll-card,.ba-card,.process-step,.testimonial-card').forEach(function(el){
+  el.addEventListener('touchstart', function(){ el.classList.add('apex-touching'); }, {passive:true});
+  el.addEventListener('touchend', function(){ setTimeout(function(){ el.classList.remove('apex-touching'); }, 160); }, {passive:true});
+  el.addEventListener('touchcancel', function(){ el.classList.remove('apex-touching'); }, {passive:true});
+});
+
+// Hero phase dots on native mobile scroll.
+const dots = document.querySelectorAll('#phase-dots .phase-dot');
+function syncHeroDots(){
+  const hero = document.getElementById('hero-wrapper');
+  if(!hero || !dots.length) return;
+  const rect = hero.getBoundingClientRect();
+  const total = Math.max(1, rect.height - innerHeight);
+  const p = Math.max(0, Math.min(1, -rect.top / total));
+  dots.forEach(function(d, i){ d.classList.toggle('active', i === (p > .50 ? 1 : 0)); });
+}
+window.addEventListener('scroll', syncHeroDots, {passive:true});
+syncHeroDots();
+
+// CSS for IO reveal / tap feedback injected here to keep single-file portability.
+const style = document.createElement('style');
+style.textContent = `
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  .apex-mobile-reveal { opacity: 0; transform: translate3d(0, 22px, 0) scale(.985); transition: opacity .72s cubic-bezier(.16,1,.3,1), transform .72s cubic-bezier(.16,1,.3,1); }
+  .apex-mobile-in { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  .apex-touching { transform: translateY(-2px) scale(.992) !important; filter: brightness(1.08) !important; }
+  .is-mobile-native-scroll { scrollbar-width: none; }
+  .is-mobile-native-scroll::-webkit-scrollbar { display:none; }
+}`;
+document.head.appendChild(style);
 })();
 </script>
 
