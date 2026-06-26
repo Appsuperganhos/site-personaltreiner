@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APEX Training — Elite Personal Trainer · São Paulo · v12 Living Motion</title>
-<meta name="description" content="Metodologia de alta performance para quem exige o máximo. Personal trainer elite em São Paulo.">
+<title>APEX Training — Diagnóstico, Treino e Recalibração Física · São Paulo · v14 Copy Power</title>
+<meta name="description" content="Diagnóstico físico, treino personalizado, nutrição estratégica e acompanhamento semanal para transformar corpo, força e rotina com método.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════════════════
-   APEX TRAINING — ULTRA PREMIUM v11
+   APEX TRAINING — ULTRA PREMIUM v14 COPY POWER
    Paleta: Vermelho energia #E8213A · Preto profundo #060608
    Novidades: noise texture, glassmorphism nav, cursor magnético,
    hero split-screen cinematic, parallax multicamada, shaders inline,
@@ -1751,6 +1751,125 @@ img, canvas { -webkit-user-drag: none; }
   }
 }
 
+
+
+/* ══════════════════════════════════════════════════════
+   APEX v14 — COPY POWER + HERO CONVERSION LAYER
+   Foco: clareza, desejo, diagnóstico e imagem com autoridade
+══════════════════════════════════════════════════════ */
+.hero-proof-strip {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(12px);
+  will-change: opacity, transform;
+}
+.hero-proof-strip span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 8px 12px;
+  border: 1px solid rgba(232,33,58,.22);
+  background: rgba(6,6,8,.48);
+  color: rgba(245,245,240,.66);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+}
+.hero-proof-strip span::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  margin-right: 8px;
+  background: var(--red);
+  box-shadow: 0 0 9px var(--red);
+}
+.hero-visual-card {
+  position: absolute;
+  z-index: 4;
+  min-width: 160px;
+  padding: 14px 16px;
+  border: 1px solid rgba(232,33,58,.22);
+  background: linear-gradient(135deg, rgba(6,6,8,.78), rgba(20,20,24,.42));
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: 0 22px 60px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.025);
+  pointer-events: none;
+  opacity: .92;
+  transform: translate3d(0,0,0);
+  animation: apexFloatProof 4.8s var(--easing) infinite;
+}
+.hero-visual-card span {
+  display: block;
+  color: var(--red);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  letter-spacing: 4px;
+  line-height: 1;
+}
+.hero-visual-card strong {
+  display: block;
+  margin-top: 6px;
+  color: rgba(245,245,240,.76);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+.hero-visual-card--top { right: 9vw; top: 24vh; }
+.hero-visual-card--bottom { right: 26vw; bottom: 18vh; animation-delay: -1.8s; }
+@keyframes apexFloatProof {
+  0%,100% { transform: translate3d(0,0,0); }
+  50% { transform: translate3d(0,-10px,0); }
+}
+.hero-title-main { max-width: 920px; }
+.hero-sub-main { max-width: 520px; }
+.service-name,
+.hscroll-title,
+.process-step-title { text-wrap: balance; }
+.service-desc,
+.hscroll-desc,
+.process-step-desc,
+.testimonial-text,
+.transform-body { text-wrap: pretty; }
+.ba-result { color: rgba(245,245,240,.72); }
+.cta-input::placeholder { color: rgba(245,245,240,.28); }
+@media (max-width: 768px) {
+  .hero-proof-strip {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    max-width: min(320px, 82vw);
+    margin-top: 18px;
+  }
+  .hero-proof-strip span {
+    min-height: 28px;
+    font-size: 8px;
+    letter-spacing: 1.7px;
+    padding: 8px 10px;
+    background: rgba(6,6,8,.58);
+  }
+  .hero-visual-card {
+    min-width: 132px;
+    padding: 11px 12px;
+    opacity: .8;
+  }
+  .hero-visual-card span { font-size: 10px; letter-spacing: 3px; }
+  .hero-visual-card strong { font-size: 9px; }
+  .hero-visual-card--top { right: 18px; top: 58vh; }
+  .hero-visual-card--bottom { left: 24px; right: auto; bottom: 12vh; }
+  #athlete-stage { opacity: .32; }
+}
+@media (max-width: 480px) {
+  .hero-proof-strip { max-width: 86vw; }
+  .hero-visual-card--top { display: none; }
+  .hero-visual-card--bottom { bottom: 10vh; left: 20px; }
+}
+
 </style>
 </head>
 <body>
@@ -1765,7 +1884,7 @@ img, canvas { -webkit-user-drag: none; }
   <a href="#transformacao">Transformação</a>
   <a href="#processo">Método</a>
   <a href="#depoimentos">Resultados</a>
-  <a href="#contato" style="color:var(--red)">Começar Agora</a>
+  <a href="#contato" style="color:var(--red)">Agendar Diagnóstico</a>
 </div>
 
 <nav id="main-nav">
@@ -1779,7 +1898,7 @@ img, canvas { -webkit-user-drag: none; }
   <button id="nav-burger" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
-  <a href="#contato" class="nav-cta"><span>Começar Agora</span></a>
+  <a href="#contato" class="nav-cta"><span>Agendar Diagnóstico</span></a>
 </nav>
 
 <!-- ═══════════ HERO ═══════════ -->
@@ -1789,10 +1908,18 @@ img, canvas { -webkit-user-drag: none; }
     <div class="hero-vignette"></div>
     <div id="scan-line"></div>
 
+
+    <!-- Direção visual recomendada v14:
+         A imagem ideal ao lado do título é um momento de autoridade em ação:
+         personal trainer corrigindo postura/execução de um aluno em estúdio escuro,
+         luz vermelha lateral, corpo inteiro ou 3/4, olhar voltado para a área do CTA,
+         fundo limpo, sem academia poluída, sem pose de fisiculturismo exagerada. -->
     <!-- Athlete Layer — independente das fases de texto -->
     <div id="athlete-layer">
       <div id="athlete-stage">
         <div id="athlete-glow"></div>
+        <div class="hero-visual-card hero-visual-card--top"><span>AVALIAÇÃO</span><strong>técnica real</strong></div>
+        <div class="hero-visual-card hero-visual-card--bottom"><span>PLANO</span><strong>ajustado por semana</strong></div>
         <div id="athlete-ground"></div>
         <div id="athlete-tilt">
           <!-- imgs injetadas via JS -->
@@ -1803,44 +1930,49 @@ img, canvas { -webkit-user-drag: none; }
     <!-- FASE 1: título -->
     <div class="hero-overlay" id="hero-phase-1">
       <div id="hero-text-block">
-        <p class="hero-label">Elite Personal Training · São Paulo</p>
+        <p class="hero-label">Diagnóstico físico · Treino individual · Acompanhamento real</p>
         <div id="hero-accent-line"></div>
         <h1 class="hero-title-main">
-          <span class="hero-line"><span class="hero-word">FORJE</span></span>
-          <span class="hero-line"><span class="hero-word hero-word-red">SEU</span><span class="hero-word">&nbsp;MELHOR</span></span>
-          <span class="hero-line"><span class="hero-word">CORPO</span></span>
+          <span class="hero-line"><span class="hero-word">TRANSFORME</span></span>
+          <span class="hero-line"><span class="hero-word hero-word-red">SEU</span><span class="hero-word">&nbsp;CORPO</span></span>
+          <span class="hero-line"><span class="hero-word">COM MÉTODO</span></span>
         </h1>
-        <p class="hero-sub-main">Metodologia de alta performance para quem exige o máximo</p>
+        <p class="hero-sub-main">Treino, nutrição e acompanhamento semanal para perder gordura, ganhar força e manter constância mesmo com agenda cheia.</p>
         <a href="#contato" class="hero-cta-inline">
-          <span>Começar Agora</span>
+          <span>Agendar Diagnóstico</span>
           <span class="hero-cta-arrow">→</span>
         </a>
+        <div class="hero-proof-strip" aria-label="Diferenciais do método APEX">
+          <span>Diagnóstico individual</span>
+          <span>Plano semanal</span>
+          <span>Ajuste técnico</span>
+        </div>
       </div>
     </div>
 
     <!-- FASE 2: stats -->
     <div class="hero-overlay" id="hero-phase-2">
       <div class="phase2-left">
-        <div class="phase2-stat"><span class="phase2-num">850+</span><span class="phase2-label">Alunos Transformados</span></div>
-        <div class="phase2-stat"><span class="phase2-num">12</span><span class="phase2-label">Anos de Expertise</span></div>
-        <div class="phase2-stat"><span class="phase2-num">98%</span><span class="phase2-label">Taxa de Satisfação</span></div>
+        <div class="phase2-stat"><span class="phase2-num">850+</span><span class="phase2-label">Planos acompanhados com método</span></div>
+        <div class="phase2-stat"><span class="phase2-num">12</span><span class="phase2-label">Anos refinando protocolos</span></div>
+        <div class="phase2-stat"><span class="phase2-num">98%</span><span class="phase2-label">Satisfação no acompanhamento</span></div>
       </div>
       <div class="phase2-right">
-        <div class="phase2-tag">FORÇA</div>
-        <div class="phase2-tag">RESISTÊNCIA</div>
-        <div class="phase2-tag">DISCIPLINA</div>
-        <div class="phase2-tag">RESULTADO</div>
-        <div class="phase2-tag">PERFORMANCE</div>
+        <div class="phase2-tag">DIAGNÓSTICO</div>
+        <div class="phase2-tag">CONSISTÊNCIA</div>
+        <div class="phase2-tag">TÉCNICA</div>
+        <div class="phase2-tag">EVOLUÇÃO</div>
+        <div class="phase2-tag">ROTINA</div>
       </div>
     </div>
 
     <!-- FASE 3: CTA -->
     <div class="hero-overlay" id="hero-phase-3">
       <div style="text-align:center">
-        <h2 class="phase3-title">PRONTO PARA<br><span style="color:var(--red)">EVOLUIR?</span></h2>
+        <h2 class="phase3-title">PRONTO PARA<br><span style="color:var(--red)">TER UM PLANO?</span></h2>
         <div id="phase3-line"></div>
-        <p class="phase3-sub">Vagas limitadas · Próxima turma em 15 dias</p>
-        <a href="#contato" class="phase3-btn"><span>Reservar Minha Vaga</span></a>
+        <p class="phase3-sub">A primeira evolução começa com diagnóstico, não com chute.</p>
+        <a href="#contato" class="phase3-btn"><span>Quero Minha Avaliação</span></a>
       </div>
     </div>
 
@@ -1861,27 +1993,27 @@ img, canvas { -webkit-user-drag: none; }
 
 <!-- STATS -->
 <section class="stats-section">
-  <div class="stat-item"><div class="stat-number"><span class="count" data-target="850">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Alunos Transformados</div></div>
-  <div class="stat-item"><div class="stat-number"><span class="count" data-target="12">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Anos de Experiência</div></div>
-  <div class="stat-item"><div class="stat-number"><span class="count" data-target="98">0</span><span class="stat-suffix">%</span></div><div class="stat-label">Taxa de Satisfação</div></div>
-  <div class="stat-item"><div class="stat-number"><span class="count" data-target="47">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Medalhas Conquistadas</div></div>
+  <div class="stat-item"><div class="stat-number"><span class="count" data-target="850">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Planos Acompanhados</div></div>
+  <div class="stat-item"><div class="stat-number"><span class="count" data-target="12">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Anos de Método</div></div>
+  <div class="stat-item"><div class="stat-number"><span class="count" data-target="98">0</span><span class="stat-suffix">%</span></div><div class="stat-label">Satisfação Registrada</div></div>
+  <div class="stat-item"><div class="stat-number"><span class="count" data-target="47">0</span><span class="stat-suffix">+</span></div><div class="stat-label">Metas de Alta Performance</div></div>
 </section>
 
 <!-- TICKER -->
 <div class="ticker-wrap">
   <div class="ticker-track">
-    <span class="ticker-item">FORÇA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">RESISTÊNCIA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">DISCIPLINA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">RESULTADO</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">PERFORMANCE</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">ELITE TRAINING</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">FORÇA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">RESISTÊNCIA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">DISCIPLINA</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">RESULTADO</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">PERFORMANCE</span><span class="ticker-item accent">✦</span>
-    <span class="ticker-item">ELITE TRAINING</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">DIAGNÓSTICO</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">CONSISTÊNCIA</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">TÉCNICA</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">EVOLUÇÃO</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">RECUPERAÇÃO</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">APEX METHOD</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">DIAGNÓSTICO</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">CONSISTÊNCIA</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">TÉCNICA</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">EVOLUÇÃO</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">RECUPERAÇÃO</span><span class="ticker-item accent">✦</span>
+    <span class="ticker-item">APEX METHOD</span><span class="ticker-item accent">✦</span>
   </div>
 </div>
 
@@ -1889,15 +2021,15 @@ img, canvas { -webkit-user-drag: none; }
 
 <!-- SERVIÇOS -->
 <section class="services-section" id="services">
-  <p class="section-eyebrow">O Que Oferecemos</p>
-  <h2 class="section-title"><span class="s-word">PROGRAMAS</span> <span class="s-word" style="color:var(--red)">ELITE</span></h2>
+  <p class="section-eyebrow">O Que Você Recebe</p>
+  <h2 class="section-title"><span class="s-word">MÉTODO</span> <span class="s-word" style="color:var(--red)">APEX</span></h2>
   <div class="services-grid">
-    <div class="service-card"><div class="service-num">01</div><span class="service-icon service-icon--performance" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M27 4 10 27h13l-2 17 17-24H25l2-16Z"/></svg></span><div class="service-bar"></div><h3 class="service-name">Treino Personalizado</h3><p class="service-desc">Protocolo exclusivo desenhado para sua biometria, objetivos e estilo de vida. Cada sessão é uma experiência única de alto rendimento.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">02</div><span class="service-icon service-icon--nutrition" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M10 29c8-1 18-7 22-18 6 8 4 24-7 29-7 3-14 0-15-11Z"/><path d="M14 34c6-7 12-10 18-13"/><path d="M32 12c3 2 5 5 6 9"/></svg></span><div class="service-bar"></div><h3 class="service-name">Nutrição Estratégica</h3><p class="service-desc">Plano alimentar baseado em dados reais do seu organismo. Ciência aplicada para máxima performance e recuperação acelerada.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">03</div><span class="service-icon service-icon--mind" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="14" cy="18" r="4"/><circle cx="31" cy="13" r="4"/><circle cx="34" cy="31" r="4"/><circle cx="17" cy="34" r="4"/><path d="M18 17 27 14M32 17l1 10M30 31l-9 3M18 31l12-15"/></svg></span><div class="service-bar"></div><h3 class="service-name">Mentoria Mental</h3><p class="service-desc">O corpo segue a mente. Técnicas de foco, disciplina e mentalidade vencedora para ir além de qualquer limite.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">04</div><span class="service-icon service-icon--strength" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M7 24h34"/><path d="M14 16v16M19 18v12M29 18v12M34 16v16"/><path d="M7 19v10M41 19v10"/></svg></span><div class="service-bar"></div><h3 class="service-name">High Performance</h3><p class="service-desc">Para atletas e executivos de alta demanda. Força, HIIT e recuperação ativa em protocolo intensivo e científico.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">05</div><span class="service-icon service-icon--bodycomp" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 42c8-3 13-9 12-17-.8-7-6-11-10-18-1 7-7 10-10 15-5 8-1 17 8 20Z"/><path d="M24 42c4-3 6-7 5-11-.5-4-3-6-5-10-1 4-5 6-6 10-2 5 1 9 6 11Z"/></svg></span><div class="service-bar"></div><h3 class="service-name">Recomposição Corporal</h3><p class="service-desc">Redução de gordura e hipertrofia simultâneos. Metodologia exclusiva com reavaliação semanal e ajuste contínuo.</p><div class="service-link">Explorar →</div></div>
-    <div class="service-card"><div class="service-num">06</div><span class="service-icon service-icon--digital" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="15" y="5" width="18" height="38" rx="4"/><path d="M21 10h6M22 37h4"/><path d="M19 17h10M19 23h7M19 29h10"/></svg></span><div class="service-bar"></div><h3 class="service-name">Online Premium</h3><p class="service-desc">App exclusivo com treinos em vídeo, check-ins diários, análise de desempenho e suporte 24h onde você estiver.</p><div class="service-link">Explorar →</div></div>
+    <div class="service-card"><div class="service-num">01</div><span class="service-icon service-icon--performance" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M27 4 10 27h13l-2 17 17-24H25l2-16Z"/></svg></span><div class="service-bar"></div><h3 class="service-name">Diagnóstico APEX</h3><p class="service-desc">Antes de treinar pesado, entendemos seu corpo: histórico, rotina, mobilidade, força, composição corporal e objetivo real.</p><div class="service-link">Ver protocolo →</div></div>
+    <div class="service-card"><div class="service-num">02</div><span class="service-icon service-icon--nutrition" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M10 29c8-1 18-7 22-18 6 8 4 24-7 29-7 3-14 0-15-11Z"/><path d="M14 34c6-7 12-10 18-13"/><path d="M32 12c3 2 5 5 6 9"/></svg></span><div class="service-bar"></div><h3 class="service-name">Nutrição Aplicável</h3><p class="service-desc">Estratégia alimentar possível de seguir: rotina, preferências, horários e ajustes sem terrorismo nutricional.</p><div class="service-link">Ver protocolo →</div></div>
+    <div class="service-card"><div class="service-num">03</div><span class="service-icon service-icon--mind" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="14" cy="18" r="4"/><circle cx="31" cy="13" r="4"/><circle cx="34" cy="31" r="4"/><circle cx="17" cy="34" r="4"/><path d="M18 17 27 14M32 17l1 10M30 31l-9 3M18 31l12-15"/></svg></span><div class="service-bar"></div><h3 class="service-name">Constância Guiada</h3><p class="service-desc">Check-ins, metas curtas e cobrança inteligente para você não depender de motivação nem recomeçar toda segunda-feira.</p><div class="service-link">Ver protocolo →</div></div>
+    <div class="service-card"><div class="service-num">04</div><span class="service-icon service-icon--strength" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M7 24h34"/><path d="M14 16v16M19 18v12M29 18v12M34 16v16"/><path d="M7 19v10M41 19v10"/></svg></span><div class="service-bar"></div><h3 class="service-name">Performance Sem Caos</h3><p class="service-desc">Para quem tem agenda cheia e precisa de treinos objetivos, seguros e fortes, sem perder tempo com tentativa e erro.</p><div class="service-link">Ver protocolo →</div></div>
+    <div class="service-card"><div class="service-num">05</div><span class="service-icon service-icon--bodycomp" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 42c8-3 13-9 12-17-.8-7-6-11-10-18-1 7-7 10-10 15-5 8-1 17 8 20Z"/><path d="M24 42c4-3 6-7 5-11-.5-4-3-6-5-10-1 4-5 6-6 10-2 5 1 9 6 11Z"/></svg></span><div class="service-bar"></div><h3 class="service-name">Recomposição Guiada</h3><p class="service-desc">Perda de gordura, ganho de força e melhora estética com progressão controlada, sono, nutrição e treino alinhados.</p><div class="service-link">Ver protocolo →</div></div>
+    <div class="service-card"><div class="service-num">06</div><span class="service-icon service-icon--digital" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="15" y="5" width="18" height="38" rx="4"/><path d="M21 10h6M22 37h4"/><path d="M19 17h10M19 23h7M19 29h10"/></svg></span><div class="service-bar"></div><h3 class="service-name">Acompanhamento Premium</h3><p class="service-desc">Treinos, vídeos, relatórios, ajustes semanais e suporte direto para manter o padrão APEX dentro ou fora da academia.</p><div class="service-link">Ver protocolo →</div></div>
   </div>
 </section>
 
@@ -1907,8 +2039,8 @@ img, canvas { -webkit-user-drag: none; }
 <section class="hscroll-section">
   <div class="hscroll-sticky">
     <div class="hscroll-header">
-      <p class="section-eyebrow" style="opacity:0;transform:none">Categorias</p>
-      <h2 class="section-title" style="font-size:clamp(32px,3.5vw,48px)"><span style="display:block;transform:none;opacity:1">EXPLORE OS</span><span style="display:block;transform:none;opacity:1;color:var(--red)">PROGRAMAS</span></h2>
+      <p class="section-eyebrow" style="opacity:0;transform:none">Protocolos</p>
+      <h2 class="section-title" style="font-size:clamp(32px,3.5vw,48px)"><span style="display:block;transform:none;opacity:1">ESCOLHA O</span><span style="display:block;transform:none;opacity:1;color:var(--red)">CAMINHO</span></h2>
     </div>
     <div class="hscroll-track" id="hscroll-track">
       <div class="hscroll-card" data-program="forca">
@@ -1916,40 +2048,40 @@ img, canvas { -webkit-user-drag: none; }
         <div class="hscroll-card-bar"></div>
         <div class="hscroll-card-num">01</div>
         <div class="hscroll-tag">Programa</div>
-        <div class="hscroll-title">FORÇA & POTÊNCIA</div>
-        <div class="hscroll-desc">Levantamentos compostos e olímpicos para máximo recrutamento muscular e explosão atlética.</div>
+        <div class="hscroll-title">FORÇA INTELIGENTE</div>
+        <div class="hscroll-desc">Progressão de carga, técnica e estabilidade para ficar mais forte sem quebrar sua rotina nem seu corpo.</div>
       </div>
       <div class="hscroll-card" data-program="hiit">
         <div class="hscroll-card-img-wrap"><img src="images/programs/hiit.png" class="hscroll-athlete-img" alt="HIIT"></div>
         <div class="hscroll-card-bar"></div>
         <div class="hscroll-card-num">02</div>
         <div class="hscroll-tag">Programa</div>
-        <div class="hscroll-title">HIIT & CARDIO</div>
-        <div class="hscroll-desc">Intervalados de alta intensidade para queima máxima e condicionamento cardiovascular de elite.</div>
+        <div class="hscroll-title">CONDICIONAMENTO REAL</div>
+        <div class="hscroll-desc">Sessões curtas e intensas, calibradas pelo seu nível, para melhorar fôlego, disposição e gasto energético.</div>
       </div>
       <div class="hscroll-card" data-program="estetica">
         <div class="hscroll-card-img-wrap"><img src="images/programs/estetica.png" class="hscroll-athlete-img" alt="Estética"></div>
         <div class="hscroll-card-bar"></div>
         <div class="hscroll-card-num">03</div>
         <div class="hscroll-tag">Programa</div>
-        <div class="hscroll-title">ESTÉTICA AVANÇADA</div>
-        <div class="hscroll-desc">Hipertrofia específica para simetria e proporções perfeitas. Ciência do bodybuilding aplicada.</div>
+        <div class="hscroll-title">ESTÉTICA ATLÉTICA</div>
+        <div class="hscroll-desc">Treino de hipertrofia com foco em proporção, postura e definição — visual forte, saudável e elegante.</div>
       </div>
       <div class="hscroll-card" data-program="mobilidade">
         <div class="hscroll-card-img-wrap"><img src="images/programs/mobilidade.png" class="hscroll-athlete-img" alt="Mobilidade"></div>
         <div class="hscroll-card-bar"></div>
         <div class="hscroll-card-num">04</div>
         <div class="hscroll-tag">Programa</div>
-        <div class="hscroll-title">MOBILIDADE & CORE</div>
-        <div class="hscroll-desc">Pilates, alongamento ativo e estabilização para performance duradoura e prevenção de lesões.</div>
+        <div class="hscroll-title">MOBILIDADE E POSTURA</div>
+        <div class="hscroll-desc">Mobilidade, core e controle corporal para treinar melhor, sentir menos dor e sustentar evolução por anos.</div>
       </div>
       <div class="hscroll-card" data-program="emagrecimento">
         <div class="hscroll-card-img-wrap"><img src="images/programs/emagrecimento.png" class="hscroll-athlete-img" alt="Emagrecimento"></div>
         <div class="hscroll-card-bar"></div>
         <div class="hscroll-card-num">05</div>
         <div class="hscroll-tag">Programa</div>
-        <div class="hscroll-title">EMAGRECIMENTO</div>
-        <div class="hscroll-desc">Perda de gordura sustentável com preservação muscular total. Combinação inteligente de treino e nutrição.</div>
+        <div class="hscroll-title">PERDA DE GORDURA</div>
+        <div class="hscroll-desc">Estratégia para reduzir medidas preservando massa muscular, energia e prazer na rotina.</div>
       </div>
     </div>
   </div>
@@ -1964,18 +2096,18 @@ img, canvas { -webkit-user-drag: none; }
     <div class="transform-badge"><span>10</span><small>Semanas</small></div>
   </div>
   <div class="transform-text-side">
-    <p class="section-eyebrow">A Jornada</p>
-    <h2 class="section-title"><span class="s-word">TRANSFOR</span><span class="s-word" style="color:var(--red)">MAÇÃO</span><span class="s-word" style="display:block">REAL</span></h2>
-    <p class="transform-body">Em 10 semanas de protocolo intensivo você experimenta resultados que levaria anos tentando sozinho. Nossa abordagem combina ciência do esporte, tecnologia e acompanhamento humanizado.</p>
+    <p class="section-eyebrow">A Virada</p>
+    <h2 class="section-title"><span class="s-word">MENOS</span><span class="s-word" style="color:var(--red)">&nbsp;ACHISMO</span><span class="s-word" style="display:block">MAIS DIREÇÃO</span></h2>
+    <p class="transform-body">Em vez de “treinar mais”, você passa a treinar melhor: diagnóstico claro, protocolo progressivo, ajustes semanais e acompanhamento para transformar esforço em evolução mensurável.</p>
     <div>
-      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">Avaliação física e funcional completa na chegada</span></div>
-      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">Protocolo 100% individualizado e adaptativo</span></div>
-      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">Medições semanais com ajuste contínuo</span></div>
-      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">Suporte nutricional e de sono incluídos</span></div>
-      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">App exclusivo com painel de evolução em tempo real</span></div>
+      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">Avaliação física, funcional e de rotina antes do primeiro plano</span></div>
+      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">Treino pensado para seu objetivo, tempo disponível e limitações</span></div>
+      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">Métricas semanais para corrigir rota antes de estagnar</span></div>
+      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">Nutrição, sono e recuperação tratados como parte do treino</span></div>
+      <div class="feature-row"><div class="feature-dot"></div><span class="feature-text">Painel de evolução com tarefas, check-ins e próximos passos</span></div>
     </div>
     <br><br>
-    <a href="#contato" class="btn-red"><span>Iniciar Transformação</span></a>
+    <a href="#contato" class="btn-red"><span>Agendar Diagnóstico</span></a>
   </div>
 </section>
 
@@ -1983,8 +2115,8 @@ img, canvas { -webkit-user-drag: none; }
 
 <!-- ANTES / DEPOIS -->
 <section class="beforeafter-section">
-  <p class="section-eyebrow">Provas Reais</p>
-  <h2 class="section-title"><span class="s-word">ANTES</span> <span class="s-word" style="color:var(--red)">&amp; DEPOIS</span></h2>
+  <p class="section-eyebrow">Recalibração Mensurável</p>
+  <h2 class="section-title"><span class="s-word">PROVA DE</span> <span class="s-word" style="color:var(--red)">PROGRESSO</span></h2>
   <div class="beforeafter-grid">
     <div class="ba-card">
       <div class="ba-divider"></div>
@@ -1993,14 +2125,14 @@ img, canvas { -webkit-user-drag: none; }
       <div class="ba-before" style="background:linear-gradient(160deg,#0a0810,#0e0c12)">
         <div class="ba-info">
           <span class="ba-name">Marcos R.</span>
-          <span class="ba-result">−14 kg · +8% músculo</span>
+          <span class="ba-result">−14 kg · +8% força</span>
           <span class="ba-weeks">12 Semanas</span>
         </div>
       </div>
       <div class="ba-after" style="background:linear-gradient(160deg,#16080a,#1a0d12)">
         <div class="ba-info" style="position:relative;z-index:3">
           <span class="ba-name">Marcos R.</span>
-          <span class="ba-result">−14 kg · +8% músculo</span>
+          <span class="ba-result">−14 kg · +8% força</span>
           <span class="ba-weeks">12 Semanas</span>
         </div>
       </div>
@@ -2010,10 +2142,10 @@ img, canvas { -webkit-user-drag: none; }
       <span class="ba-label ba-label-before">ANTES</span>
       <span class="ba-label ba-label-after">DEPOIS</span>
       <div class="ba-before" style="background:linear-gradient(160deg,#0a0810,#0e0c12)">
-        <div class="ba-info"><span class="ba-name">Carolina S.</span><span class="ba-result">PR Maratona 3h42</span><span class="ba-weeks">8 Semanas</span></div>
+        <div class="ba-info"><span class="ba-name">Carolina S.</span><span class="ba-result">ritmo 5K + estável</span><span class="ba-weeks">8 Semanas</span></div>
       </div>
       <div class="ba-after" style="background:linear-gradient(160deg,#16080a,#1a0d12)">
-        <div class="ba-info" style="position:relative;z-index:3"><span class="ba-name">Carolina S.</span><span class="ba-result">PR Maratona 3h42</span><span class="ba-weeks">8 Semanas</span></div>
+        <div class="ba-info" style="position:relative;z-index:3"><span class="ba-name">Carolina S.</span><span class="ba-result">ritmo 5K + estável</span><span class="ba-weeks">8 Semanas</span></div>
       </div>
     </div>
     <div class="ba-card">
@@ -2021,10 +2153,10 @@ img, canvas { -webkit-user-drag: none; }
       <span class="ba-label ba-label-before">ANTES</span>
       <span class="ba-label ba-label-after">DEPOIS</span>
       <div class="ba-before" style="background:linear-gradient(160deg,#0a0810,#0e0c12)">
-        <div class="ba-info"><span class="ba-name">André F.</span><span class="ba-result">+18% força total</span><span class="ba-weeks">10 Semanas</span></div>
+        <div class="ba-info"><span class="ba-name">André F.</span><span class="ba-result">+18% carga total</span><span class="ba-weeks">10 Semanas</span></div>
       </div>
       <div class="ba-after" style="background:linear-gradient(160deg,#16080a,#1a0d12)">
-        <div class="ba-info" style="position:relative;z-index:3"><span class="ba-name">André F.</span><span class="ba-result">+18% força total</span><span class="ba-weeks">10 Semanas</span></div>
+        <div class="ba-info" style="position:relative;z-index:3"><span class="ba-name">André F.</span><span class="ba-result">+18% carga total</span><span class="ba-weeks">10 Semanas</span></div>
       </div>
     </div>
   </div>
@@ -2032,8 +2164,8 @@ img, canvas { -webkit-user-drag: none; }
 
 <!-- PROCESSO -->
 <section class="process-section" id="processo">
-  <p class="section-eyebrow" style="text-align:center">Método APEX</p>
-  <h2 class="section-title" style="text-align:center"><span class="s-word">COMO</span><span class="s-word" style="color:var(--red)">&nbsp;FUNCIONA</span></h2>
+  <p class="section-eyebrow" style="text-align:center">Como Funciona</p>
+  <h2 class="section-title" style="text-align:center"><span class="s-word">DO DIAGNÓSTICO</span><span class="s-word" style="color:var(--red)">&nbsp;À EVOLUÇÃO</span></h2>
   <div class="process-track">
     <div class="process-progress-line"><div class="process-progress-fill" id="process-fill"></div></div>
     <div class="process-steps">
@@ -2041,25 +2173,25 @@ img, canvas { -webkit-user-drag: none; }
         <div class="process-step-num">01</div>
         <div class="process-circle">01</div>
         <h3 class="process-step-title">Diagnóstico</h3>
-        <p class="process-step-desc">Avaliação completa: bioimpedância, análise postural, testes de força e mobilidade.</p>
+        <p class="process-step-desc">Mapeamos corpo, rotina, histórico, limitações e objetivo para não começar no escuro.</p>
       </div>
       <div class="process-step">
         <div class="process-step-num">02</div>
         <div class="process-circle">02</div>
-        <h3 class="process-step-title">Planejamento</h3>
-        <p class="process-step-desc">Protocolo personalizado baseado nos seus dados, objetivos, agenda e nível físico.</p>
+        <h3 class="process-step-title">Plano de Ataque</h3>
+        <p class="process-step-desc">Você recebe um protocolo objetivo: treino, nutrição, recuperação e metas semanais.</p>
       </div>
       <div class="process-step">
         <div class="process-step-num">03</div>
         <div class="process-circle">03</div>
-        <h3 class="process-step-title">Execução</h3>
-        <p class="process-step-desc">Treinos com supervisão técnica, feedback em tempo real e ajustes constantes.</p>
+        <h3 class="process-step-title">Execução Assistida</h3>
+        <p class="process-step-desc">Técnica, intensidade e consistência acompanhadas para cada sessão render mais.</p>
       </div>
       <div class="process-step">
         <div class="process-step-num">04</div>
         <div class="process-circle">04</div>
-        <h3 class="process-step-title">Evolução</h3>
-        <p class="process-step-desc">Reavaliações, relatórios de progresso e recalibração para resultados contínuos.</p>
+        <h3 class="process-step-title">Recalibração</h3>
+        <p class="process-step-desc">Quando seu corpo muda, o plano muda junto. Sem platô, sem improviso.</p>
       </div>
     </div>
   </div>
@@ -2068,15 +2200,15 @@ img, canvas { -webkit-user-drag: none; }
 <!-- DEPOIMENTOS -->
 <section class="testimonials-section" id="depoimentos">
   <div class="testimonials-header">
-    <p class="section-eyebrow">O Que Dizem</p>
-    <h2 class="section-title"><span class="s-word">RESULTADOS</span><span class="s-word" style="color:var(--red)">&nbsp;REAIS</span></h2>
+    <p class="section-eyebrow">Depoimentos</p>
+    <h2 class="section-title"><span class="s-word">CLIENTES QUE</span><span class="s-word" style="color:var(--red)">&nbsp;EXECUTARAM</span></h2>
   </div>
   <div class="testimonials-track" id="testimonials-track">
-    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Em 12 semanas perdi 14kg e ganhei disposição que não sentia há 10 anos. O acompanhamento é impecável — parece que você tem um exército de especialistas ao seu lado."</p><div class="testimonial-meta"><div class="testimonial-avatar">MR</div><div><div class="testimonial-name">Marcos Rodrigues</div><div class="testimonial-role">CEO · Empresário</div></div></div></div>
-    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Conquistei meu melhor resultado em maratona após 3 meses. A metodologia e a atenção aos detalhes são de outro nível completamente."</p><div class="testimonial-meta"><div class="testimonial-avatar">CS</div><div><div class="testimonial-name">Carolina Souza</div><div class="testimonial-role">Maratonista Amadora</div></div></div></div>
-    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"A mentoria mental transformou minha disciplina em todos os aspectos da vida. É o investimento que mais retorno me deu em anos."</p><div class="testimonial-meta"><div class="testimonial-avatar">AF</div><div><div class="testimonial-name">André Ferreira</div><div class="testimonial-role">Executivo de Finanças</div></div></div></div>
-    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Após duas cirurgias, reconquistei meu corpo e superei o estado pré-cirurgia em apenas 6 meses. Método que funciona de verdade."</p><div class="testimonial-meta"><div class="testimonial-avatar">PL</div><div><div class="testimonial-name">Patricia Lima</div><div class="testimonial-role">Arquiteta</div></div></div></div>
-    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Nunca imaginei que poderia ter esse corpo aos 45 anos. O método APEX vai além do físico — é uma transformação de vida completa."</p><div class="testimonial-meta"><div class="testimonial-avatar">RN</div><div><div class="testimonial-name">Roberto Nunes</div><div class="testimonial-role">Médico · 45 anos</div></div></div></div>
+    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Eu precisava de um plano que coubesse na minha agenda. Em 12 semanas reduzi medidas, voltei a treinar com consistência e parei de improvisar."</p><div class="testimonial-meta"><div class="testimonial-avatar">MR</div><div><div class="testimonial-name">Marcos Rodrigues</div><div class="testimonial-role">CEO · Empresário</div></div></div></div>
+    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"O que mudou foi a precisão. Treinei menos no automático, recuperei melhor e consegui bater meu melhor ritmo sem sentir que estava me destruindo."</p><div class="testimonial-meta"><div class="testimonial-avatar">CS</div><div><div class="testimonial-name">Carolina Souza</div><div class="testimonial-role">Maratonista Amadora</div></div></div></div>
+    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Os check-ins me colocaram no trilho. Não foi motivação: foi clareza, cobrança e uma sequência simples de executar todos os dias."</p><div class="testimonial-meta"><div class="testimonial-avatar">AF</div><div><div class="testimonial-name">André Ferreira</div><div class="testimonial-role">Executivo de Finanças</div></div></div></div>
+    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Eu tinha medo de voltar a treinar pesado. O processo foi técnico, seguro e progressivo. Hoje me sinto forte de novo."</p><div class="testimonial-meta"><div class="testimonial-avatar">PL</div><div><div class="testimonial-name">Patricia Lima</div><div class="testimonial-role">Arquiteta</div></div></div></div>
+    <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Aos 45, eu não queria promessa milagrosa. Queria direção. O APEX me deu um plano realista e resultado que eu consigo manter."</p><div class="testimonial-meta"><div class="testimonial-avatar">RN</div><div><div class="testimonial-name">Roberto Nunes</div><div class="testimonial-role">Médico · 45 anos</div></div></div></div>
   </div>
 </section>
 
@@ -2084,8 +2216,8 @@ img, canvas { -webkit-user-drag: none; }
 <div class="countdown-section" id="contagem">
   <div class="countdown-inner">
     <div class="countdown-text">
-      <h3>PRÓXIMA TURMA EM</h3>
-      <p>Vagas limitadas · Reserve já o seu lugar</p>
+      <h3>NOVAS AVALIAÇÕES EM</h3>
+      <p>Poucas agendas de diagnóstico por semana</p>
     </div>
     <div class="countdown-units">
       <div class="countdown-unit"><span class="countdown-num" id="cd-days">15</span><span class="countdown-label">Dias</span></div>
@@ -2093,36 +2225,36 @@ img, canvas { -webkit-user-drag: none; }
       <div class="countdown-unit"><span class="countdown-num" id="cd-mins">00</span><span class="countdown-label">Minutos</span></div>
       <div class="countdown-unit"><span class="countdown-num" id="cd-secs">00</span><span class="countdown-label">Segundos</span></div>
     </div>
-    <a href="#contato" class="countdown-cta">Garantir Vaga</a>
+    <a href="#contato" class="countdown-cta">Agendar Diagnóstico</a>
   </div>
 </div>
 
 <!-- CTA -->
 <section class="cta-section" id="contato">
   <div class="cta-glow"></div>
-  <p class="section-eyebrow" style="margin-bottom:20px">Comece Hoje</p>
-  <h2 class="cta-title">SEU MELHOR EU<br><span style="color:var(--red)">COMEÇA AQUI</span></h2>
-  <p class="cta-sub">Vagas limitadas. Próxima turma inicia em 15 dias.</p>
+  <p class="section-eyebrow" style="margin-bottom:20px">Próximo Passo</p>
+  <h2 class="cta-title">AGENDE SEU<br><span style="color:var(--red)">DIAGNÓSTICO APEX</span></h2>
+  <p class="cta-sub">Receba uma primeira leitura do seu objetivo, rotina e melhor caminho de treino.</p>
   <div class="cta-form">
-    <input type="email" class="cta-input" placeholder="Seu melhor e-mail">
-    <button class="cta-btn">Reservar Vaga</button>
+    <input type="email" class="cta-input" placeholder="Seu melhor e-mail ou WhatsApp">
+    <button class="cta-btn">Solicitar Avaliação</button>
   </div>
-  <p class="cta-fine">Sem spam. Retorno em até 2 horas.</p>
+  <p class="cta-fine">Resposta manual. Sem spam. Atendimento em horário comercial.</p>
 </section>
 
 <!-- FOOTER -->
 <footer>
   <div>
     <a href="#" class="footer-logo">APE<span>X</span></a>
-    <p class="footer-tagline">Metodologia de elite para quem leva a vida a sério. São Paulo · Brasil</p>
+    <p class="footer-tagline">Diagnóstico, treino, nutrição e acompanhamento para quem quer resultado com método. São Paulo · Brasil</p>
   </div>
-  <div class="footer-col"><h4>Serviços</h4><ul><li><a href="#services">Treino Personalizado</a></li><li><a href="#services">Nutrição</a></li><li><a href="#services">Online Premium</a></li><li><a href="#services">High Performance</a></li></ul></div>
+  <div class="footer-col"><h4>Serviços</h4><ul><li><a href="#services">Diagnóstico APEX</a></li><li><a href="#services">Nutrição</a></li><li><a href="#services">Acompanhamento Premium</a></li><li><a href="#services">Performance Sem Caos</a></li></ul></div>
   <div class="footer-col"><h4>Links</h4><ul><li><a href="#">Sobre</a></li><li><a href="#depoimentos">Resultados</a></li><li><a href="#">Blog</a></li><li><a href="#contato">Contato</a></li></ul></div>
   <div class="footer-col"><h4>Contato</h4><ul><li><a href="mailto:contato@apex.com.br">contato@apex.com.br</a></li><li><a href="tel:+5511999990000">+55 (11) 99999-0000</a></li><li><a href="#">Instagram</a></li><li><a href="#">WhatsApp</a></li></ul></div>
 </footer>
 <div class="footer-bottom">
   <span>© 2025 APEX Training. Todos os direitos reservados.</span>
-  <span>Elite Personal Training · SP</span>
+  <span>Diagnóstico físico · Treino individual · SP</span>
 </div>
 
 <!-- ═══════════ SCRIPTS ═══════════ -->
@@ -2321,13 +2453,13 @@ const PR = Math.min(devicePixelRatio, isMobile ? 1 : 1.8);
   if(!tilt) return;
 
   const SRCS=['images/hero/male.png','images/hero/female.png'];
-  const LABELS=['ELE PODE','ELA TAMBÉM'];
+  const LABELS=['DIAGNÓSTICO','EVOLUÇÃO GUIADA'];
   const dots=document.querySelectorAll('.phase-dot');
   const phaseLabel=document.getElementById('phase-label');
 
-  const imgs=SRCS.map(src=>{
+  const imgs=SRCS.map((src,i)=>{
     const img=document.createElement('img');
-    img.className='athlete-img'; img.alt=''; img.draggable=false;
+    img.className='athlete-img'; img.alt=i===0?'Personal trainer conduzindo treino técnico APEX':'Cliente em evolução física guiada pelo método APEX'; img.draggable=false;
     tilt.appendChild(img); return img;
   });
 
@@ -2503,6 +2635,7 @@ function scramble(el,text,dur=0.8){
   const label=document.querySelector('.hero-label');
   const sub=document.querySelector('.hero-sub-main');
   const cta=document.querySelector('.hero-cta-inline');
+  const proof=document.querySelector('.hero-proof-strip');
   const hint=document.getElementById('scroll-hint');
   const accLine=document.getElementById('hero-accent-line');
   if(!words.length)return;
@@ -2513,6 +2646,7 @@ function scramble(el,text,dur=0.8){
     .to(label,{opacity:1,duration:.8,ease:'power3.out'},'<')
     .to(sub,{opacity:1,duration:.8,ease:'power3.out'},'-=.5')
     .to(cta,{opacity:1,y:0,duration:.7,ease:'power3.out'},'-=.4')
+    .to(proof,{opacity:1,y:0,duration:.75,ease:'power3.out'},'-=.45')
     .to(hint,{opacity:1,duration:.6},'-=.3');
 })();
 
