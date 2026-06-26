@@ -1267,6 +1267,295 @@ body.apex-touch #cursor, body.apex-touch #cursor-ring { display:none; }
   .premium-reveal { opacity:1; transform:none; filter:none; }
 }
 
+
+
+/* ═════════════════════════════════════════════════════════════
+   APEX 200K UPGRADE — RESPONSIVE CINEMATIC SYSTEM
+   Camada final: mantém a arquitetura visual, melhora mobile e fluidez.
+══════════════════════════════════════════════════════════════ */
+:root {
+  --apex-safe-x: clamp(20px, 5vw, 72px);
+  --apex-safe-y: clamp(84px, 10vw, 150px);
+  --apex-radius: 0px;
+  --apex-soft-line: rgba(255,255,255,.075);
+  --apex-glow-strong: 0 0 34px rgba(232,33,58,.22), 0 26px 100px rgba(0,0,0,.42);
+  --apex-vh: 1vh;
+}
+html {
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: none;
+}
+body {
+  min-height: 100%;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(232,33,58,.105), transparent 31vw),
+    linear-gradient(115deg, rgba(255,255,255,.018), transparent 38%, rgba(232,33,58,.026));
+  opacity:.86;
+}
+nav, #hero-wrapper, .stats-section, .ticker-wrap, .section-divider,
+.services-section, .hscroll-section, .transform-section, .intelligence-section,
+.apex-concierge-section, .process-section, .testimonials-section, .cta-section,
+footer, .footer-bottom { position: relative; z-index:2; }
+.services-section, .transform-section, .intelligence-section, .apex-concierge-section,
+.process-section, .testimonials-section, .cta-section, footer {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 900px;
+}
+#hero-wrapper, .hscroll-section { content-visibility: visible; }
+#hero-sticky { min-height: 100svh; min-height: calc(var(--apex-vh) * 100); }
+#hero-canvas, #transform-canvas-2 { transform: translateZ(0); backface-visibility:hidden; }
+#progress-bar { height:3px; background:linear-gradient(90deg,#E8213A,#ff5870,#E8213A); }
+
+/* Desktop visual refinement */
+.service-card, .hscroll-card, .testimonial-card, .command-card, .protocol-panel, .week-panel, .apex-concierge-card {
+  backface-visibility:hidden;
+  transform-style: preserve-3d;
+  contain: layout paint;
+}
+.service-card::after, .hscroll-card::before, .testimonial-card::after, .apex-concierge-card::before {
+  pointer-events:none;
+}
+.service-card:hover, .testimonial-card:hover, .command-card:hover, .week-panel:hover, .apex-concierge-card:hover {
+  box-shadow: var(--apex-glow-strong);
+}
+.nav-links a, .nav-cta, .phase3-btn, .btn-red, .cta-btn, .hero-cta-inline, .apex-ghost-btn {
+  min-height: 44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* 200K: seção premium de conversão high-ticket */
+.apex-concierge-section {
+  overflow:hidden;
+  padding: clamp(112px, 12vw, 180px) var(--apex-safe-x);
+  background:
+    radial-gradient(circle at 14% 16%, rgba(232,33,58,.17), transparent 32%),
+    radial-gradient(circle at 86% 76%, rgba(255,255,255,.05), transparent 28%),
+    linear-gradient(180deg, #060608 0%, #0d0d11 100%);
+  border-top:1px solid rgba(255,255,255,.055);
+  border-bottom:1px solid rgba(255,255,255,.055);
+}
+.apex-concierge-section::before {
+  content:''; position:absolute; inset:-20% -10%; pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.032) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 112px 112px;
+  mask-image: radial-gradient(circle at 50% 50%, #000, transparent 72%);
+  transform: translate3d(calc(var(--apex-scroll,0) * -90px), 0, 0);
+}
+.apex-concierge-shell {
+  position:relative;
+  display:grid;
+  grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+  gap: clamp(32px, 7vw, 104px);
+  align-items:center;
+}
+.apex-concierge-kicker {
+  color:var(--red); font-size:10px; letter-spacing:6px; text-transform:uppercase; margin-bottom:18px;
+}
+.apex-concierge-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size: clamp(58px, 8.4vw, 126px);
+  line-height:.84; letter-spacing:-1.5px;
+}
+.apex-concierge-title span { color:var(--red); display:block; }
+.apex-concierge-copy {
+  margin-top:28px; color:rgba(245,245,240,.58); font-size:14px; line-height:1.95; max-width:600px;
+}
+.apex-concierge-actions { display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin-top:38px; }
+.apex-concierge-proof {
+  margin-top:34px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.06);
+}
+.apex-proof-item { background:rgba(6,6,8,.84); padding:20px 18px; }
+.apex-proof-item strong { display:block; font-family:'Bebas Neue',sans-serif; font-size:34px; line-height:1; color:#fff; }
+.apex-proof-item span { display:block; margin-top:7px; color:rgba(245,245,240,.38); font-size:9px; letter-spacing:2.6px; text-transform:uppercase; }
+.apex-concierge-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.apex-concierge-card {
+  position:relative; min-height:210px; padding:28px;
+  border:1px solid rgba(255,255,255,.075);
+  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  overflow:hidden;
+  transition: transform .55s cubic-bezier(.16,1,.3,1), box-shadow .55s cubic-bezier(.16,1,.3,1), border-color .55s ease;
+}
+.apex-concierge-card::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at var(--card-x, 50%) var(--card-y, 50%), rgba(232,33,58,.18), transparent 34%);
+  opacity:0; transition:opacity .35s ease;
+}
+.apex-concierge-card:hover { transform:translateY(-8px); border-color:rgba(232,33,58,.32); }
+.apex-concierge-card:hover::before { opacity:1; }
+.apex-card-index { position:relative; font-size:9px; letter-spacing:4px; color:var(--red); text-transform:uppercase; }
+.apex-card-title { position:relative; margin-top:46px; font-family:'Bebas Neue',sans-serif; font-size:34px; letter-spacing:1.5px; }
+.apex-card-copy { position:relative; margin-top:10px; color:rgba(245,245,240,.48); font-size:12px; line-height:1.75; }
+.apex-concierge-card.is-wide { grid-column:1 / -1; min-height:180px; display:grid; grid-template-columns:1fr auto; gap:20px; align-items:end; }
+.apex-live-meter { position:relative; width:min(240px, 40vw); display:grid; gap:10px; }
+.apex-live-meter span { height:3px; background:rgba(255,255,255,.08); overflow:hidden; }
+.apex-live-meter span::before { content:''; display:block; height:100%; width:var(--w,70%); background:var(--red); box-shadow:0 0 14px var(--red); animation: apexMeterPulse 2.7s ease-in-out infinite alternate; }
+.apex-live-meter span:nth-child(2)::before { animation-delay:.2s; }
+.apex-live-meter span:nth-child(3)::before { animation-delay:.4s; }
+@keyframes apexMeterPulse { from{filter:brightness(.72)} to{filter:brightness(1.28)} }
+
+/* Mobile sticky conversion without harming desktop */
+.apex-mobile-cta {
+  display:none; position:fixed; left:14px; right:14px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:9996;
+  min-height:54px; align-items:center; justify-content:center; gap:10px;
+  background:linear-gradient(90deg, #E8213A, #ff405a);
+  color:#060608; text-decoration:none; font-size:11px; font-weight:800; letter-spacing:3px; text-transform:uppercase;
+  box-shadow:0 18px 64px rgba(232,33,58,.26), inset 0 1px 0 rgba(255,255,255,.18);
+  transform:translateY(86px); opacity:0; transition:transform .45s cubic-bezier(.16,1,.3,1), opacity .45s ease;
+}
+.apex-mobile-cta.is-visible { transform:translateY(0); opacity:1; }
+.apex-mobile-cta b { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px; }
+
+/* Tablet/mobile: preserva linguagem desktop em uma versão leve e estável */
+@media (max-width: 1100px) {
+  nav { padding-inline:var(--apex-safe-x) !important; }
+  .nav-links { gap:clamp(18px,3vw,34px); }
+  .services-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .stats-section { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .transform-section, .intelligence-head, .command-grid, .apex-concierge-shell { grid-template-columns:1fr; }
+  .apex-concierge-grid { max-width:900px; }
+}
+@media (max-width: 980px) {
+  :root { --apex-safe-x: clamp(18px, 5.8vw, 34px); }
+  body { cursor:auto; }
+  #cursor, #cursor-ring { display:none !important; }
+  .apex-scroll-minimap { display:none; }
+  nav { min-height:72px; padding:14px var(--apex-safe-x) !important; }
+  nav.scrolled { padding:12px var(--apex-safe-x) !important; }
+  .nav-logo { font-size:25px; letter-spacing:4px; }
+  .nav-links {
+    top:calc(72px + env(safe-area-inset-top)); left:var(--apex-safe-x); right:var(--apex-safe-x);
+    border-color:rgba(232,33,58,.28); box-shadow:0 30px 110px rgba(0,0,0,.58);
+  }
+  .nav-links li a { min-height:52px; font-size:12px; letter-spacing:3px; }
+  #hero-wrapper { height:340svh !important; min-height:2500px; }
+  #hero-sticky { height:100svh !important; min-height:100svh !important; }
+  #hero-canvas { opacity:.72; }
+  #athlete-layer { z-index:1 !important; }
+  #athlete-stage {
+    width:100% !important; right:0 !important; left:0 !important;
+    opacity:.62 !important; justify-content:flex-end !important;
+    filter:saturate(1.05) contrast(1.04);
+  }
+  #athlete-tilt, .athlete-img { height:min(66svh, 620px) !important; }
+  #athlete-tilt { left:64% !important; }
+  #athlete-glow { width:140%; height:80%; opacity:.75; }
+  #hero-phase-1 {
+    padding:92px var(--apex-safe-x) 0 !important;
+    justify-content:flex-start !important;
+    align-items:center !important;
+  }
+  #hero-text-block { max-width:min(72vw, 560px) !important; }
+  .hero-title-main { font-size:clamp(58px, 17vw, 108px) !important; line-height:.88 !important; letter-spacing:-.8px !important; }
+  .hero-sub-main { font-size:13px !important; max-width:330px !important; background:linear-gradient(90deg, rgba(6,6,8,.62), transparent); }
+  .hero-cta-inline { padding:14px 28px; letter-spacing:2.4px; }
+  #hero-phase-2 {
+    padding: 88px var(--apex-safe-x) 72px !important;
+    align-items:flex-end !important;
+    flex-direction:column !important;
+    justify-content:flex-end !important;
+    background:linear-gradient(90deg, rgba(6,6,8,.82), rgba(6,6,8,.18));
+  }
+  .phase2-left, .phase2-right { width:100%; flex:none; }
+  .phase2-stat { margin-bottom:22px; }
+  .phase2-num { font-size:clamp(48px, 14vw, 84px) !important; }
+  .phase2-label { font-size:9px; }
+  .phase2-right { align-items:flex-start !important; flex-direction:row !important; flex-wrap:wrap !important; justify-content:flex-start !important; gap:10px !important; margin-top:8px; }
+  .phase2-tag { padding:8px 10px; border:1px solid rgba(232,33,58,.18); background:rgba(6,6,8,.54); font-size:14px !important; text-align:left !important; }
+  #hero-phase-3 { padding:0 var(--apex-safe-x) !important; background:radial-gradient(circle at 50% 52%, rgba(232,33,58,.12), transparent 44%); }
+  .phase3-title { font-size:clamp(52px, 15vw, 94px) !important; }
+
+  .stats-section { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .stat-item { padding:42px var(--apex-safe-x); }
+  .stat-number { font-size:clamp(52px, 16vw, 78px); }
+  .services-section, .transform-section, .process-section, .cta-section, footer, .intelligence-section, .apex-concierge-section { padding-left:var(--apex-safe-x) !important; padding-right:var(--apex-safe-x) !important; }
+  .services-section, .transform-section, .intelligence-section, .apex-concierge-section, .process-section, .testimonials-section, .cta-section { padding-top:110px !important; padding-bottom:110px !important; }
+  .services-grid { grid-template-columns:1fr !important; gap:12px; background:transparent; }
+  .service-card { min-height:230px; padding:34px 26px; border:1px solid rgba(255,255,255,.075); }
+
+  /* Horizontal cards: mobile mantém a arquitetura visual, mas usa scroll nativo suave/snap, sem pin pesado. */
+  .hscroll-section { height:auto !important; min-height:0 !important; padding:112px 0 96px; overflow:hidden; }
+  .hscroll-sticky { position:relative !important; top:auto !important; height:auto !important; min-height:0 !important; overflow:visible !important; display:block !important; }
+  .hscroll-header { position:relative !important; top:auto !important; left:auto !important; padding:0 var(--apex-safe-x); margin-bottom:36px; }
+  .hscroll-track {
+    transform:none !important;
+    margin-top:0 !important;
+    padding:0 var(--apex-safe-x) 18px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scroll-snap-type:x mandatory;
+    scroll-padding-inline:var(--apex-safe-x);
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    gap:18px !important;
+  }
+  .hscroll-track::-webkit-scrollbar { display:none; }
+  .hscroll-card {
+    width:min(84vw, 430px) !important;
+    height:min(68svh, 590px) !important;
+    min-height:480px;
+    scroll-snap-align:center;
+    scroll-snap-stop:always;
+    border-color:rgba(255,255,255,.085);
+  }
+  .hscroll-athlete-img { opacity:1; transform:translateY(0) scale(1); height:88%; }
+  .hscroll-card:first-child { margin-left:0; }
+  .hscroll-card:last-child { margin-right:var(--apex-safe-x); }
+
+  .transform-section { gap:46px !important; }
+  .transform-visual { max-width:560px; width:100%; margin:0 auto; }
+  .intelligence-head { margin-bottom:42px; }
+  .command-grid, .protocol-stage, .apex-concierge-shell { gap:24px; }
+  .protocol-panel { min-height:auto !important; padding:24px; }
+  .protocol-stage { grid-template-columns:1fr !important; }
+  .protocol-visual { min-height:360px; }
+  .week-grid, .apex-concierge-proof { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .apex-concierge-grid { grid-template-columns:1fr; }
+  .apex-concierge-card.is-wide { grid-column:auto; display:block; }
+  .apex-live-meter { width:100%; margin-top:22px; }
+  .testimonials-track { overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:18px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .testimonials-track::-webkit-scrollbar { display:none; }
+  .testimonial-card { width:min(82vw, 390px); scroll-snap-align:center; }
+  .cta-form { max-width:620px; }
+  .apex-mobile-cta { display:flex; }
+}
+@media (max-width: 560px) {
+  .hero-title-main { font-size:clamp(56px, 18.5vw, 86px) !important; }
+  #hero-text-block { max-width:84vw !important; }
+  #athlete-stage { opacity:.48 !important; }
+  #athlete-tilt { left:72% !important; }
+  .stats-section { grid-template-columns:1fr !important; }
+  .ticker-wrap { padding:24px 0; }
+  .ticker-item { font-size:18px; letter-spacing:5px; padding:0 26px; }
+  .section-title, .intelligence-title, .apex-concierge-title, .cta-title { letter-spacing:-.5px; }
+  .service-card { padding:32px 22px; }
+  .hscroll-card { width:86vw !important; min-height:460px; height:min(66svh, 560px) !important; padding:28px 24px; }
+  .hscroll-title { font-size:32px; }
+  .protocol-toolbar, .cta-form { flex-direction:column; align-items:stretch; }
+  .goal-switch { grid-template-columns:1fr; }
+  .week-grid, .apex-concierge-proof { grid-template-columns:1fr; }
+  .cta-input { min-height:56px; }
+  .cta-btn { min-height:56px; }
+  footer { gap:34px !important; padding-bottom:90px !important; }
+  .footer-bottom { padding-bottom:90px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .apex-concierge-section::before, .apex-live-meter span::before { animation:none !important; transform:none !important; }
+  .apex-mobile-cta { transition:none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -1535,6 +1824,58 @@ body.apex-touch #cursor, body.apex-touch #cursor-ring { display:none; }
     <div class="testimonial-card"><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div><p class="testimonial-text">"Após duas cirurgias, reconquistei meu corpo e superei o estado pré-cirurgia em apenas 6 meses. Método que funciona de verdade."</p><div class="testimonial-meta"><div class="testimonial-avatar">PL</div><div><div class="testimonial-name">Patricia Lima</div><div class="testimonial-role">Arquiteta</div></div></div></div>
   </div>
 </section>
+
+<section class="apex-concierge-section" id="concierge">
+  <div class="apex-concierge-shell premium-reveal">
+    <div class="apex-concierge-copyblock">
+      <div class="apex-concierge-kicker">Elite Concierge System</div>
+      <h2 class="apex-concierge-title">ACOMPANHAMENTO<br><span>DE 200 MIL</span></h2>
+      <p class="apex-concierge-copy">Uma experiência high-ticket de transformação física: diagnóstico, treino, nutrição, recuperação, accountability e tomada de decisão semanal em um sistema visual de elite. O aluno sente que entrou em uma operação exclusiva, não em mais um treino comum.</p>
+      <div class="apex-concierge-actions">
+        <a href="#contato" class="btn-red"><span>Aplicar para avaliação</span></a>
+        <a href="#intelligence" class="apex-ghost-btn">Ver inteligência</a>
+      </div>
+      <div class="apex-concierge-proof" aria-label="Indicadores do protocolo">
+        <div class="apex-proof-item"><strong>07</strong><span>dias de diagnóstico</span></div>
+        <div class="apex-proof-item"><strong>24H</strong><span>ajuste de rotina</span></div>
+        <div class="apex-proof-item"><strong>1:1</strong><span>acompanhamento elite</span></div>
+      </div>
+    </div>
+    <div class="apex-concierge-grid" aria-label="Pilares do acompanhamento premium">
+      <article class="apex-concierge-card apex-tilt-card premium-reveal">
+        <div class="apex-card-index">Pilar 01</div>
+        <h3 class="apex-card-title">Diagnóstico Vivo</h3>
+        <p class="apex-card-copy">Leitura inicial de objetivo, disponibilidade, histórico, limitações, sono, estresse e nível físico para montar uma rota realista.</p>
+      </article>
+      <article class="apex-concierge-card apex-tilt-card premium-reveal">
+        <div class="apex-card-index">Pilar 02</div>
+        <h3 class="apex-card-title">Execução Guiada</h3>
+        <p class="apex-card-copy">Cada semana recebe intenção clara: força, volume, cardio, recuperação e pontos de controle que mantêm o aluno em movimento.</p>
+      </article>
+      <article class="apex-concierge-card apex-tilt-card premium-reveal">
+        <div class="apex-card-index">Pilar 03</div>
+        <h3 class="apex-card-title">Ajuste Semanal</h3>
+        <p class="apex-card-copy">O protocolo não fica parado. Ele evolui com resposta corporal, rotina, energia, medidas e aderência.</p>
+      </article>
+      <article class="apex-concierge-card apex-tilt-card premium-reveal">
+        <div class="apex-card-index">Pilar 04</div>
+        <h3 class="apex-card-title">Retenção Premium</h3>
+        <p class="apex-card-copy">Relatórios, metas curtas e visão de progresso fazem o aluno perceber valor antes, durante e depois de cada ciclo.</p>
+      </article>
+      <article class="apex-concierge-card is-wide premium-reveal">
+        <div>
+          <div class="apex-card-index">Operação ativa</div>
+          <h3 class="apex-card-title">Performance Command Room</h3>
+          <p class="apex-card-copy">Painel narrativo que comunica controle, exclusividade e evolução — perfeito para vender alto valor no desktop e no mobile.</p>
+        </div>
+        <div class="apex-live-meter" aria-hidden="true">
+          <span style="--w:86%"></span><span style="--w:72%"></span><span style="--w:94%"></span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="cta-section" id="contato">
   <div class="cta-glow"></div>
   <p class="section-eyebrow" style="opacity:0;margin-bottom:20px">Comece Hoje</p>
@@ -1584,9 +1925,10 @@ if (!canvas) return;
 
 const scene    = new THREE.Scene();
 const camera   = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 300);
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true, powerPreference:'high-performance' });
+const apex3DMobile = matchMedia('(max-width: 768px), (pointer: coarse)').matches;
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setPixelRatio(Math.min(devicePixelRatio, apex3DMobile ? 1.05 : 1.35));
 renderer.setClearColor(0x000000, 0);
 camera.position.z = 32;
 
@@ -1599,9 +1941,9 @@ if(typeof THREE.EffectComposer !== 'undefined') {
 
   const bloom = new THREE.UnrealBloomPass(
     new THREE.Vector2(innerWidth, innerHeight),
-    0.72,  // strength  — brilho cinematográfico real
-    0.40,  // radius    — falloff suave
-    0.84   // threshold — só os pixels mais brilhantes (vermelhos e brancos)
+    apex3DMobile ? 0.42 : 0.68,  // strength — bloom controlado para mobile
+    apex3DMobile ? 0.28 : 0.40,  // radius
+    0.86   // threshold
   );
   composer.addPass(bloom);
 
@@ -2180,12 +2522,16 @@ gsap.registerPlugin(ScrollTrigger);
 // ── LENIS SMOOTH SCROLL ───────────────────────────────────
 // Substitui o scroll nativo por inércia física real
 const lenis = (typeof Lenis !== 'undefined') ? new Lenis({
-  duration:        1.4,
+  // 200K tuning: sensação premium sem scroll pesado no mobile
+  duration:        1.08,
   easing:          t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
   smoothWheel:     true,
-  wheelMultiplier: 0.88,
-  touchMultiplier: 1.8,
+  smoothTouch:     false,
+  syncTouch:       false,
+  wheelMultiplier: 0.72,
+  touchMultiplier: 1.06,
 }) : null;
+window.apexLenis = lenis;
 
 if(lenis) {
   // Lenis roda no mesmo ticker do GSAP — 100% sincronizado
@@ -2959,4 +3305,153 @@ window.addEventListener('resize',()=>ScrollTrigger.refresh());
 })();
 
 </script>
+
+<script>
+/* ═════════════════════════════════════════════════════════════
+   APEX 200K UPGRADE — fluid scroll/responsive orchestration
+══════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  document.documentElement.classList.add('apex-200k');
+
+  // Stable mobile viewport unit: prevents jumpy hero on mobile browser chrome changes.
+  const setVH = () => {
+    const h = (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.01;
+    document.documentElement.style.setProperty('--apex-vh', h + 'px');
+  };
+  setVH();
+  window.addEventListener('resize', setVH, {passive:true});
+  if(window.visualViewport) window.visualViewport.addEventListener('resize', setVH, {passive:true});
+
+  // GSAP global performance tuning.
+  if(window.gsap && window.ScrollTrigger){
+    gsap.ticker.lagSmoothing(0);
+    ScrollTrigger.config({ ignoreMobileResize: true, limitCallbacks: true });
+  }
+
+  // Mobile sticky CTA: high-ticket conversion always accessible, but appears after the hero starts moving.
+  if(!$('.apex-mobile-cta')){
+    document.body.insertAdjacentHTML('beforeend','<a class="apex-mobile-cta" href="#contato"><b>APEX</b> Reservar avaliação</a>');
+  }
+  const mobileCTA = $('.apex-mobile-cta');
+  const toggleMobileCTA = () => {
+    if(!mobileCTA) return;
+    const show = window.matchMedia('(max-width: 980px)').matches && window.scrollY > window.innerHeight * .55;
+    mobileCTA.classList.toggle('is-visible', show);
+  };
+  window.addEventListener('scroll', toggleMobileCTA, {passive:true});
+  toggleMobileCTA();
+
+  // Cursor-card light follows finger/mouse on 200K cards without repainting the whole page.
+  $$('.apex-concierge-card').forEach(card => {
+    card.addEventListener('pointermove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--card-x', ((e.clientX - r.left) / r.width * 100).toFixed(2) + '%');
+      card.style.setProperty('--card-y', ((e.clientY - r.top) / r.height * 100).toFixed(2) + '%');
+    }, {passive:true});
+  });
+
+  // Rebuild horizontal section responsively.
+  // Desktop = pinned cinematic horizontal scroll.
+  // Mobile = same visual cards, native snap scroll for perfect touch fluidity.
+  let hTween = null;
+  const setupHorizontal200K = () => {
+    const track = $('#hscroll-track');
+    const section = $('.hscroll-section');
+    const sticky = $('.hscroll-sticky');
+    if(!track || !section || !sticky) return;
+
+    if(window.ScrollTrigger){
+      ScrollTrigger.getAll().forEach(st => {
+        const trig = st.trigger;
+        const isH = trig === section || trig === sticky || (st.vars && st.vars.pin === '.hscroll-sticky');
+        if(isH) st.kill(true);
+      });
+    }
+    if(hTween && hTween.kill) hTween.kill();
+    hTween = null;
+    const hHeader = document.querySelector('.hscroll-header');
+    if(window.gsap) {
+      gsap.set(track, { clearProps:'transform,x' });
+      if(hHeader) gsap.set(hHeader, { clearProps:'transform,opacity,x,y' });
+    }
+    if(hHeader) { hHeader.style.opacity = ''; hHeader.style.transform = ''; }
+    track.style.transform = 'none';
+
+    const mobile = window.matchMedia('(max-width: 980px)').matches;
+    $$('.hscroll-card').forEach((c,i)=>setTimeout(()=>c.classList.add('img-visible'), i * 80));
+
+    if(!mobile && window.gsap && window.ScrollTrigger){
+      const distance = () => Math.max(0, track.scrollWidth - document.documentElement.clientWidth + 128);
+      hTween = gsap.to(track, {
+        x: () => -distance(),
+        ease: 'none',
+        overwrite: true,
+        scrollTrigger: {
+          id: 'apex-hscroll-200k',
+          trigger: section,
+          start: 'top top',
+          end: () => '+=' + Math.max(window.innerHeight * 1.25, distance() * 1.14),
+          scrub: .72,
+          pin: sticky,
+          anticipatePin: 1,
+          invalidateOnRefresh: true
+        }
+      });
+    }
+    if(window.ScrollTrigger) requestAnimationFrame(()=>ScrollTrigger.refresh());
+  };
+
+  // Run after the old scripts have finished creating their triggers, then own the section.
+  const boot = () => setTimeout(setupHorizontal200K, 320);
+  if(document.readyState === 'complete') boot(); else window.addEventListener('load', boot, {once:true});
+  let resizeT;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(setupHorizontal200K, 220);
+  }, {passive:true});
+  window.addEventListener('orientationchange', () => setTimeout(setupHorizontal200K, 380), {passive:true});
+
+  // Smooth anchor scroll through existing Lenis when available.
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if(!a) return;
+    const id = a.getAttribute('href');
+    if(!id || id === '#') return;
+    const target = document.querySelector(id);
+    if(!target) return;
+    e.preventDefault();
+    document.body.classList.remove('apex-menu-open');
+    if(window.apexLenis && typeof window.apexLenis.scrollTo === 'function') {
+      window.apexLenis.scrollTo(target, { offset: 0, duration: 1.05 });
+    } else {
+      target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start' });
+    }
+  }, true);
+
+  // Better reveal pass for newly inserted 200K section.
+  const revealNodes = $$('.premium-reveal:not(.is-visible)');
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){ entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+      });
+    }, {threshold:.16, rootMargin:'0px 0px -6% 0px'});
+    revealNodes.forEach(n=>io.observe(n));
+  } else revealNodes.forEach(n=>n.classList.add('is-visible'));
+
+  // Prevent modal locking from hiding mobile sticky CTA forever.
+  const modalObserver = new MutationObserver(() => toggleMobileCTA());
+  const modal = $('.apex-modal');
+  if(modal) modalObserver.observe(modal, {attributes:true, attributeFilter:['class']});
+
+  // Final refresh after fonts/images/late DOM injections settle.
+  const finalRefresh = () => { if(window.ScrollTrigger) ScrollTrigger.refresh(true); };
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(finalRefresh).catch(()=>{});
+  window.addEventListener('load', () => setTimeout(finalRefresh, 900), {once:true});
+})();
+</script>
+
 </body></html>
